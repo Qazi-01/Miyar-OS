@@ -32,7 +32,7 @@ $(KERNEL_BIN): $(KERNEL_ELF)
        objcopy -O binary $< $@
 
 $(ISO): $(KERNEL_ELF)
-      cp $(KERNEL_ELF) $(ISODIR)/boot/
+       cp $(KERNEL_ELF) $(ISODIR)/boot/
 	 grub-mkrescue -o $@ $(ISODIR)
 
 $(BUILDDIR):
