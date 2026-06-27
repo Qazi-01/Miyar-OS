@@ -2,7 +2,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-    .multiboot 0×100000 : AT(ADDR(.multiboot) & 0xFFFF)
+    .multiboot 0x100000 : AT(ADDR(.multiboot) & 0xFFFF)
     {
         KEEP(*(.multiboot))
     }
