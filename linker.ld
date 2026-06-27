@@ -2,24 +2,26 @@ ENTRY(_start)
 
 SECTIONS
 {
-  .multiboot 0x100000 : AT(0x400)
+  . = 1M;
+
+  .multiboot ALIGN(4) : AT(0)
   {
     KEEP(*(.multiboot))
   }
 
-  . = 0x100000 + SIZEOF(.multiboot);
-
-  .text ALIGN(4K) : AT(ADDR(.text))
+  . = ALIGN(4K);
+  
+  .text : AT(ADDR(.text) - 1M)
   {
     *(.text)
   }
 
-  .data ALIGN(4K) : AT(ADDR(.data))
+  .data : AT(ADDR(.data) - 1M)
   {
     *(.data)
   }
 
-  .bss ALIGN(4K) : AT(ADDR(.bss))
+  .bss : AT(ADDR(.bss) - 1M)
   {
     *(COMMON)
     *(.bss)
