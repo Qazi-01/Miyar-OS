@@ -25,6 +25,6 @@ void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
     vga_buffer[6] = vga_entry('S', color);
 
     for (;;) {
-        _asm_; volatile ("hlt");
+        __asm__ volatile ("hlt");
     }
 }
