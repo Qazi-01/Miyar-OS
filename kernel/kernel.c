@@ -26,7 +26,7 @@ static inline void serial_putc(char c) {
     outb(0x3F8, c);
 }
 
-void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
+__attribute__((used)) void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
     (void)magic;
     (void)multiboot_info;
 
