@@ -11,6 +11,21 @@ static inline uint16_t vga_entry(char c, uint8_t color) {
     return (uint16_t)c | (uint16_t)color << 8;
 }
 
+static inline void outb(uint16_t port, uint8_t value) {
+    __asm__ volatile ("outb %0, %1" : : "a"(value), "Nd"(port))
+}
+
+static inline uint8_t inb(uint16_t port) {
+    uint8_t result;
+    __asm__ volatile ("inb %1, %0" : "=a"(result) : "Nd"(port));
+    return result;
+}
+
+static inline void serial_putc(char c) {
+    while ((inb(0x3FD) & 0x20) == 0);
+    outb(0x3F8, c);
+}
+
 void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
     (void)magic;
     (void)multiboot_info;
