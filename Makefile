@@ -20,26 +20,26 @@ ISO=miyaros.iso
 all: $(ISO)
 
 $(BUILDDIR)/boot.o: $(SRCDIR)/boot.asm | $(BUILDDIR)
-      $(ASM) $(ASMFLAGS) $< -o $@
+       $(ASM) $(ASMFLAGS) $< -o $@
 
 $(BUILDDIR)/kernel.o: $(KERNELDIR)/kernel.c | $(BUILDDIR)
-      $(CC) $(CFLAGS) -c $< -o $@
+       $(CC) $(CFLAGS) -c $< -o $@
 
 $(KERNEL_ELF): $(BUILDDIR)/boot.o $(BUILDDIR)/kernel.o
-      $(LD) $(LDFLAGS) -o $@ $^
+       $(LD) $(LDFLAGS) -o $@ $^
 
 $(KERNEL_BIN): $(KERNEL_ELF)
-      objcopy -O binary $< $@
+       objcopy -O binary $< $@
 
 $(ISO): $(KERNEL_ELF)
       cp $(KERNEL_ELF) $(ISODIR)/boot/
 	 grub-mkrescue -o $@ $(ISODIR)
 
 $(BUILDDIR):
-      mkdir -p $@
+       mkdir -p $@
 
 run: $(ISO)
-      qemu-system-i386 -cdrom $(ISO) -nographic -no-reboot
+       qemu-system-i386 -cdrom $(ISO) -nographic -no-reboot
 
 clean:
-      rm -rf $(BUILDDIR) $(ISO)
+       rm -rf $(BUILDDIR) $(ISO)
