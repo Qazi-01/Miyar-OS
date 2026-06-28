@@ -4,27 +4,22 @@ SECTIONS
 {
   . = 1M;
 
-  .multiboot ALIGN(4) : AT(0)
+  .text ALIGN(4K) :
   {
     KEEP(*(.multiboot))
+    *(.text*)
+    *(.rodata*)
   }
 
-  . = ALIGN(4K);
-  
-  .text : AT(ADDR(.text) - 1M)
+  .data ALIGN(4K) :
   {
-    *(.text)
+    *(.data*)
   }
 
-  .data : AT(ADDR(.data) - 1M)
-  {
-    *(.data)
-  }
-
-  .bss : AT(ADDR(.bss) - 1M)
+  .bss ALIGN(4K) :
   {
     *(COMMON)
-    *(.bss)
+    *(.bss*)
   }
 
   _kernel_end = .;
