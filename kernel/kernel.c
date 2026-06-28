@@ -34,7 +34,6 @@ static void serial_init(void) {
 }
 
 static void serial_putc(char c) {
-    while ((inb(0x3F8 + 5) & 0x20) == 0);
     outb(0x3F8, c);
 }
 
