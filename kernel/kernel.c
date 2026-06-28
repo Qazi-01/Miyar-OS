@@ -1,4 +1,4 @@
-/* MiyarOS kernel - VGA + Serial output */
+/* MiyarOS kernel - VGA + Serial */
 #include <stdint.h>
 
 #define VGA_ADDRESS 0xB8000
@@ -11,7 +11,7 @@ static inline uint16_t vga_entry(char c, uint8_t color) {
     return (uint16_t)c | (uint16_t)color << 8;
 }
 
-/* Port I/O helpers */
+/* ---- Port I/O ---- */
 static inline void outb(uint16_t port, uint8_t value) {
     __asm__ volatile ("outb %0, %1" : : "a"(value), "Nd"(port));
 }
@@ -22,12 +22,19 @@ static inline uint8_t inb(uint16_t port) {
     return result;
 }
 
-/* Write a character to COM1 serial port */
-static inline void serial_putc(char c) {
+/* ---- Serial ---- */
+static void serial_putc(char c) {
     while ((inb(0x3FD) & 0x20) == 0);
     outb(0x3F8, c);
 }
 
+static void kputs(const char *s) {
+    while (*s) {
+        serial_putc(*s++);
+    }
+}
+
+/* ---- Main ---- */
 __attribute__((used))
 void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
     (void)magic;
@@ -35,7 +42,7 @@ void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
 
     uint8_t color = 0x0F;
 
-    /* VGA output */
+    /* VGA */
     vga_buffer[0] = vga_entry('M', color);
     vga_buffer[1] = vga_entry('i', color);
     vga_buffer[2] = vga_entry('y', color);
@@ -44,15 +51,8 @@ void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
     vga_buffer[5] = vga_entry('O', color);
     vga_buffer[6] = vga_entry('S', color);
 
-    /* Serial output */
-    serial_putc('M');
-    serial_putc('i');
-    serial_putc('y');
-    serial_putc('a');
-    serial_putc('r');
-    serial_putc('O');
-    serial_putc('S');
-    serial_putc('\n');
+    /* Serial */
+    kputs("MiyarOS\n");
 
     for (;;) {
         __asm__ volatile ("hlt");
