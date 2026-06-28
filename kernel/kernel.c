@@ -15,6 +15,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     vga_write("MiyarOS");
 
     kputs("Kernel booted.\n");
+    kputs("MiyarOS (VGA written)\n");
 
     while (1) {
         __asm__ volatile ("hlt");
