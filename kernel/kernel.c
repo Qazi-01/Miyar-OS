@@ -51,6 +51,7 @@ void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
     (void)multiboot_info;
 
     serial_init();   /* <-- MUST be called first */
+    __asm__ volatile ("outb %0, %1" : : "a"((uint8_t)'Y'), "Nd"((uint16_t)0x3F8));
 
     uint8_t color = 0x0F;
 
