@@ -28,6 +28,11 @@ void vga_putc(char c) {
     if (c == '\n') {
         cursor_col = 0;
         cursor_row++;
+
+        if (cursor_row >= VGA_HEIGHT) {
+            cursor_row = VGA_HEIGHT - 1;
+        }
+
         return;
     }
 
@@ -35,27 +40,20 @@ void vga_putc(char c) {
         cursor_row = VGA_HEIGHT - 1;
     }
 
-    return;
-    }
-
-    if (cursor_row >= VGA_HEIGHT) {
-        cursor_row = VGA_HEIGHT - 1;
-    }
-
-    vga_buffer[cursor_row * VGA_WIDTH + cursor_col] = vga_entry(c, color);
+    vga_buffer[cursor_row * VGA_WIDTH + cursor_col] =
+        vga_entry(c, color);
 
     cursor_col++;
 
     if (cursor_col >= VGA_WIDTH) {
         cursor_col = 0;
         cursor_row++;
-    }
 
-    if (cursor_row >= VGA_HEIGHT) {
-        cursor_row = VGA_HEIGHT - 1;
+        if (cursor_row >= VGA_HEIGHT) {
+            cursor_row = VGA_HEIGHT - 1;
+        }
     }
 }
-
 
 void vga_write(const char *str) {
     while (*str) {
