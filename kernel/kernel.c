@@ -1,4 +1,4 @@
-/* MiyarOS kernel - VGA + Serial */
+/* MiyarOS kernel – VGA + Serial, with init */
 #include <stdint.h>
 
 #define VGA_ADDRESS 0xB8000
@@ -22,9 +22,19 @@ static inline uint8_t inb(uint16_t port) {
     return result;
 }
 
-/* ---- Serial ---- */
+/* ---- Serial (COM1, 0x3F8) ---- */
+static void serial_init(void) {
+    outb(0x3F8 + 1, 0x00);    /* Disable all interrupts */
+    outb(0x3F8 + 3, 0x80);    /* Enable DLAB (set baud rate divisor) */
+    outb(0x3F8 + 0, 0x03);    /* Set divisor to 3 (lo byte) 38400 baud */
+    outb(0x3F8 + 1, 0x00);    /*                  (hi byte) */
+    outb(0x3F8 + 3, 0x03);    /* 8 bits, no parity, one stop bit */
+    outb(0x3F8 + 2, 0xC7);    /* Enable FIFO, clear them, with 14-byte threshold */
+    outb(0x3F8 + 4, 0x0B);    /* IRQs enabled, RTS/DSR set */
+}
+
 static void serial_putc(char c) {
-    while ((inb(0x3FD) & 0x20) == 0);
+    while ((inb(0x3F8 + 5) & 0x20) == 0);
     outb(0x3F8, c);
 }
 
@@ -39,6 +49,8 @@ __attribute__((used))
 void kernel_main(uint32_t magic, uint32_t* multiboot_info) {
     (void)magic;
     (void)multiboot_info;
+
+    serial_init();   /* <-- MUST be called first */
 
     uint8_t color = 0x0F;
 
