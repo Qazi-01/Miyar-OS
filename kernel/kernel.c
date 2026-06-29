@@ -13,7 +13,9 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
 
     terminal_init();
 
-    terminal_write("MiyarOS\n");
+    terminal_write("Welcome!\n");
+    terminal_write("System boot successful.\n");
+    terminal_write("\n");
 
     kputs("Kernel booted.\n");
     kputs("MiyarOS (VGA written)\n");
