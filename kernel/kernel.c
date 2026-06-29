@@ -11,7 +11,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     (void)multiboot_info;
 
     serial_init();
-    keybard_init();
+    keyboard_init();
 
     terminal_init();
 
