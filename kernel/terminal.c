@@ -20,3 +20,9 @@ void terminal_write(const char *str)
     vga_write(str);
     kputs(str);
 }
+
+void terminal_writeIn(const char *str)
+{
+    terminal_write(str);
+    terminal_write("\n");
+}
