@@ -16,6 +16,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     terminal_write("Welcome!\n");
     terminal_write("System boot successful.\n");
     terminal_write("\n");
+    terminal_prompt();
 
     while (1) {
         __asm__ volatile ("hlt");
