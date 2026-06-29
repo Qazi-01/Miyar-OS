@@ -16,7 +16,8 @@ BOOT_OBJ=$(BUILDDIR)/boot.o
 KERNEL_OBJS=\
 $(BUILDDIR)/kernel.o \
 $(BUILDDIR)/serial.o \
-$(BUILDDIR)/vga.o
+$(BUILDDIR)/vga.o \
+$(BUILDDIR)/terminal.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -40,6 +41,9 @@ $(BUILDDIR)/serial.o: $(KERNELDIR)/serial.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/vga.o: $(KERNELDIR)/vga.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/terminal.o: $(KERNELDIR)/terminal.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(KERNEL_ELF): $(BOOT_OBJ) $(KERNEL_OBJS)
