@@ -9,8 +9,10 @@ void terminal_init(void)
     vga_clear();
 
     terminal_write("====================\n");
-    terminal_write("MiyarOS\n");
-    terminal_write("====================\n\n");
+    terminal_write("MiyarOS v0.1\n");
+    terminal_write("====================\n");
+    terminal_write("Initializing Terminal... OK\n");
+    terminal_write("\n");
 }
 
 void terminal_write(const char *str)
