@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "keyboard.h"                                                                                                        }
 #include "serial.h"
 #include "terminal.h"
 #include "vga.h"
@@ -10,6 +11,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     (void)multiboot_info;
 
     serial_init();
+    keybard_init();
 
     terminal_init();
 
