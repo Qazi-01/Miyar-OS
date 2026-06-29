@@ -4,9 +4,13 @@
 
 void terminal_init(void)
 {
+    vga_set_color(VGA_BLACK, VGA_WHITE);
+
     vga_clear();
 
-    vga_set_color(VGA_WHITE, VGA_BLACK);
+    terminal_write("====================\n");
+    terminal_write("MiyarOS\n");
+    terminal_write("====================\n\n");
 }
 
 void terminal_write(const char *str)
