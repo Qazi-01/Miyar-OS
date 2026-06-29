@@ -1,3 +1,4 @@
+#include "serial.h"
 #include "terminal.h"
 #include "vga.h"
 
@@ -11,4 +12,5 @@ void terminal_init(void)
 void terminal_write(const char *str)
 {
     vga_write(str);
+    kputs(str);
 }
