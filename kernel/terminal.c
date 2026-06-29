@@ -1,3 +1,5 @@
-#include <terminal.h>
+#include "terminal.h"
 
-void terminal_init(void) {
+void terminal_init(void)
+{
+}
