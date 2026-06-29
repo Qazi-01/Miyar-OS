@@ -22,4 +22,8 @@ void outb(uint16_t port, uint8_t value)
 
 void keyboard_init(void)
 {
+    while (inb(0x64) & 0x01)
+    {
+        inb(0x60);
+    }
 }
