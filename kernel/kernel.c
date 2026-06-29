@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "serial.h"
+#include "terminal.h"
 #include "vga.h"
 
 __attribute__((used))
@@ -10,9 +11,9 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
 
     serial_init();
 
-    vga_clear();
+    terminal_init();
 
-    vga_write("MiyarOS");
+    terminal_write("MiyarOS\n");
 
     kputs("Kernel booted.\n");
     kputs("MiyarOS (VGA written)\n");
