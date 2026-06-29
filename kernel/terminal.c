@@ -26,3 +26,8 @@ void terminal_writeIn(const char *str)
     terminal_write(str);
     terminal_write("\n");
 }
+
+void terminal_prompt(void)
+{
+    terminal_write("> ");
+}
