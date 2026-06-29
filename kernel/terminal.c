@@ -12,7 +12,7 @@ void terminal_init(void)
     terminal_writeIn("MiyarOS v0.1\n");
     terminal_writeIn("====================\n");
     terminal_writeIn("Initializing Terminal... OK\n");
-    terminal_write("\n");
+    terminal_writeIn("\n");
 }
 
 void terminal_write(const char *str)
