@@ -16,6 +16,11 @@ static inline uint16_t vga_entry(char c, uint8_t color) {
     return (uint16_t)c | ((uint16_t)color << 8);
 }
 
+void vga_set_color(uint8_t foreground, uint8_t background)
+{
+    color = (background << 4) | foreground;
+}
+
 void vga_clear(void) {
     for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
         vga_buffer[i] = vga_entry(' ', color);
