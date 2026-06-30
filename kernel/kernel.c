@@ -21,6 +21,11 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     terminal_prompt();
 
     while (1) {
-        __asm__ volatile ("hlt");
+        char c = keyboard_getchar();
+
+        if (c)
+        {
+            terminal_write((char[]){c, '\0'});
+        }
     }
 }
