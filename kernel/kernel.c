@@ -20,12 +20,32 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     terminal_write("\n");
     terminal_prompt();
 
+    char input[128];
+    int index = 0;
+
     while (1) {
         char c = keyboard_getchar();
 
-        if (c)
+        if (!c)
         {
-            terminal_write((char[]){c, '\0'});
+            continue;
+        }
+
+        if (c == '\n')
+        {
+            input[index] = '\0';
+
+            terminal_writeIn("");
+            terminal_prompt();
+
+            index = 0;
+            continue;
+        }
+        if (index < 127)
+        {
+            input[index++] = c;
+
+            terminal_write((char[])){c, '\0'});
         }
     }
 }
