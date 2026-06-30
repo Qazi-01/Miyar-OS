@@ -29,7 +29,7 @@ void shell_execute(const char *input)
     else
     {
         terminal_writeIn("");
-        terminal_writeIn("Unknown command: ")
+        terminal_writeIn("Unknown command: ");
         terminal_writeIn(input);
     }
 }
