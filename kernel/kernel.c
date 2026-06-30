@@ -45,7 +45,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
         {
             input[index++] = c;
 
-            terminal_write((char[])){c, '\0'});
+            terminal_write((char[]){c, '\0'});
         }
     }
 }
