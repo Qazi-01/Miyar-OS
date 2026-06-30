@@ -12,7 +12,6 @@ char keyboard_getchar(void)
     }
 
     scancode = inb(0x60);
-    return scancode;
 
     if (scancode & 0x80)
     {
