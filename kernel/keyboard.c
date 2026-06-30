@@ -20,7 +20,7 @@ char keyboard_getchar(void)
 
     if (scancode < sizeof(scancode_table))
     {
-        return 'X';
+        return scancode_table[scancode];
     }
 
     return 0;
