@@ -46,25 +46,30 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
             continue;
         }
 
-        if (streq(input, "help"))
+        if (c == '\n')
+        {
+            input[index] = '\0';
+
+            if (streq(input, "help"))
             {
                 terminal_writeIn("");
                 terminal_writeIn("Available commands: ");
                 terminal_writeIn("help");
             }
-        
-        else
-        {
+            
+            else
+            {
             terminal_writeIn("");
             terminal_writeIn("Unknown command: ");
 
             terminal_writeIn(input);
-        }
+            }
 
             terminal_prompt();
             
             index = 0;
             continue;
+        }
 
         if (index < 127)
         {
