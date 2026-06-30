@@ -5,13 +5,14 @@ static const char scancode_table[128] = {0, 27, '1', '2', '3', '4', '5', '6', '7
 
 char keyboard_getchar(void)
 {
-    uint8_t scancode;
+    uint8_t scancode = 0;
 
     while (!(inb(0x64) & 0x01))
     {
     }
 
     scancode = inb(0x60);
+    return scancode;
 
     if (scancode & 0x80)
     {
