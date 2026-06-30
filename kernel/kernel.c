@@ -34,6 +34,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     terminal_write("System boot successful.\n");
     terminal_write("\n");
     terminal_prompt();
+    terminal_write("TEST");
 
     char input[128];
     int index = 0;
