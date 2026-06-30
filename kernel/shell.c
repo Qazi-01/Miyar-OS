@@ -23,7 +23,7 @@ void shell_execute(const char *input)
 
     if (streq(input, "help"))
     {
-        terminal_writeIn("Available commands: ")
+        terminal_writeIn("Available commands: ");
         terminal_writeIn("help");
         terminal_writeIn("about");
         terminal_writeIn("version");
@@ -42,7 +42,7 @@ void shell_execute(const char *input)
 
     else
     {
-        terminal_write("Unknown command: ")
+        terminal_write("Unknown command: ");
         terminal_writeIn(input);
     }
 }
