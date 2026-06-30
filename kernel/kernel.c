@@ -2,24 +2,10 @@
 
 #include "keyboard.h"
 #include "serial.h"
+#include "shell.h"
 #include "terminal.h"
 #include "vga.h"
 
-static int streq(const char *a, const char *b)
-{
-    while (*a && *b)
-    {
-        if (*a != *b)
-        {
-            return 0;
-        }
-
-        a++;
-        b++;
-    }
-
-    return *a == *b;
-}
 __attribute__((used))
 void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     (void)magic;
@@ -50,21 +36,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
         {
             input[index] = '\0';
 
-            if (streq(input, "help"))
-            {
-                terminal_writeIn("");
-                terminal_writeIn("Available commands: ");
-                terminal_writeIn("help");
-            }
-            
-            else
-            {
-            terminal_writeIn("");
-            terminal_writeIn("Unknown command: ");
-
-            terminal_writeIn(input);
-            }
-
+            shell_execute(input);
             terminal_prompt();
             
             index = 0;
