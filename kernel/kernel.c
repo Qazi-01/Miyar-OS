@@ -5,6 +5,21 @@
 #include "terminal.h"
 #include "vga.h"
 
+static int streq(const char *a, const char *b)
+{
+    while (*a && *b)
+    {
+        if (*a != *b)
+        {
+            return 0;
+        }
+
+        a++;
+        b++;
+    }
+
+    return *a == *b;
+}
 __attribute__((used))
 void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     (void)magic;
