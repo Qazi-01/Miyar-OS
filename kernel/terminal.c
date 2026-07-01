@@ -8,9 +8,9 @@ void terminal_init(void)
 
     vga_clear();
 
-    terminal_writeIn("====================\n");
+    terminal_writeIn("====================");
     terminal_writeIn("MiyarOS v0.1\n");
-    terminal_writeIn("====================\n");
+    terminal_writeIn("====================");
     terminal_writeIn("Initializing Terminal... OK\n");
     terminal_writeIn("\n");
 }
