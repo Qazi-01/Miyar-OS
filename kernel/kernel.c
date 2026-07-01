@@ -2,6 +2,7 @@
 
 #include "idt.h"
 #include "keyboard.h"
+#include "pic.h"
 #include "serial.h"
 #include "shell.h"
 #include "terminal.h"
@@ -15,6 +16,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     serial_init();
     keyboard_init();
     terminal_init();
+    pic_init();
     idt_init();
 
     terminal_write("Welcome!\n");
