@@ -35,7 +35,7 @@ static int starts_with(const char *str, const char *prefix)
 
 void shell_execute(const char *input)
 {
-    if (input == '\0')
+    if (*input == '\0')
     {
         return;
     }
