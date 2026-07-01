@@ -3,7 +3,7 @@ CC=gcc
 LD=ld
 
 ASMFLAGS=-f elf32
-CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra
+CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra -MMD -MP
 LDFLAGS=-m elf_i386 -T linker.ld -z max-page-size=0x1000
 
 SRCDIR=src
@@ -82,3 +82,5 @@ run: $(ISO)
 
 clean:
 > rm -rf $(BUILDDIR) $(ISO)
+
+-include $(wildcard $(BUILDDIR)/*.d)
