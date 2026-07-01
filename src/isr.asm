@@ -8,8 +8,11 @@ isr0:
 
     pusha
 
+    push esp
     call isr0_handler
+    add esp, 4
 
-.hang:
-    hlt
-    jmp .hang
+    popa
+
+    iretd
+
