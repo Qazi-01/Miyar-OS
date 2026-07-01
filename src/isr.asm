@@ -31,7 +31,25 @@ global isr_stub_29
 global isr_stub_30
 global isr_stub_31
 
+global irq_stub_0
+global irq_stub_1
+global irq_stub_2
+global irq_stub_3
+global irq_stub_4
+global irq_stub_5
+global irq_stub_6
+global irq_stub_7
+global irq_stub_8
+global irq_stub_9
+global irq_stub_10
+global irq_stub_11
+global irq_stub_12
+global irq_stub_13
+global irq_stub_14
+global irq_stub_15
+
 extern exception_handler
+extern irq_handler
 
 section .text
 
@@ -44,8 +62,23 @@ isr_stub_%1:
     iret
 %endmacro
 
+%macro IRQ 1
+irq_stub_%1:
+    cli
+    pusha
+    call irq_handler
+    popa
+    iret
+%endmacro
+
 %assign i 0
 %rep 32
 ISR_NOERR i
+%assign i i + 1
+%endrep
+
+%assign i 0
+%rep 16
+IRQ i
 %assign i i + 1
 %endrep
