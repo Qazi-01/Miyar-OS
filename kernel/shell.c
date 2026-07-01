@@ -17,6 +17,22 @@ static int streq(const char *a, const char *b)
     return *a == *b;
 }
 
+static int starts_with(const char *str, const char *prefix)
+{
+    while (*prefix)
+    {
+        if (*str != *prefix)
+        {
+            return 0;
+        }
+
+        str++;
+        prefix++;
+    }
+
+    return 1;
+}
+
 void shell_execute(const char *input)
 {
     terminal_writeIn("");
@@ -38,6 +54,11 @@ void shell_execute(const char *input)
     else if (streq(input, "version"))
     {
         terminal_writeIn("MiyarOS v0.1");
+    }
+
+    else if (starts_with(input, "echo "))
+    {
+        terminal_writeIn(input + 5);
     }
 
     else
