@@ -17,7 +17,7 @@ void pic_send_eoi(unsigned char irq)
         outb(PIC2_COMMAND, 0x20);
     }
 
-    outb(PIC1_COMMAND, 0x20)
+    outb(PIC1_COMMAND, 0x20);
 }
 
 void pic_init(void)
