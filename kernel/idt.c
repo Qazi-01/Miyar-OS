@@ -27,10 +27,17 @@ static void idt_set_gate(uint8_t num, uint32_t handler, uint16_t selector, uint8
     idt[num].offset_high = (handler >> 16) & 0xFFFF;
 }
 
+static void idt_load(struct idt_ptr *idtp)
+{
+    __asm__ volatile("lidt (%0)" :: "r"(idtp));
+}
+
 void idt_init(void)
 {
     struct idt_ptr idtp;
 
     idtp.limit = sizeof(idt) - 1;
     idtp.base = (uint32_t)idt;
+    
+    idt_load(&idtp);
 }
