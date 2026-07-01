@@ -18,6 +18,15 @@ struct idt_ptr
 
 static struct idt_entry idt[256];
 
+static void idt_set_gate(uint8_t num, uint32_t handler, uint16_t selector, uint8_t flags)
+{
+    idt[num].offset_low = handler & 0xFFFF;
+    idt[num].selector = selector;
+    idt[num].zero = 0;
+    idt[num].type_attr = flags;
+    idt[num].offset_high = (handler >> 16) & 0xFFFF;
+}
+
 void idt_init(void)
 {
 }
