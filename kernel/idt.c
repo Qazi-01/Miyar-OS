@@ -29,4 +29,8 @@ static void idt_set_gate(uint8_t num, uint32_t handler, uint16_t selector, uint8
 
 void idt_init(void)
 {
+    struct idt_ptr idtp;
+
+    idtp.limit = sizeof(idt) - 1;
+    idtp.base = (uint32_t)idt;
 }
