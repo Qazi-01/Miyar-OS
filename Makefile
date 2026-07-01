@@ -20,7 +20,8 @@ $(BUILDDIR)/vga.o \
 $(BUILDDIR)/terminal.o \
 $(BUILDDIR)/keyboard.o \
 $(BUILDDIR)/shell.o \
-$(BUILDDIR)/idt.o
+$(BUILDDIR)/idt.o \
+$(BUILDDIR)/isr.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -57,6 +58,9 @@ $(BUILDDIR)/shell.o: $(KERNELDIR)/shell.c | $(BUILDDIR)
 
 $(BUILDDIR)/idt.o: $(KERNELDIR)/idt.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/isr.o: $(SRCDIR)/isr.asm | $(BUILDDIR)
+> $(ASM) $(ASMFLAGS) $< -o $@
 
 $(KERNEL_ELF): $(BOOT_OBJ) $(KERNEL_OBJS)
 > $(LD) $(LDFLAGS) -o $@ $^
