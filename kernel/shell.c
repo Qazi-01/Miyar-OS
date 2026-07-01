@@ -39,7 +39,7 @@ void shell_execute(const char *input)
     {
         return;
     }
-    
+
     terminal_writeIn("");
 
     if (streq(input, "help"))
@@ -71,6 +71,11 @@ void shell_execute(const char *input)
     else if (streq(input, "clear"))
     {
         terminal_clear();
+    }
+
+    else if (streq(input, "uptime"))
+    {
+        terminal_writeIn("Uptime: Timer not implemented yet.");
     }
 
     else
