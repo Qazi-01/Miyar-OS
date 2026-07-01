@@ -49,6 +49,7 @@ void shell_execute(const char *input)
         terminal_writeIn("about");
         terminal_writeIn("version");
         terminal_writeIn("echo <message>");
+        terminal_writeIn("uptime");
         terminal_writeIn("clear");
     }
 
