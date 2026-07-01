@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "idt.h"
 
-extern void isr0(void);
+extern void isr_stub_0(void);
 
 struct idt_entry
 {
@@ -41,7 +41,7 @@ void idt_init(void)
     idtp.limit = sizeof(idt) - 1;
     idtp.base = (uint32_t)idt;
     
-    idt_set_gate(0, (uint32_t)isr0, 0x08, 0x8E);
+    idt_set_gate(0, (uint32_t)isr_stub_0, 0x08, 0x8E);
 
     idt_load(&idtp);
 }

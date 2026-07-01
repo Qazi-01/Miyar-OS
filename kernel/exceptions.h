@@ -15,6 +15,6 @@ struct registers
     uint32_t eax;
 };
 
-void isr0_handler(struct registers *regs);
+void exception_handler(void);
 
 #endif
