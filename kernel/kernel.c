@@ -14,9 +14,8 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
 
     serial_init();
     keyboard_init();
-    idt_init();
-
     terminal_init();
+    idt_init();
 
     terminal_write("Welcome!\n");
     terminal_write("System boot successful.\n");
