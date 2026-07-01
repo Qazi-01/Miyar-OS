@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "idt.h"
 #include "keyboard.h"
 #include "serial.h"
 #include "shell.h"
@@ -13,6 +14,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
 
     serial_init();
     keyboard_init();
+    idt_init();
 
     terminal_init();
 
