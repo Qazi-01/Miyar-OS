@@ -24,7 +24,8 @@ $(BUILDDIR)/idt.o \
 $(BUILDDIR)/isr.o \
 $(BUILDDIR)/panic.o \
 $(BUILDDIR)/exceptions.o \
-$(BUILDDIR)/pic.o
+$(BUILDDIR)/pic.o \
+$(BUILDDIR)/irq.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -72,6 +73,9 @@ $(BUILDDIR)/exceptions.o: $(KERNELDIR)/exceptions.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/pic.o: $(KERNELDIR)/pic.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/irq.o: $(KERNELDIR)/irq.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(KERNEL_ELF): $(BOOT_OBJ) $(KERNEL_OBJS)
