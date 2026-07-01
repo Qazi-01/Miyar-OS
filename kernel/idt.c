@@ -2,6 +2,9 @@
 #include "idt.h"
 
 extern void isr_stub_0(void);
+extern void isr_stub_1(void);
+extern void isr_stub_2(void);
+extern void isr_stub_3(void);
 
 struct idt_entry
 {
@@ -42,6 +45,9 @@ void idt_init(void)
     idtp.base = (uint32_t)idt;
     
     idt_set_gate(0, (uint32_t)isr_stub_0, 0x08, 0x8E);
+    idt_set_gate(1, (uint32_t)isr_stub_1, 0x08, 0x8E);
+    idt_set_gate(2, (uint32_t)isr_stub_2, 0x08, 0x8E);
+    idt_set_gate(3, (uint32_t)isr_stub_3, 0x08, 0x8E);
 
     idt_load(&idtp);
 }
