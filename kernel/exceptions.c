@@ -1,3 +1,4 @@
+#include "exceptions.h"
 #include "panic.h"
 
 void isr0_handler(void)
