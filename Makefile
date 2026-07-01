@@ -22,7 +22,8 @@ $(BUILDDIR)/keyboard.o \
 $(BUILDDIR)/shell.o \
 $(BUILDDIR)/idt.o \
 $(BUILDDIR)/isr.o \
-$(BUILDDIR)/panic.o
+$(BUILDDIR)/panic.o \
+$(BUILDDIR)/isr_c.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -65,6 +66,9 @@ $(BUILDDIR)/panic.o: $(KERNELDIR)/panic.c | $(BUILDDIR)
 
 $(BUILDDIR)/isr.o: $(SRCDIR)/isr.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
+
+$(BUILDDIR)/isr_c.o: $(KERNELDIR)/isr.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
 
 $(KERNEL_ELF): $(BOOT_OBJ) $(KERNEL_OBJS)
 > $(LD) $(LDFLAGS) -o $@ $^
