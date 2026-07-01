@@ -6,6 +6,41 @@ extern void isr_stub_1(void);
 extern void isr_stub_2(void);
 extern void isr_stub_3(void);
 
+#define DECLARE_ISR(n) extern void isr_stub_##n(void)
+
+DECLARE_ISR(0);
+DECLARE_ISR(1);
+DECLARE_ISR(2);
+DECLARE_ISR(3);
+DECLARE_ISR(4);
+DECLARE_ISR(5);
+DECLARE_ISR(6);
+DECLARE_ISR(7);
+DECLARE_ISR(8);
+DECLARE_ISR(9);
+DECLARE_ISR(10);
+DECLARE_ISR(11);
+DECLARE_ISR(12);
+DECLARE_ISR(13);
+DECLARE_ISR(14);
+DECLARE_ISR(15);
+DECLARE_ISR(16);
+DECLARE_ISR(17);
+DECLARE_ISR(18);
+DECLARE_ISR(19);
+DECLARE_ISR(20);
+DECLARE_ISR(21);
+DECLARE_ISR(22);
+DECLARE_ISR(23);
+DECLARE_ISR(24);
+DECLARE_ISR(25);
+DECLARE_ISR(26);
+DECLARE_ISR(27);
+DECLARE_ISR(28);
+DECLARE_ISR(29);
+DECLARE_ISR(30);
+DECLARE_ISR(31);
+
 struct idt_entry
 {
     uint16_t offset_low;
@@ -44,10 +79,40 @@ void idt_init(void)
     idtp.limit = sizeof(idt) - 1;
     idtp.base = (uint32_t)idt;
     
-    idt_set_gate(0, (uint32_t)isr_stub_0, 0x08, 0x8E);
-    idt_set_gate(1, (uint32_t)isr_stub_1, 0x08, 0x8E);
-    idt_set_gate(2, (uint32_t)isr_stub_2, 0x08, 0x8E);
-    idt_set_gate(3, (uint32_t)isr_stub_3, 0x08, 0x8E);
+    #define SET_ISR(n) idt_set_gate(n, (uint32_t)isr_stub_##n, 0x08, 0x8E)
+
+    SET_ISR(0);
+    SET_ISR(1);
+    SET_ISR(2);
+    SET_ISR(3);
+    SET_ISR(4);
+    SET_ISR(5);
+    SET_ISR(6);
+    SET_ISR(7);
+    SET_ISR(8);
+    SET_ISR(9);
+    SET_ISR(10);
+    SET_ISR(11);
+    SET_ISR(12);
+    SET_ISR(13);
+    SET_ISR(14);
+    SET_ISR(15);
+    SET_ISR(16);
+    SET_ISR(17);
+    SET_ISR(18);
+    SET_ISR(19);
+    SET_ISR(20);
+    SET_ISR(21);
+    SET_ISR(22);
+    SET_ISR(23);
+    SET_ISR(24);
+    SET_ISR(25);
+    SET_ISR(26);
+    SET_ISR(27);
+    SET_ISR(28);
+    SET_ISR(29);
+    SET_ISR(30);
+    SET_ISR(31);
 
     idt_load(&idtp);
 }

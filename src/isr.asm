@@ -16,7 +16,8 @@ isr_stub_%1:
     iret
 %endmacro
 
-ISR_NOERR 0
-ISR_NOERR 1
-ISR_NOERR 2
-ISR_NOERR 3
+%assign i 0
+%rep 32
+ISR_NOERR i
+%assign i i + 1
+%endrep
