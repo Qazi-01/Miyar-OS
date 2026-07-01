@@ -22,11 +22,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     terminal_write("System boot successful.\n");
     terminal_write("Testing divide-by-zero...\n");
 
-    volatile int x = 1;
-    volatile int y = 0;
-    volatile int z = x/y;
-
-    (void)z;
+    __asm__ volatile ("int $0");
 
     terminal_write("\n");
     terminal_prompt();
