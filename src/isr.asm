@@ -14,7 +14,7 @@ isr0:
 isr_common_stub:
     pusha
     
-    move eax, esp
+    mov eax, esp
     push eax
 
     call isr0_handler
@@ -26,4 +26,3 @@ isr_common_stub:
     add esp, 8
 
     iretd
-
