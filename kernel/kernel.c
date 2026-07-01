@@ -19,10 +19,6 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
 
     terminal_write("Welcome!\n");
     terminal_write("System boot successful.\n");
-    terminal_write("Testing divide-by-zero...\n");
-
-    __asm__ volatile ("int $0");
-
     terminal_write("\n");
     terminal_prompt();
 
