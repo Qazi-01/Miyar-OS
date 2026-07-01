@@ -37,6 +37,11 @@ char terminal_readchar(void)
     return 0;
 }
 
+void terminal_clear(void)
+{
+    vga_clear();
+}
+
 void terminal_backspace(void)
 {
 }

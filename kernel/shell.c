@@ -43,6 +43,8 @@ void shell_execute(const char *input)
         terminal_writeIn("help");
         terminal_writeIn("about");
         terminal_writeIn("version");
+        terminal_writeIn("echo <message>");
+        terminal_writeIn("clear");
     }
 
     else if (streq(input, "about"))
@@ -59,6 +61,11 @@ void shell_execute(const char *input)
     else if (starts_with(input, "echo "))
     {
         terminal_writeIn(input + 5);
+    }
+
+    else if (streq(input, "clear"))
+    {
+        terminal_clear();
     }
 
     else
