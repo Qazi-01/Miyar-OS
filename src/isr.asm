@@ -6,30 +6,49 @@ extern irq_handler
 
 section .text
 
+; -------------------------------
+; Exceptions WITHOUT error code
+; -------------------------------
+
 %macro ISR_NOERR 1
 global isr_stub_%1
 isr_stub_%1:
     cli
-
-    push dword 0          ; fake error code
-    push dword %1         ; interrupt number
-
+    push dword 0
+    push dword %1
     jmp isr_common
 %endmacro
+
+; -------------------------------
+; Exceptions WITH error code
+; CPU already pushed one.
+; -------------------------------
+
+%macro ISR_ERR 1
+global isr_stub_%1
+isr_stub_%1:
+    cli
+    push dword %1
+    jmp isr_common
+%endmacro
+
+; -------------------------------
+; IRQ
+; -------------------------------
 
 %macro IRQ 2
 global irq_stub_%1
 irq_stub_%1:
     cli
-
     push dword 0
     push dword %2
-
     jmp irq_common
 %endmacro
 
+; =========================================================
 
 isr_common:
+
     pusha
 
     push ds
@@ -37,15 +56,15 @@ isr_common:
     push fs
     push gs
 
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
+    mov ax,0x10
+    mov ds,ax
+    mov es,ax
+    mov fs,ax
+    mov gs,ax
 
     push esp
     call exception_handler
-    add esp, 4
+    add esp,4
 
     pop gs
     pop fs
@@ -54,13 +73,14 @@ isr_common:
 
     popa
 
-    add esp, 8
+    add esp,8
 
-    sti
     iretd
 
+; =========================================================
 
 irq_common:
+
     pusha
 
     push ds
@@ -68,15 +88,15 @@ irq_common:
     push fs
     push gs
 
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
+    mov ax,0x10
+    mov ds,ax
+    mov es,ax
+    mov fs,ax
+    mov gs,ax
 
     push esp
     call irq_handler
-    add esp, 4
+    add esp,4
 
     pop gs
     pop fs
@@ -85,11 +105,13 @@ irq_common:
 
     popa
 
-    add esp, 8
+    add esp,8
 
-    sti
     iretd
 
+; =========================================================
+; CPU Exceptions
+; =========================================================
 
 ISR_NOERR 0
 ISR_NOERR 1
@@ -99,16 +121,22 @@ ISR_NOERR 4
 ISR_NOERR 5
 ISR_NOERR 6
 ISR_NOERR 7
-ISR_NOERR 8
+
+ISR_ERR   8
+
 ISR_NOERR 9
-ISR_NOERR 10
-ISR_NOERR 11
-ISR_NOERR 12
-ISR_NOERR 13
-ISR_NOERR 14
+
+ISR_ERR   10
+ISR_ERR   11
+ISR_ERR   12
+ISR_ERR   13
+ISR_ERR   14
+
 ISR_NOERR 15
 ISR_NOERR 16
-ISR_NOERR 17
+
+ISR_ERR   17
+
 ISR_NOERR 18
 ISR_NOERR 19
 ISR_NOERR 20
@@ -123,6 +151,10 @@ ISR_NOERR 28
 ISR_NOERR 29
 ISR_NOERR 30
 ISR_NOERR 31
+
+; =========================================================
+; IRQs
+; =========================================================
 
 IRQ 0,32
 IRQ 1,33
