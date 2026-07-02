@@ -14,15 +14,12 @@ static const char scancode_table[128] =
 
 void irq_handler(struct registers *r)
 {
-    terminal_write("IRQ ");
+    unsigned char irq = r->int_no - 32;
 
-    if (r->int_no == 32)
-        terminal_write("0\n");
-    else if (r->int_no == 33)
-        terminal_write("1\n");
-    else
-        terminal_write("?\n");
+    if (irq == 1)
+    {
+        terminal_write("Keyboard IRQ\n");
+    }
 
-    while (1)
-        __asm__ volatile("cli; hlt");
+    pic_send_eoi(irq);
 }
