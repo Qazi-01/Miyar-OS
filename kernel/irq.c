@@ -1,12 +1,21 @@
 #include "irq.h"
 #include "pic.h"
-#include "terminal.h"
+#include "io.h"
 
 void irq_handler(struct registers *r)
 {
-    (void)r;
+    unsigned char irq = (unsigned char)(r->int_no - 32);
 
-    terminal_write("IRQ\n");
+    switch (irq)
+    {
+        case 1:
+            /* Keyboard IRQ: read the scancode to clear the controller */
+            (void)inb(0x60);
+            break;
 
-    pic_send_eoi(0);
+        default:
+            break;
+    }
+
+    pic_send_eoi(irq);
 }
