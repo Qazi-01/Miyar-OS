@@ -5,5 +5,6 @@
 
 char keyboard_getchar(void);
 void keyboard_init(void);
+void keyboard_buffer_put(char c);
 
 #endif
