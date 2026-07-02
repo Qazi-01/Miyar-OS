@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "gdt.h"
 #include "idt.h"
 #include "keyboard.h"
 #include "pic.h"
@@ -14,10 +15,10 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     (void)multiboot_info;
 
     serial_init();
+    gdt_init();
     terminal_init();
     pic_init();
     idt_init();
-
     keyboard_init();
     
     __asm__ volatile("sti");
