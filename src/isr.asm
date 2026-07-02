@@ -1,52 +1,5 @@
 global isr_stub_0
-global isr_stub_1
-global isr_stub_2
-global isr_stub_3
-global isr_stub_4
-global isr_stub_5
-global isr_stub_6
-global isr_stub_7
-global isr_stub_8
-global isr_stub_9
-global isr_stub_10
-global isr_stub_11
-global isr_stub_12
-global isr_stub_13
-global isr_stub_14
-global isr_stub_15
-global isr_stub_16
-global isr_stub_17
-global isr_stub_18
-global isr_stub_19
-global isr_stub_20
-global isr_stub_21
-global isr_stub_22
-global isr_stub_23
-global isr_stub_24
-global isr_stub_25
-global isr_stub_26
-global isr_stub_27
-global isr_stub_28
-global isr_stub_29
-global isr_stub_30
-global isr_stub_31
-
 global irq_stub_0
-global irq_stub_1
-global irq_stub_2
-global irq_stub_3
-global irq_stub_4
-global irq_stub_5
-global irq_stub_6
-global irq_stub_7
-global irq_stub_8
-global irq_stub_9
-global irq_stub_10
-global irq_stub_11
-global irq_stub_12
-global irq_stub_13
-global irq_stub_14
-global irq_stub_15
 
 extern exception_handler
 extern irq_handler
@@ -54,42 +7,136 @@ extern irq_handler
 section .text
 
 %macro ISR_NOERR 1
+global isr_stub_%1
 isr_stub_%1:
     cli
-    pusha
-    call exception_handler
-    popa
-    iret
+
+    push dword 0          ; fake error code
+    push dword %1         ; interrupt number
+
+    jmp isr_common
 %endmacro
 
-%macro IRQ 1
+%macro IRQ 2
+global irq_stub_%1
 irq_stub_%1:
     cli
 
-    push dword 0          ; dummy error code
-    push dword (32 + %1)  ; interrupt number
+    push dword 0
+    push dword %2
 
+    jmp irq_common
+%endmacro
+
+
+isr_common:
     pusha
 
+    push ds
+    push es
+    push fs
+    push gs
+
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
     push esp
-    call irq_handler
+    call exception_handler
     add esp, 4
+
+    pop gs
+    pop fs
+    pop es
+    pop ds
 
     popa
 
     add esp, 8
 
+    sti
     iretd
-%endmacro
 
-%assign i 0
-%rep 32
-ISR_NOERR i
-%assign i i + 1
-%endrep
 
-%assign i 0
-%rep 16
-IRQ i
-%assign i i + 1
-%endrep
+irq_common:
+    pusha
+
+    push ds
+    push es
+    push fs
+    push gs
+
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    push esp
+    call irq_handler
+    add esp, 4
+
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
+    popa
+
+    add esp, 8
+
+    sti
+    iretd
+
+
+ISR_NOERR 0
+ISR_NOERR 1
+ISR_NOERR 2
+ISR_NOERR 3
+ISR_NOERR 4
+ISR_NOERR 5
+ISR_NOERR 6
+ISR_NOERR 7
+ISR_NOERR 8
+ISR_NOERR 9
+ISR_NOERR 10
+ISR_NOERR 11
+ISR_NOERR 12
+ISR_NOERR 13
+ISR_NOERR 14
+ISR_NOERR 15
+ISR_NOERR 16
+ISR_NOERR 17
+ISR_NOERR 18
+ISR_NOERR 19
+ISR_NOERR 20
+ISR_NOERR 21
+ISR_NOERR 22
+ISR_NOERR 23
+ISR_NOERR 24
+ISR_NOERR 25
+ISR_NOERR 26
+ISR_NOERR 27
+ISR_NOERR 28
+ISR_NOERR 29
+ISR_NOERR 30
+ISR_NOERR 31
+
+IRQ 0,32
+IRQ 1,33
+IRQ 2,34
+IRQ 3,35
+IRQ 4,36
+IRQ 5,37
+IRQ 6,38
+IRQ 7,39
+IRQ 8,40
+IRQ 9,41
+IRQ 10,42
+IRQ 11,43
+IRQ 12,44
+IRQ 13,45
+IRQ 14,46
+IRQ 15,47
