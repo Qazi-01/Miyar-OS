@@ -1,6 +1,15 @@
 #include "irq.h"
 #include "pic.h"
 #include "io.h"
+#include "keyboard.h"
+
+static const char scancode_table[128] =
+{
+    0, 27,'1','2','3','4','5','6','7','8','9','0','-','=', '\b','\t',
+    'q','w','e','r','t','y','u','i','o','p','[',']','\n',0,
+    'a','s','d','f','g','h','j','k','l',';','\'','`',0,'\\',
+    'z','x','c','v','b','n','m',',','.','/',0,'*',0,' ',
+};
 
 void irq_handler(struct registers *r)
 {
@@ -9,9 +18,25 @@ void irq_handler(struct registers *r)
     switch (irq)
     {
         case 1:
-            /* Keyboard IRQ: read the scancode to clear the controller */
-            (void)inb(0x60);
+        {
+            unsigned char scancode = inb(0x60);
+
+            /* Ignore key releases */
+            if (!(scancode & 0x80))
+            {
+                if (scancode < sizeof(scancode_table))
+                {
+                    char c = scancode_table[scancode];
+
+                    if (c)
+                    {
+                        keyboard_buffer_put(c);
+                    }
+                }
+            }
+
             break;
+        }
 
         default:
             break;
