@@ -5,6 +5,8 @@
 
 struct registers
 {
+    uint32_t gs, fs, es, ds;
+
     uint32_t edi;
     uint32_t esi;
     uint32_t ebp;
@@ -13,8 +15,18 @@ struct registers
     uint32_t edx;
     uint32_t ecx;
     uint32_t eax;
+
+    uint32_t int_no;
+    uint32_t err_code;
+
+    uint32_t eip;
+    uint32_t cs;
+    uint32_t eflags;
+    uint32_t useresp;
+    uint32_t ss;
 };
 
-void exception_handler(void);
+void exception_handler(struct registers *r);
+void irq_handler(struct registers *r);
 
 #endif
