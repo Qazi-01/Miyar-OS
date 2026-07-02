@@ -13,6 +13,8 @@ static const char scancode_table[128] =
 
 void irq_handler(struct registers *r)
 {
+    terminal_write("I");
+
     unsigned char irq = (unsigned char)(r->int_no - 32);
 
     switch (irq)
