@@ -65,10 +65,21 @@ isr_stub_%1:
 %macro IRQ 1
 irq_stub_%1:
     cli
+
+    push dword 0          ; dummy error code
+    push dword (32 + %1)  ; interrupt number
+
     pusha
+
+    push esp
     call irq_handler
+    add esp, 4
+
     popa
-    iret
+
+    add esp, 8
+
+    iretd
 %endmacro
 
 %assign i 0
