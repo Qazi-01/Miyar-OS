@@ -18,9 +18,9 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     pic_init();
     idt_init();
 
-    __asm__ volatile("sti");
-
     keyboard_init();
+    
+    __asm__ volatile("sti");
 
     terminal_write("Welcome!\n");
     terminal_write("System boot successful.\n");
