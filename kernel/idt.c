@@ -41,6 +41,25 @@ DECLARE_ISR(29);
 DECLARE_ISR(30);
 DECLARE_ISR(31);
 
+#define DECLARE_IRQ(n) extern void irq_stub_##n(void)
+
+DECLARE_IRQ(0);
+DECLARE_IRQ(1);
+DECLARE_IRQ(2);
+DECLARE_IRQ(3);
+DECLARE_IRQ(4);
+DECLARE_IRQ(5);
+DECLARE_IRQ(6);
+DECLARE_IRQ(7);
+DECLARE_IRQ(8);
+DECLARE_IRQ(9);
+DECLARE_IRQ(10);
+DECLARE_IRQ(11);
+DECLARE_IRQ(12);
+DECLARE_IRQ(13);
+DECLARE_IRQ(14);
+DECLARE_IRQ(15);
+
 struct idt_entry
 {
     uint16_t offset_low;
@@ -113,6 +132,25 @@ void idt_init(void)
     SET_ISR(29);
     SET_ISR(30);
     SET_ISR(31);
+
+    #define SET_IRQ(n) idt_set_gate(32 + n, (uint32_t)irq_stub_##n, 0x08, 0x8E)
+
+    SET_IRQ(0);
+    SET_IRQ(1);
+    SET_IRQ(2);
+    SET_IRQ(3);
+    SET_IRQ(4);
+    SET_IRQ(5);
+    SET_IRQ(6);
+    SET_IRQ(7);
+    SET_IRQ(8);
+    SET_IRQ(9);
+    SET_IRQ(10);
+    SET_IRQ(11);
+    SET_IRQ(12);
+    SET_IRQ(13);
+    SET_IRQ(14);
+    SET_IRQ(15);
 
     idt_load(&idtp);
 }
