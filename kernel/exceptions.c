@@ -31,7 +31,8 @@ void exception_handler(struct registers *r)
 
     if (r->int_no < 21)
         terminal_write((char *)exception_names[r->int_no]);
-
+        terminal_write("\n");
+    
     while (1)
         __asm__ volatile("cli; hlt");
 }
