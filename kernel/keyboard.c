@@ -1,36 +1,38 @@
-#include <stdint.h>
 #include "keyboard.h"
-#include "io.h"
 
-static const char scancode_table[128] = {0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0};
+#define KEYBOARD_BUFFER_SIZE 128
 
-char keyboard_getchar(void)
-{
-    uint8_t scancode = 0;
+static char keyboard_buffer[KEYBOARD_BUFFER_SIZE];
 
-    while (!(inb(0x64) & 0x01))
-    {
-    }
-
-    scancode = inb(0x60);
-
-    if (scancode & 0x80)
-    {
-        return 0;
-    }
-
-    if (scancode < sizeof(scancode_table))
-    {
-        return scancode_table[scancode];
-    }
-
-    return 0;
-}
+static volatile unsigned int buffer_head = 0;
+static volatile unsigned int buffer_tail = 0;
 
 void keyboard_init(void)
 {
-    while (inb(0x64) & 0x01)
-    {
-        inb(0x60);
-    }
+    buffer_head = 0;
+    buffer_tail = 0;
+}
+
+void keyboard_buffer_put(char c)
+{
+    unsigned int next = (buffer_head + 1) % KEYBOARD_BUFFER_SIZE;
+
+    /* Buffer full */
+    if (next == buffer_tail)
+        return;
+
+    keyboard_buffer[buffer_head] = c;
+    buffer_head = next;
+}
+
+char keyboard_getchar(void)
+{
+    if (buffer_head == buffer_tail)
+        return 0;
+
+    char c = keyboard_buffer[buffer_tail];
+
+    buffer_tail = (buffer_tail + 1) % KEYBOARD_BUFFER_SIZE;
+
+    return c;
 }
