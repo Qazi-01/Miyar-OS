@@ -1,11 +1,6 @@
 #include <stdint.h>
 #include "idt.h"
 
-extern void isr_stub_0(void);
-extern void isr_stub_1(void);
-extern void isr_stub_2(void);
-extern void isr_stub_3(void);
-
 #define DECLARE_ISR(n) extern void isr_stub_##n(void)
 
 DECLARE_ISR(0);
