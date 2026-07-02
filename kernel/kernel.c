@@ -14,12 +14,13 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     (void)multiboot_info;
 
     serial_init();
-    keyboard_init();
     terminal_init();
     pic_init();
     idt_init();
 
     __asm__ volatile("sti");
+
+    keyboard_init();
 
     terminal_write("Welcome!\n");
     terminal_write("System boot successful.\n");
