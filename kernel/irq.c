@@ -2,6 +2,7 @@
 #include "pic.h"
 #include "io.h"
 #include "keyboard.h"
+#include "terminal.h"
 
 static const char scancode_table[128] =
 {
@@ -13,34 +14,15 @@ static const char scancode_table[128] =
 
 void irq_handler(struct registers *r)
 {
-    unsigned char irq = (unsigned char)(r->int_no - 32);
+    terminal_write("IRQ ");
 
-    switch (irq)
-    {
-        case 1:
-        {
-            unsigned char scancode = inb(0x60);
+    if (r->int_no == 32)
+        terminal_write("0\n");
+    else if (r->int_no == 33)
+        terminal_write("1\n");
+    else
+        terminal_write("?\n");
 
-            /* Ignore key releases */
-            if (!(scancode & 0x80))
-            {
-                if (scancode < sizeof(scancode_table))
-                {
-                    char c = scancode_table[scancode];
-
-                    if (c)
-                    {
-                        keyboard_buffer_put(c);
-                    }
-                }
-            }
-
-            break;
-        }
-
-        default:
-            break;
-    }
-
-    pic_send_eoi(irq);
+    while (1)
+        __asm__ volatile("cli; hlt");
 }
