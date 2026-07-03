@@ -13,12 +13,32 @@ static const char scancode_table[128] =
     'z','x','c','v','b','n','m',',','.','/',0,'*',0,' ',
 };
 
+static const char scancode_table_shift[128] =
+{
+    0, 27,'!','@','#','$','%','^','&','*','(',')','_','+', '\b','\t',
+    'Q','W','E','R','T','Y','U','I','O','P','{','}','\n',0,
+    'A','S','D','F','G','H','J','K','L',':','"','~',0,'|',
+    'Z','X','C','V','B','N','M','<','>','?',0,'*',0,' ',
+};
+
 void irq_handler(struct registers *r) {
+    static unsigned char shift_pressed = 0;
+
     if (r->int_no == 33) {
         unsigned char scancode = inb(0x60);
 
-        if ((scancode & 0x80) == 0 && scancode < 128) {
-            keyboard_buffer_put(scancode_table[scancode]);
+        if (scancode == 0x2A || scancode == 0x36) {
+            shift_pressed = 1;
+        }
+        else if (scancode == 0xAA || scancode == 0xB6) {
+            shift_pressed = 0;
+        }
+        else if ((scancode & 0x80) == 0 && scancode < 128) {
+            char c = shift_pressed ? scancode_table_shift[scancode] : scancode_table[scancode];
+
+            if (c != 0) {
+                keyboard_buffer_put(c);
+            }
         }
     }
 
