@@ -16,18 +16,36 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     (void)multiboot_info;
 
     serial_init();
-    gdt_init();
     terminal_init();
-    pic_init();
+    terminal_writeIn("============================================================");
+    terminal_writeIn("                        MIYAR OS");
+    terminal_writeIn("                                                  v0.1");
+    terminal_writeIn("                                                  ============================================================");
+    terminal_writeIn("");
+    terminal_writeIn("                                                  Booting kernel...");
+
+    gdt_init();
+    terminal_writeIn("                                                  Loading GDT....................... [ OK ]");
+
     idt_init();
+    terminal_writeIn("                                                  Loading IDT....................... [ OK ]");
+
+    pic_init();
+    terminal_writeIn("                                                  Initializing PIC................. [ OK ]");
+
     keyboard_init();
+    terminal_writeIn("                                                  Initializing Keyboard............ [ OK ]");
+
     timer_init();
-    
+    terminal_writeIn("                                                  Initializing Terminal............ [ OK ]");
+
     __asm__ volatile("sti");
 
-    terminal_write("Welcome!\n");
-    terminal_write("System boot successful.\n");
-    terminal_write("\n");
+    terminal_writeIn("");
+    terminal_writeIn("");
+    terminal_writeIn("                                                  System initialized successfully.");
+    terminal_writeIn("                                                  Type \"help\" to get started.");
+    terminal_writeIn("");
     terminal_prompt();
 
     char input[128];
