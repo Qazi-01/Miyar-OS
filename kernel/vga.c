@@ -2,8 +2,8 @@
 #include "vga.h"
 
 #define VGA_ADDRESS 0xB8000
-#define VGA_WIDTH 80
-#define VGA_HEIGHT 25
+#define VGA_WIDTH   80
+#define VGA_HEIGHT  25
 
 static uint16_t *vga_buffer = (uint16_t *)VGA_ADDRESS;
 
@@ -12,8 +12,34 @@ static uint8_t color = (VGA_BLACK << 4) | VGA_WHITE;
 static int cursor_row = 0;
 static int cursor_col = 0;
 
-static inline uint16_t vga_entry(char c, uint8_t color) {
+static inline uint16_t vga_entry(char c, uint8_t color)
+{
     return (uint16_t)c | ((uint16_t)color << 8);
+}
+
+static void vga_scroll(void)
+{
+    if (cursor_row < VGA_HEIGHT)
+        return;
+
+    /* Move every row up one line */
+    for (int row = 1; row < VGA_HEIGHT; row++)
+    {
+        for (int col = 0; col < VGA_WIDTH; col++)
+        {
+            vga_buffer[(row - 1) * VGA_WIDTH + col] =
+                vga_buffer[row * VGA_WIDTH + col];
+        }
+    }
+
+    /* Clear the last line */
+    for (int col = 0; col < VGA_WIDTH; col++)
+    {
+        vga_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + col] =
+            vga_entry(' ', color);
+    }
+
+    cursor_row = VGA_HEIGHT - 1;
 }
 
 void vga_set_color(uint8_t foreground, uint8_t background)
@@ -21,8 +47,10 @@ void vga_set_color(uint8_t foreground, uint8_t background)
     color = (background << 4) | foreground;
 }
 
-void vga_clear(void) {
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
+void vga_clear(void)
+{
+    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++)
+    {
         vga_buffer[i] = vga_entry(' ', color);
     }
 
@@ -30,20 +58,14 @@ void vga_clear(void) {
     cursor_col = 0;
 }
 
-void vga_putc(char c) {
-    if (c == '\n') {
+void vga_putc(char c)
+{
+    if (c == '\n')
+    {
         cursor_col = 0;
         cursor_row++;
-
-        if (cursor_row >= VGA_HEIGHT) {
-            cursor_row = VGA_HEIGHT - 1;
-        }
-
+        vga_scroll();
         return;
-    }
-
-    if (cursor_row >= VGA_HEIGHT) {
-        cursor_row = VGA_HEIGHT - 1;
     }
 
     vga_buffer[cursor_row * VGA_WIDTH + cursor_col] =
@@ -51,18 +73,18 @@ void vga_putc(char c) {
 
     cursor_col++;
 
-    if (cursor_col >= VGA_WIDTH) {
+    if (cursor_col >= VGA_WIDTH)
+    {
         cursor_col = 0;
         cursor_row++;
-
-        if (cursor_row >= VGA_HEIGHT) {
-            cursor_row = VGA_HEIGHT - 1;
-        }
+        vga_scroll();
     }
 }
 
-void vga_write(const char *str) {
-    while (*str) {
+void vga_write(const char *str)
+{
+    while (*str)
+    {
         vga_putc(*str++);
     }
 }
