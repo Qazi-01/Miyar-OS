@@ -17,27 +17,26 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
 
     serial_init();
     terminal_init();
-    terminal_writeIn("============================================================");
+    terminal_writeIn("============================================================\n");
     terminal_writeIn("                        MIYAR OS");
-    terminal_writeIn("                                                  v0.1");
-    terminal_writeIn("                                                  ============================================================");
-    terminal_writeIn("");
-    terminal_writeIn("                                                  Booting kernel...");
+    terminal_writeIn("                          v0.1");
+    terminal_writeIn("============================================================\n");
+    terminal_writeIn("Booting kernel...");
 
     gdt_init();
-    terminal_writeIn("                                                  Loading GDT....................... [ OK ]");
+    terminal_writeIn("Loading GDT....................... [ OK ]");
 
     idt_init();
-    terminal_writeIn("                                                  Loading IDT....................... [ OK ]");
+    terminal_writeIn("Loading IDT....................... [ OK ]");
 
     pic_init();
-    terminal_writeIn("                                                  Initializing PIC................. [ OK ]");
+    terminal_writeIn("Initializing PIC................. [ OK ]");
 
     keyboard_init();
-    terminal_writeIn("                                                  Initializing Keyboard............ [ OK ]");
+    terminal_writeIn("Initializing Keyboard............ [ OK ]");
 
     timer_init();
-    terminal_writeIn("                                                  Initializing Terminal............ [ OK ]");
+    terminal_writeIn("Initializing Terminal............ [ OK ]");
 
     __asm__ volatile("sti");
 
