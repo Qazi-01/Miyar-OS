@@ -4,14 +4,6 @@
 #include "keyboard.h"
 #include "terminal.h"
 
-void pic_send_eoi(int irq) {
-    outb(0x20, 0x20);   // tell the main chip "done"
-    if (irq >= 8)
-    {
-        outb(0xA0, 0x20); // if it came from the second chip, tell that one too
-    }
-}
-
 static const char scancode_table[128] =
 {
     0, 27,'1','2','3','4','5','6','7','8','9','0','-','=', '\b','\t',

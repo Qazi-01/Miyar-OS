@@ -10,7 +10,7 @@
 #define ICW1_ICW4    0x01
 #define ICW4_8086    0x01
 
-void pic_send_eoi(unsigned char irq)
+void pic_send_eoi(int irq)
 {
     if (irq >= 8)
     {
