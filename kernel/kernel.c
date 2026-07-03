@@ -31,13 +31,13 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     terminal_writeIn("Loading IDT....................... [ OK ]");
 
     pic_init();
-    terminal_writeIn("Initializing PIC................. [ OK ]");
+    terminal_writeIn("Initializing PIC.................. [ OK ]");
 
     keyboard_init();
-    terminal_writeIn("Initializing Keyboard............ [ OK ]");
+    terminal_writeIn("Initializing Keyboard............. [ OK ]");
 
     timer_init();
-    terminal_writeIn("Initializing Terminal............ [ OK ]");
+    terminal_writeIn("Initializing Timer................ [ OK ]");
 
     __asm__ volatile("sti");
 

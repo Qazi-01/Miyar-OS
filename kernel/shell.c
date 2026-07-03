@@ -121,6 +121,7 @@ void shell_execute(const char *input)
         terminal_writeIn("  clear        Clear the screen");
         terminal_writeIn("  reboot       Restart the system");
         terminal_writeIn("  shutdown     Halt the system");
+        terminal_writeIn("");
     }
 
     else if (streq(input, "about"))
