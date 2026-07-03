@@ -110,26 +110,39 @@ void shell_execute(const char *input)
 
     if (streq(input, "help"))
     {
+        terminal_writeIn("");
         terminal_writeIn("Available commands: ");
-        terminal_writeIn("help");
-        terminal_writeIn("about");
-        terminal_writeIn("version");
-        terminal_writeIn("echo <message>");
-        terminal_writeIn("uptime");
-        terminal_writeIn("clear");
-        terminal_writeIn("reboot");
-        terminal_writeIn("shutdown");
+        terminal_writeIn("-------------------\n");
+        terminal_writeIn("  help         Shows this help message");
+        terminal_writeIn("  about        About MiyarOS");
+        terminal_writeIn("  version      Show system version");
+        terminal_writeIn("  echo <msg>   Print text");
+        terminal_writeIn("  uptime       Show system uptime");
+        terminal_writeIn("  clear        Clear the screen");
+        terminal_writeIn("  reboot       Restart the system");
+        terminal_writeIn("  shutdown     Halt the system");
     }
 
     else if (streq(input, "about"))
     {
-        terminal_writeIn("MiyarOS");
-        terminal_writeIn("A hobby operating system written in C");
+        terminal_writeIn("");
+        terminal_writeIn("MiyarOS v0.1");
+        terminal_writeIn("");
+        terminal_writeIn("A hobby operating system written from scratch");
+        terminal_writeIn("in C and x86 Assembly.");
+        terminal_writeIn("");
+        terminal_writeIn("Author: Tashfeen Miyar");
+        terminal_writeIn("License: GNU General Public License V3.0 (GPLv3)");
+        terminal_writeIn("");
     }
 
     else if (streq(input, "version"))
     {
-        terminal_writeIn("MiyarOS v0.1");
+        terminal_writeIn("");
+        terminal_writeIn("MiyarOS version 0.1");
+        terminal_writeIn("");
+        terminal_writeIn("Kernel: 0.1");
+        terminal_writeIn("Architecture: x86 (32-bit)");
     }
 
     else if (starts_with(input, "echo "))
@@ -144,6 +157,17 @@ void shell_execute(const char *input)
 
     else if (streq(input, "exception"))
     {
+        terminal_writeIn("------------------------------------------------------------");
+        terminal_writeIn("");
+        terminal_writeIn("                    KERNEL PANIC");
+        terminal_writeIn("");
+        terminal_writeIn("------------------------------------------------------------");
+        terminal_writeIn("");
+        terminal_writeIn("");
+        terminal_writeIn("The system has been halted.");
+        terminal_writeIn("Restart the machine to continue.");
+        terminal_writeIn("");
+
         trigger_divide_error();
     }
 
@@ -170,5 +194,7 @@ void shell_execute(const char *input)
     {
         terminal_write("Unknown command: ");
         terminal_writeIn(input);
+        terminal_writeIn("");
+        terminal_writeIn("Type \"help\" for a list of available commands.");
     }
 }
