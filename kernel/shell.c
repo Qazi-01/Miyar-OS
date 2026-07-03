@@ -144,6 +144,7 @@ void shell_execute(const char *input)
         terminal_writeIn("");
         terminal_writeIn("Kernel: 0.1");
         terminal_writeIn("Architecture: x86 (32-bit)");
+        terminal_writeIn("");
     }
 
     else if (starts_with(input, "echo "))
@@ -197,5 +198,6 @@ void shell_execute(const char *input)
         terminal_writeIn(input);
         terminal_writeIn("");
         terminal_writeIn("Type \"help\" for a list of available commands.");
+        terminal_writeIn("");
     }
 }
