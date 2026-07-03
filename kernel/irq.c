@@ -34,7 +34,9 @@ void irq_handler(struct registers *r) {
             shift_pressed = 0;
         }
         else if ((scancode & 0x80) == 0 && scancode < 128) {
-            char c = shift_pressed ? scancode_table_shift[scancode] : scancode_table[scancode];
+            /* Capture shift state to avoid potential race */
+            unsigned char shifted = shift_pressed;
+            char c = shifted ? scancode_table_shift[scancode] : scancode_table[scancode];
 
             if (c != 0) {
                 keyboard_buffer_put(c);

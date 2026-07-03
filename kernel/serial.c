@@ -18,6 +18,9 @@ void serial_putc(char c) {
 }
 
 void kputs(const char *s) {
+    if (!s)
+        return;
+    
     while (*s) {
         serial_putc(*s++);
     }

@@ -68,6 +68,15 @@ void vga_putc(char c)
         return;
     }
 
+    /* Bounds checking to prevent buffer overflow */
+    if (cursor_row >= VGA_HEIGHT) {
+        cursor_row = VGA_HEIGHT - 1;
+    }
+    if (cursor_col >= VGA_WIDTH) {
+        cursor_col = 0;
+        cursor_row++;
+    }
+
     vga_buffer[cursor_row * VGA_WIDTH + cursor_col] =
         vga_entry(c, color);
 

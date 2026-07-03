@@ -25,5 +25,9 @@ void timer_tick(void)
 
 uint32_t timer_ticks(void)
 {
-    return ticks;
+    /* Disable interrupts to safely read ticks */
+    __asm__ volatile("cli");
+    uint32_t result = ticks;
+    __asm__ volatile("sti");
+    return result;
 }

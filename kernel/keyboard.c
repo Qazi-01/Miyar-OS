@@ -27,12 +27,17 @@ void keyboard_buffer_put(char c)
 
 char keyboard_getchar(void)
 {
-    if (buffer_head == buffer_tail)
+    /* Disable interrupts to prevent race condition */
+    __asm__ volatile("cli");
+    
+    if (buffer_head == buffer_tail) {
+        __asm__ volatile("sti");
         return 0;
+    }
 
     char c = keyboard_buffer[buffer_tail];
-
     buffer_tail = (buffer_tail + 1) % KEYBOARD_BUFFER_SIZE;
 
+    __asm__ volatile("sti");
     return c;
 }
