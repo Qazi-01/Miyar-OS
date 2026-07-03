@@ -19,8 +19,9 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     terminal_init();
     terminal_writeIn("============================================================\n");
     terminal_writeIn("                        MIYAR OS");
-    terminal_writeIn("                          v0.1");
+    terminal_writeIn("                          v0.1\n");
     terminal_writeIn("============================================================\n");
+    terminal_writeIn("");
     terminal_writeIn("Booting kernel...");
 
     gdt_init();
@@ -42,8 +43,8 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
 
     terminal_writeIn("");
     terminal_writeIn("");
-    terminal_writeIn("                                                  System initialized successfully.");
-    terminal_writeIn("                                                  Type \"help\" to get started.");
+    terminal_writeIn("System initialized successfully.");
+    terminal_writeIn("Type \"help\" to get started.");
     terminal_writeIn("");
     terminal_prompt();
 
