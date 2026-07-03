@@ -20,7 +20,7 @@ static const char scancode_table[128] =
     'z','x','c','v','b','n','m',',','.','/',0,'*',0,' ',
 };
 
-void irq_handler(registers_t *r) {
+void irq_handler(struct registers *r) {
     if (r->int_no == 33) {
         terminal_write("IRQ 1 (keyboard)\n");
     }
