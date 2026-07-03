@@ -20,6 +20,7 @@ $(BUILDDIR)/vga.o \
 $(BUILDDIR)/terminal.o \
 $(BUILDDIR)/keyboard.o \
 $(BUILDDIR)/shell.o \
+$(BUILDDIR)/timer.o \
 $(BUILDDIR)/idt.o \
 $(BUILDDIR)/isr.o \
 $(BUILDDIR)/panic.o \
@@ -62,6 +63,9 @@ $(BUILDDIR)/keyboard.o: $(KERNELDIR)/keyboard.c | $(BUILDDIR)
 $(BUILDDIR)/shell.o: $(KERNELDIR)/shell.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILDDIR)/timer.o: $(KERNELDIR)/timer.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILDDIR)/idt.o: $(KERNELDIR)/idt.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
@@ -94,7 +98,7 @@ $(ISO): $(KERNEL_ELF)
 > grub-mkrescue -o $@ $(ISODIR)
 
 run: $(ISO)
-> qemu-system-i386 -cdrom $(ISO) -nographic -no-reboot
+> qemu-system-i386 -cdrom $(ISO) -nographic
 
 clean:
 > rm -rf $(BUILDDIR) $(ISO)

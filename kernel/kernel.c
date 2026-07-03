@@ -6,6 +6,7 @@
 #include "pic.h"
 #include "serial.h"
 #include "shell.h"
+#include "timer.h"
 #include "terminal.h"
 #include "vga.h"
 
@@ -20,6 +21,7 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
     pic_init();
     idt_init();
     keyboard_init();
+    timer_init();
     
     __asm__ volatile("sti");
 

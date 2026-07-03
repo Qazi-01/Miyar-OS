@@ -1,4 +1,5 @@
 #include "irq.h"
+#include "timer.h"
 #include "pic.h"
 #include "io.h"
 #include "keyboard.h"
@@ -19,6 +20,10 @@ void irq_handler(struct registers *r) {
         if ((scancode & 0x80) == 0 && scancode < 128) {
             keyboard_buffer_put(scancode_table[scancode]);
         }
+    }
+
+    if (r->int_no == 32) {
+        timer_tick();
     }
 
     pic_send_eoi(r->int_no - 32);

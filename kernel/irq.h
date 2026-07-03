@@ -5,4 +5,6 @@
 
 void irq_handler(struct registers *r);
 
+void timer_tick(void);
+
 #endif
