@@ -88,3 +88,23 @@ void vga_write(const char *str)
         vga_putc(*str++);
     }
 }
+
+void vga_backspace(void)
+{
+    if (cursor_col == 0)
+    {
+        if (cursor_row == 0)
+        {
+            return;
+        }
+
+        cursor_row--;
+        cursor_col = VGA_WIDTH - 1;
+    }
+    else
+    {
+        cursor_col--;
+    }
+
+    vga_buffer[cursor_row * VGA_WIDTH + cursor_col] = vga_entry(' ', color);
+}

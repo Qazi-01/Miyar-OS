@@ -14,7 +14,11 @@ static const char scancode_table[128] =
 
 void irq_handler(struct registers *r) {
     if (r->int_no == 33) {
-        terminal_write("IRQ 1 (keyboard)\n");
+        unsigned char scancode = inb(0x60);
+
+        if ((scancode & 0x80) == 0 && scancode < 128) {
+            keyboard_buffer_put(scancode_table[scancode]);
+        }
     }
 
     pic_send_eoi(r->int_no - 32);

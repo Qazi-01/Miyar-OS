@@ -1,5 +1,17 @@
 #include "shell.h"
 #include "terminal.h"
+#include "io.h"
+
+static void trigger_divide_error(void)
+{
+    __asm__ volatile("xor %%eax, %%eax; div %%eax" ::: "eax");
+}
+
+static void reboot_system(void)
+{
+    terminal_writeIn("Rebooting...");
+    outb(0x64, 0xFE);
+}
 
 static int streq(const char *a, const char *b)
 {
@@ -72,6 +84,16 @@ void shell_execute(const char *input)
     else if (streq(input, "clear"))
     {
         terminal_clear();
+    }
+
+    else if (streq(input, "exception"))
+    {
+        trigger_divide_error();
+    }
+
+    else if (streq(input, "reboot"))
+    {
+        reboot_system();
     }
 
     else if (streq(input, "uptime"))

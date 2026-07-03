@@ -39,6 +39,17 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
             continue;
         }
 
+        if (c == '\b')
+        {
+            if (index > 0)
+            {
+                index--;
+                terminal_backspace();
+            }
+
+            continue;
+        }
+
         if (c == '\n')
         {
             input[index] = '\0';

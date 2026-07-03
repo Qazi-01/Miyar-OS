@@ -36,3 +36,8 @@ void terminal_clear(void)
 {
     vga_clear();
 }
+
+void terminal_backspace(void)
+{
+    vga_backspace();
+}
