@@ -49,6 +49,7 @@ Miyar-OS/
 ├── LICENSE
 ├── linker.ld
 ├── README.md
+├── miyaros.iso
 ├── iso/
 │   └── boot/
 │       └── grub/
