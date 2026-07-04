@@ -10,6 +10,8 @@ I built MiyarOS to understand how a kernel comes together from the first boot in
 
 v0.1
 
+The bootable release ISO for this version is included in the repository as [miyaros.iso](miyaros.iso).
+
 ## Features
 
 - Multiboot-compliant 32-bit x86 boot flow through GRUB.
@@ -93,6 +95,8 @@ make clean && make
 ```
 
 This builds the kernel, links it into `build/kernel.elf`, and packages a bootable ISO as `miyaros.iso`.
+
+For the v0.1 release, a prebuilt copy is also checked in at the project root as [miyaros.iso](miyaros.iso).
 
 ## Run Instructions
 
