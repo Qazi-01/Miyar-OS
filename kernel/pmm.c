@@ -2,10 +2,16 @@
 #include "memory_map.h"
 
 #define PAGE_SIZE 4096
+#define MAX_MEMORY_BYTES (4ULL * 1024 * 1024 * 1024)
+#define MAX_FRAMES (MAX_MEMORY_BYTES/PAGE_SIZE)
 
 static uint32_t total_frames = 0;
 static uint64_t total_memory = 0;
 static uint64_t usable_memory = 0;
+static void bitmap_clear(void);
+static void bitmap_set(uint32_t frame);
+static void bitmap_reset(uint32_t frame);
+static int bitmap_test(uint32_t frame);
 
 void pmm_init(void)
 {
@@ -41,9 +47,6 @@ uint32_t pmm_total_frames(void)
 {
     return total_frames;
 }
-
-#define MAX_MEMORY_BYTES(4ULL * 1024 * 1024 * 1024)
-#define MAX_FRAMES(MAX_MEMORY_BYTES/PAGE_SIZE)
 
 static uint8_t frame_bitmap[MAX_FRAMES/8];
 
