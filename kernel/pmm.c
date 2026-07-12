@@ -9,6 +9,8 @@ static uint64_t usable_memory = 0;
 
 void pmm_init(void)
 {
+    bitmap_clear();
+    
     total_memory = 0;
     usable_memory = 0;
 
@@ -38,4 +40,32 @@ uint64_t pmm_usable_memory(void)
 uint32_t pmm_total_frames(void)
 {
     return total_frames;
+}
+
+#define MAX_MEMORY_BYTES(4ULL * 1024 * 1024 * 1024)
+#define MAX_FRAMES(MAX_MEMORY_BYTES/PAGE_SIZE)
+
+static uint8_t frame_bitmap[MAX_FRAMES/8];
+
+static void bitmap_clear(void)
+{
+    for (uint32_t i = 0; i < sizeof(frame_bitmap); i++)
+    {
+        frame_bitmap[i] = 0;
+    }
+}
+
+static void bitmap_set(uint32_t frame)
+{
+    frame_bitmap[frame/8] |= (1 << (frame % 8));
+}
+
+static void bitmap_reset(uint32_t frame)
+{
+    frame_bitmap[frame/8] &= ~(1 << (frame % 8));
+}
+
+static int bitmap_test(uint32_t frame)
+{
+    return frame_bitmap[frame/8] & (1 << (frame % 8));
 }
