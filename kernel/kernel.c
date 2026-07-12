@@ -34,6 +34,8 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
         }
     }
 
+    multiboot_print_memory_map(multiboot_info);
+
     (void)multiboot_info;
 
     serial_init();

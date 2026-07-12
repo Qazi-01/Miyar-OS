@@ -35,4 +35,8 @@ typedef struct
 
 } __attribute__((packed)) multiboot_memory_map_t;
 
+multiboot_memory_map_t *multiboot_mmap_first(multiboot_info_t *mbi);
+multiboot_memory_map_t *multiboot_mmap_next(multiboot_memory_map_t *entry);
+void multiboot_print_memory_map(multiboot_info_t *mbi);
+
 #endif
