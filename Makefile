@@ -29,7 +29,8 @@ $(BUILDDIR)/pic.o \
 $(BUILDDIR)/irq.o \
 $(BUILDDIR)/gdt.o \
 $(BUILDDIR)/gdtasm.o \
-$(BUILDDIR)/multiboot.o
+$(BUILDDIR)/multiboot.o \
+$(BUILDDIR)/memory_map.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -89,6 +90,9 @@ $(BUILDDIR)/gdt.o: $(KERNELDIR)/gdt.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/multiboot.o: $(KERNELDIR)/multiboot.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/memory_map.o: $(KERNELDIR)/memory_map.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/gdt.asm | $(BUILDDIR)
