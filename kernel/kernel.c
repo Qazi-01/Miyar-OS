@@ -5,6 +5,7 @@
 #include "keyboard.h"
 #include "multiboot.h"
 #include "pic.h"
+#include "pmm.h"
 #include "serial.h"
 #include "shell.h"
 #include "timer.h"
@@ -35,6 +36,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     }
 
     multiboot_print_memory_map(multiboot_info);
+    pmm_init();
 
     (void)multiboot_info;
 
