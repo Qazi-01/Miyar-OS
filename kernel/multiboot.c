@@ -13,7 +13,7 @@ void multiboot_print_memory_map(multiboot_info_t *mbi)
         entry = multiboot_mmap_next(entry);
     }
 
-    terminal_writeIn("Memory map detected.");
+    // Memory map parsed successfully.
 }
 
 multiboot_memory_map_t *multiboot_mmap_first(multiboot_info_t *mbi)
