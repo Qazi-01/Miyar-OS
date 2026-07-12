@@ -55,7 +55,6 @@ dkms.conf
 *.dwo
 build/
 *.iso
-!miyaros.iso
 serial.log
 
 # Disk images

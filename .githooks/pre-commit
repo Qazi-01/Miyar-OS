@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -eu
+
+staged_files=$(git diff --cached --name-only)
+
+if [ -z "$staged_files" ]; then
+  exit 0
+fi
+
+staged_count=$(printf '%s
+' "$staged_files" | awk 'NF { count++ } END { print count + 0 }')
+
+if [ "$staged_count" -eq 1 ] && [ "$staged_files" = "miyaros.iso" ]; then
+  cat <<'EOF'
+ISO-only commits are blocked on main until v0.2 is finished and tested.
+Stage at least one source change, or wait to replace miyaros.iso during the v0.2 release refresh.
+EOF
+  exit 1
+fi

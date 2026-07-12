@@ -10,7 +10,7 @@ I built MiyarOS to understand how a kernel comes together from the first boot in
 
 v0.1
 
-The bootable release ISO for this version is included in the repository as [miyaros.iso](miyaros.iso).
+The bootable ISO is built locally as [miyaros.iso](miyaros.iso). The checked-in copy stays on the v0.1 baseline until v0.2 is ready for its final refresh.
 
 ## Features
 
@@ -97,7 +97,7 @@ make clean && make
 
 This builds the kernel, links it into `build/kernel.elf`, and packages a bootable ISO as `miyaros.iso`.
 
-For the v0.1 release, a prebuilt copy is also checked in at the project root as [miyaros.iso](miyaros.iso).
+Until v0.2 is complete and tested, the repository should avoid ISO-only updates on `main`. The release ISO will be replaced once the v0.2 build is validated.
 
 ## Run Instructions
 

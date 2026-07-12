@@ -1,0 +1,38 @@
+name: Prevent ISO-only changes
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  block_iso_only_updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail if the only changed file is the release ISO
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+            head_sha="${{ github.event.pull_request.head.sha }}"
+          else
+            base_sha="${{ github.event.before }}"
+            head_sha="${{ github.sha }}"
+          fi
+
+          mapfile -t changed_files < <(git diff --name-only "${base_sha}" "${head_sha}")
+
+          if (( ${#changed_files[@]} == 1 )) && [[ "${changed_files[0]}" == "miyaros.iso" ]]; then
+            echo "ISO-only changes are blocked on main until v0.2 is finished and tested."
+            exit 1
+          fi
