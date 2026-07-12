@@ -3,6 +3,7 @@
 #include "gdt.h"
 #include "idt.h"
 #include "keyboard.h"
+#include "multiboot.h"
 #include "pic.h"
 #include "serial.h"
 #include "shell.h"
@@ -11,7 +12,7 @@
 #include "vga.h"
 
 __attribute__((used))
-void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
+void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
@@ -19,6 +20,15 @@ void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
         terminal_init();
         terminal_writeIn("ERROR: Invalid bootloader magic number.");
 
+        while (1){
+            __asm__ volatile("hlt");
+        }
+    }
+
+    if (!(multiboot_info->flags & (1 << 6)))
+    {
+        terminal_init();
+        terminal_writeIn("ERROR: memory map not provided.");
         while (1){
             __asm__ volatile("hlt");
         }
