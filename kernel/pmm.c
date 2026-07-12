@@ -1,6 +1,9 @@
 #include "pmm.h"
 #include "memory_map.h"
 
+#define PAGE_SIZE 4096
+
+static uint32_t total_frames = 0;
 static uint64_t total_memory = 0;
 static uint64_t usable_memory = 0;
 
@@ -18,6 +21,8 @@ void pmm_init(void)
             usable_memory += memory_regions[i].length;
         }
     }
+
+    total_frames = usable_memory/PAGE_SIZE;
 }
 
 uint64_t pmm_total_memory(void)
@@ -28,4 +33,9 @@ uint64_t pmm_total_memory(void)
 uint64_t pmm_usable_memory(void)
 {
     return usable_memory;
+}
+
+uint32_t pmm_total_frames(void)
+{
+    return total_frames;
 }

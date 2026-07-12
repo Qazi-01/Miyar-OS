@@ -6,5 +6,6 @@
 void pmm_init(void);
 uint64_t pmm_total_memory(void);
 uint64_t pmm_usable_memory(void);
+uint32_t pmm_total_frames(void);
 
 #endif
