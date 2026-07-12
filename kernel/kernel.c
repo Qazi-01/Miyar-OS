@@ -12,7 +12,18 @@
 
 __attribute__((used))
 void kernel_main(uint32_t magic, uint32_t *multiboot_info) {
-    (void)magic;
+    #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
+
+    if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
+    {
+        terminal_init();
+        terminal_writeIn("ERROR: Invalid bootloader magic number.");
+
+        while (1){
+            __asm__ volatile("hlt");
+        }
+    }
+
     (void)multiboot_info;
 
     serial_init();
