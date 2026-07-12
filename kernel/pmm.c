@@ -12,7 +12,7 @@ static void bitmap_clear(void);
 static void bitmap_set(uint32_t frame);
 static void bitmap_reset(uint32_t frame);
 static int bitmap_test(uint32_t frame);
-static void reserve_region(uint64_t base, uint64_t length)
+static void reserve_region(uint64_t base, uint64_t length);
 
 void pmm_init(void)
 {
