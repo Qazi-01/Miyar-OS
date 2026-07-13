@@ -63,6 +63,17 @@ void *pmm_alloc_frame(void)
     return 0;
 }
 
+void pmm_free_frame(void *frame)
+{
+    if (!frame)
+    {
+        return;
+    }
+
+    uint32_t frame_number = (uintptr_t)frame/PAGE_SIZE;
+    bitmap_reset(frame_number);
+}
+
 uint64_t pmm_total_memory(void)
 {
     return total_memory;
