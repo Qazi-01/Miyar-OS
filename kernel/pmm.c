@@ -5,6 +5,9 @@
 #define MAX_MEMORY_BYTES (4ULL * 1024 * 1024 * 1024)
 #define MAX_FRAMES (MAX_MEMORY_BYTES/PAGE_SIZE)
 
+extern char _kernel_start;
+extern char _kernel_end;
+
 static uint32_t total_frames = 0;
 static uint64_t total_memory = 0;
 static uint64_t usable_memory = 0;
@@ -40,6 +43,8 @@ void pmm_init(void)
             reserve_region(memory_regions[i].base, memory_regions[i].length);
         }
     }
+
+    reserve_region((uint64_t)&_kernel_start, (uint64_t)&_kernel_end - (uint64_t)&_kernel_start);
 }
 
 uint64_t pmm_total_memory(void)
