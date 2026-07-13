@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #include "pmm.h"
 #include "memory_map.h"
 
@@ -44,7 +46,7 @@ void pmm_init(void)
         }
     }
 
-    reserve_region((uint64_t)&_kernel_start, (uint64_t)&_kernel_end - (uint64_t)&_kernel_start);
+    reserve_region((uintptr_t)&_kernel_start, (uintptr_t)(&_kernel_end -&_kernel_start));
 }
 
 uint64_t pmm_total_memory(void)
