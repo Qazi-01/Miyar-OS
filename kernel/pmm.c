@@ -49,6 +49,20 @@ void pmm_init(void)
     reserve_region((uintptr_t)&_kernel_start, (uintptr_t)(&_kernel_end -&_kernel_start));
 }
 
+void *pmm_alloc_frame(void)
+{
+    for (uint32_t frame = 0; frame < total_frames; frame++)
+    {
+        if (!bitmap_test(frame))
+        {
+            bitmap_set(frame);
+            return (void *)((uintptr_t)frame * PAGE_SIZE);
+        }
+    }
+
+    return 0;
+}
+
 uint64_t pmm_total_memory(void)
 {
     return total_memory;
