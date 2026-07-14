@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "gdt.h"
+#include "heap.h"
 #include "idt.h"
 #include "keyboard.h"
 #include "multiboot.h"
@@ -37,6 +38,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
 
     multiboot_print_memory_map(multiboot_info);
     pmm_init();
+    heap_init();
 
     (void)multiboot_info;
 
