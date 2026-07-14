@@ -33,7 +33,8 @@ $(BUILDDIR)/multiboot.o \
 $(BUILDDIR)/memory_map.o \
 $(BUILDDIR)/pmm.o \
 $(BUILDDIR)/heap.o \
-$(BUILDDIR)/paging.o
+$(BUILDDIR)/paging.o \
+$(BUILDDIR)/vmm.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -105,6 +106,9 @@ $(BUILDDIR)/heap.o: $(KERNELDIR)/heap.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/paging.o: $(KERNELDIR)/paging.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/vmm.o: $(KERNELDIR)/vmm.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/gdt.asm | $(BUILDDIR)

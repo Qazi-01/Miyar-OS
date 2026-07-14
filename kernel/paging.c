@@ -38,3 +38,13 @@ void paging_init(void)
     load_page_directory(page_directory);
     enable_paging();
 }
+
+uint32_t *paging_get_directory(void)
+{
+    return page_directory;
+}
+
+uint32_t *paging_get_first_table(void)
+{
+    return first_page_table;
+}
