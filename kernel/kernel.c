@@ -5,6 +5,7 @@
 #include "idt.h"
 #include "keyboard.h"
 #include "multiboot.h"
+#include "paging.h"
 #include "pic.h"
 #include "pmm.h"
 #include "serial.h"
@@ -39,6 +40,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     multiboot_print_memory_map(multiboot_info);
     pmm_init();
     heap_init();
+    paging_init();
 
     (void)multiboot_info;
 

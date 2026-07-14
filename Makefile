@@ -32,7 +32,8 @@ $(BUILDDIR)/gdtasm.o \
 $(BUILDDIR)/multiboot.o \
 $(BUILDDIR)/memory_map.o \
 $(BUILDDIR)/pmm.o \
-$(BUILDDIR)/heap.o
+$(BUILDDIR)/heap.o \
+$(BUILDDIR)/paging.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
