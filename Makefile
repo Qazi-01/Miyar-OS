@@ -103,6 +103,9 @@ $(BUILDDIR)/pmm.o: $(KERNELDIR)/pmm.c | $(BUILDDIR)
 $(BUILDDIR)/heap.o: $(KERNELDIR)/heap.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILDDIR)/paging.o: $(KERNELDIR)/paging.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/gdt.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 
