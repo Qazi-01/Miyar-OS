@@ -1,8 +1,8 @@
-#include <stdint.h>
-
 #include "heap.h"
 
-#define HEAP_SIZE (1024 *1024)
+#include <stdint.h>
+
+#define HEAP_SIZE (1024 * 1024)
 
 static uint8_t kernel_heap[HEAP_SIZE];
 static size_t heap_offset = 0;
@@ -25,7 +25,7 @@ void *kmalloc(size_t size)
         return 0;
     }
 
-    size = (size + 7)& ~7;
+    size = (size + 7) & ~7;
 
     heap_block_t *block = (heap_block_t *)kernel_heap;
 
@@ -37,8 +37,22 @@ void *kmalloc(size_t size)
             return (void *)(block + 1);
         }
 
-        block = (heap_block_t * )((uint8_t *)(block + 1) + block->size);
+        block = (heap_block_t *)((uint8_t *)(block + 1) + block->size);
     }
+
+    if (heap_offset + sizeof(heap_block_t) + size > HEAP_SIZE)
+    {
+        return 0;
+    }
+
+    heap_block_t *new_block = (heap_block_t *)&kernel_heap[heap_offset];
+
+    new_block->size = size;
+    new_block->free = 0;
+
+    heap_offset += sizeof(heap_block_t) + size;
+
+    return (void *)(new_block + 1);
 }
 
 void kfree(void *ptr)
@@ -47,6 +61,8 @@ void kfree(void *ptr)
     {
         return;
     }
+
     heap_block_t *block = ((heap_block_t *)ptr) - 1;
+
     block->free = 1;
 }
