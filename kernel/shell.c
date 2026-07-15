@@ -83,22 +83,6 @@ static int streq(const char *a, const char *b)
     return *a == *b;
 }
 
-static int starts_with(const char *str, const char *prefix)
-{
-    while (*prefix)
-    {
-        if (*str != *prefix)
-        {
-            return 0;
-        }
-
-        str++;
-        prefix++;
-    }
-
-    return 1;
-}
-
 static void split_command(const char *input, char *command, char *args)
 {
     while (*input && *input != ' ')
@@ -154,7 +138,7 @@ void shell_execute(const char *input)
     else if (streq(command, "about"))
     {
         terminal_writeIn("");
-        terminal_writeIn("MiyarOS v0.1");
+        terminal_writeIn("MiyarOS v0.2");
         terminal_writeIn("");
         terminal_writeIn("A hobby operating system written from scratch");
         terminal_writeIn("in C and x86 Assembly.");
@@ -167,9 +151,9 @@ void shell_execute(const char *input)
     else if (streq(command, "version"))
     {
         terminal_writeIn("");
-        terminal_writeIn("MiyarOS version 0.1");
+        terminal_writeIn("MiyarOS version 0.2");
         terminal_writeIn("");
-        terminal_writeIn("Kernel: 0.1");
+        terminal_writeIn("Kernel: 0.2");
         terminal_writeIn("Architecture: x86 (32-bit)");
         terminal_writeIn("");
     }
@@ -214,7 +198,6 @@ void shell_execute(const char *input)
     {
         uint32_t seconds = timer_ticks() / 100;
 
-        terminal_write("Uptime: ");
         write_uint32(seconds);
         terminal_writeIn(" seconds");
     }
