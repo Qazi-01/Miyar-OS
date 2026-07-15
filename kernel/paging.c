@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-#define PAGE_PRESENT  0x1
-#define PAGE_WRITABLE 0x2
+extern char _kernel_start;
+extern char _kernel_end;
 
 static uint32_t page_directory[1024] __attribute__((aligned(4096)));
 static uint32_t first_page_table[1024] __attribute__((aligned(4096)));
