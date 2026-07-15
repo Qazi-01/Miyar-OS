@@ -1,5 +1,6 @@
 #include "exceptions.h"
 #include "page_fault.h"
+#include "panic.h"
 #include "terminal.h"
 
 static const char *exception_names[] = {
@@ -38,10 +39,11 @@ void exception_handler(struct registers *r)
 
     if (r->int_no < 21)
     {
-    terminal_write(exception_names[r->int_no]);
-    terminal_write("\n");
+        kernel_panic(exception_names[r->int_no], r);
     }
-    
-    while (1)
-        __asm__ volatile("cli; hlt");
+
+    else
+    {
+        kernel_panic("Unknown Exception", r);
+    }
 }
