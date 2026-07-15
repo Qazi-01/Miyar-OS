@@ -99,6 +99,28 @@ static int starts_with(const char *str, const char *prefix)
     return 1;
 }
 
+static void split_command(const char *input, char *command, char *args)
+{
+    while (*input && *input != ' ')
+    {
+        *command++ = *input++;
+    }
+
+    *command = '\0';
+
+    if (*input == ' ')
+    {
+        input++;
+    }
+
+    while (*input)
+    {
+        *args++ = *input++;
+    }
+
+    *args = '\0';
+}
+
 void shell_execute(const char *input)
 {
     if (*input == '\0')
@@ -106,9 +128,14 @@ void shell_execute(const char *input)
         return;
     }
 
+    char command[32];
+    char args[224];
+
+    split_command(input, command, args);
+
     terminal_writeIn("");
 
-    if (streq(input, "help"))
+    if (streq(command, "help"))
     {
         terminal_writeIn("");
         terminal_writeIn("Available commands: ");
@@ -124,7 +151,7 @@ void shell_execute(const char *input)
         terminal_writeIn("");
     }
 
-    else if (streq(input, "about"))
+    else if (streq(command, "about"))
     {
         terminal_writeIn("");
         terminal_writeIn("MiyarOS v0.1");
@@ -137,7 +164,7 @@ void shell_execute(const char *input)
         terminal_writeIn("");
     }
 
-    else if (streq(input, "version"))
+    else if (streq(command, "version"))
     {
         terminal_writeIn("");
         terminal_writeIn("MiyarOS version 0.1");
@@ -147,17 +174,17 @@ void shell_execute(const char *input)
         terminal_writeIn("");
     }
 
-    else if (starts_with(input, "echo "))
+    else if (streq(command, "echo"))
     {
-        terminal_writeIn(input + 5);
+        terminal_writeIn(args);
     }
 
-    else if (streq(input, "clear"))
+    else if (streq(command, "clear"))
     {
         terminal_clear();
     }
 
-    else if (streq(input, "exception"))
+    else if (streq(command, "exception"))
     {
         terminal_writeIn("------------------------------------------------------------");
         terminal_writeIn("");
@@ -173,17 +200,17 @@ void shell_execute(const char *input)
         trigger_divide_error();
     }
 
-    else if (streq(input, "reboot"))
+    else if (streq(command, "reboot"))
     {
         reboot_system();
     }
 
-    else if (streq(input, "shutdown"))
+    else if (streq(command, "shutdown"))
     {
         shutdown_system();
     }
 
-    else if (streq(input, "uptime"))
+    else if (streq(command, "uptime"))
     {
         uint32_t seconds = timer_ticks() / 100;
 
