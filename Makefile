@@ -34,7 +34,8 @@ $(BUILDDIR)/memory_map.o \
 $(BUILDDIR)/pmm.o \
 $(BUILDDIR)/heap.o \
 $(BUILDDIR)/paging.o \
-$(BUILDDIR)/vmm.o
+$(BUILDDIR)/vmm.o \
+$(BUILDDIR)/page_fault.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -109,6 +110,9 @@ $(BUILDDIR)/paging.o: $(KERNELDIR)/paging.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/vmm.o: $(KERNELDIR)/vmm.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/page_fault.o: $(KERNELDIR)/page_fault.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/gdt.asm | $(BUILDDIR)

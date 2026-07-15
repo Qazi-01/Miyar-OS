@@ -1,4 +1,5 @@
 #include "exceptions.h"
+#include "page_fault.h"
 #include "terminal.h"
 
 static const char *exception_names[] = {
@@ -27,6 +28,12 @@ static const char *exception_names[] = {
 
 void exception_handler(struct registers *r)
 {
+    if (r->int_no == 14)
+    {
+        page_fault_handler(r->err_code);
+        return;
+    }
+
     terminal_write("\nEXCEPTION!\n");
 
     if (r->int_no < 21)
