@@ -39,6 +39,8 @@ void paging_init(void)
         first_page_table[i] &= ~PAGE_WRITABLE;
     }
 
+    first_page_table[0] = 0;
+
     page_directory[0] =
         ((uint32_t)first_page_table) |
         PAGE_PRESENT |
