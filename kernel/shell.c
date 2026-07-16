@@ -162,7 +162,7 @@ static void cmd_uptime(const char *args)
 {
     (void)args;
 
-    uint32_t seconds = timer_ticks()/100;
+    uint32_t seconds = timer_ticks() / 100;
 
     write_uint32(seconds);
     terminal_writeIn(" seconds");
@@ -183,32 +183,19 @@ static void cmd_shutdown(const char *args)
 static void cmd_exception(const char *args)
 {
     (void)args;
-
-    terminal_writeIn("------------------------------------------------------------");
-    terminal_writeIn("");
-    terminal_writeIn("                     KERNEL PANIC");
-    terminal_writeIn("");
-    terminal_writeIn("------------------------------------------------------------");
-    terminal_writeIn("");
-    terminal_writeIn("");
-    terminal_writeIn("The system has been halted.");
-    terminal_writeIn("Restart the machine to continue.");
-    terminal_writeIn("");
-
     trigger_divide_error();
 }
 
-static const struct shell_command command_table[] = 
-{
-    { "help", cmd_help },
-    { "about", cmd_about },
-    { "echo", cmd_echo },
-    { "clear", cmd_clear },
-    { "exception", cmd_exception },
-    { "reboot", cmd_reboot },
-    { "shutdown", cmd_shutdown },
-    { "uptime", cmd_uptime }
-};
+static const struct shell_command command_table[] =
+    {
+        {"help", cmd_help},
+        {"about", cmd_about},
+        {"echo", cmd_echo},
+        {"clear", cmd_clear},
+        {"exception", cmd_exception},
+        {"reboot", cmd_reboot},
+        {"shutdown", cmd_shutdown},
+        {"uptime", cmd_uptime}};
 
 #define COMMAND_COUNT (sizeof(command_table) / sizeof(command_table[0]))
 
@@ -234,7 +221,7 @@ void shell_execute(const char *input)
             return;
         }
     }
-    
+
     terminal_write("Unknown command: ");
     terminal_writeIn(input);
     terminal_writeIn("");
