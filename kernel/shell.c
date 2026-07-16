@@ -117,10 +117,6 @@ void shell_execute(const char *input)
 
     split_command(input, command, args);
 
-    terminal_write("COMMAND=[");
-    terminal_write(command);
-    terminal_writeIn("]");
-
     terminal_writeIn("");
 
     if (streq(command, "help"))
