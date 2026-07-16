@@ -137,13 +137,13 @@ static void cmd_about(const char *args)
     terminal_writeIn("");
     terminal_writeIn("MiyarOS v0.2");
     terminal_writeIn("Kernel: 0.2");
-    terminal_writeIn("Architecture: x86(32-bits)");
+    terminal_writeIn("Architecture: x86 (32-bits)");
     terminal_writeIn("");
     terminal_writeIn("A hobby operating system written from scratch");
     terminal_writeIn("in C and x86 Assembly.");
     terminal_writeIn("");
     terminal_writeIn("Author: Tashfeen Miyar");
-    terminal_writeIn("License: GNU General Public License V3.0(GPLv3)");
+    terminal_writeIn("License: GNU General Public License V3.0 (GPLv3)");
     terminal_writeIn("");
 }
 
@@ -198,7 +198,8 @@ static void cmd_exception(const char *args)
     trigger_divide_error();
 }
 
-static const struct shell_command command_table[] = {
+static const struct shell_command command_table[] = 
+{
     { "help", cmd_help },
     { "about", cmd_about },
     { "echo", cmd_echo },
