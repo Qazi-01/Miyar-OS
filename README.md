@@ -1,45 +1,54 @@
 # MiyarOS
 
-MiyarOS is a small hobby operating system for x86 that boots with GRUB and follows the Multiboot specification. The kernel is written in C and x86 Assembly, and it currently provides a text-mode boot experience with basic hardware setup, a keyboard-driven shell, VGA output, and serial debugging.
+MiyarOS is a hobby operating system for x86 that boots with GRUB and follows the Multiboot specification. The kernel is written in C and x86 Assembly, and now includes a basic memory management subsystem alongside a text-mode terminal, keyboard-driven shell, interrupt handling, paging, and serial debugging.
 
 ## Why I Built It
 
-I built MiyarOS to understand how a kernel comes together from the first boot instruction through to a usable command line. It is a hands-on project for learning low-level x86 development, interrupt handling, and simple device drivers without hiding the hardware behind a larger framework.
+I built MiyarOS to understand how a kernel comes together from the first boot instruction through to a usable command line. It is a hands-on project for learning low-level x86 development, memory management, interrupt handling, and operating system design without relying on existing kernels or frameworks.
 
 ## Current Version
 
-v0.1
+**v0.2 – Memory Management**
 
-The bootable ISO is built locally as [miyaros.iso](miyaros.iso). The checked-in copy stays on the v0.1 baseline until v0.2 is ready for its final refresh.
+A bootable release ISO is available in the `release/` directory and on the project's GitHub Releases page.
 
 ## Features
 
 - Multiboot-compliant 32-bit x86 boot flow through GRUB.
-- Kernel code split between C and x86 Assembly.
-- Global Descriptor Table setup.
-- Interrupt Descriptor Table setup for CPU exceptions and hardware IRQs.
-- PIC remapping and end-of-interrupt handling.
-- Basic exception handling for CPU faults.
-- PS/2 keyboard input with scancode translation and Shift support.
-- VGA text mode terminal output.
-- Terminal scrolling and backspace handling.
-- Serial output for debugging and mirrored console text.
-- PIT timer initialization and uptime reporting.
-- A small interactive shell with a handful of built-in commands.
+- Kernel written in C and x86 Assembly.
+- Global Descriptor Table (GDT).
+- Interrupt Descriptor Table (IDT).
+- PIC remapping and IRQ handling.
+- CPU exception handling.
+- Dedicated kernel panic screen with diagnostic information.
+- Dedicated page fault handler.
+- Multiboot memory map detection.
+- Physical Memory Manager (PMM).
+- Bitmap-based physical frame allocator.
+- Kernel heap (`kmalloc` / `kfree`).
+- Paging support.
+- Virtual Memory Manager (VMM).
+- Dynamic page table creation.
+- Read-only kernel memory protection.
+- PS/2 keyboard driver with Shift support.
+- VGA text-mode terminal with scrolling and backspace.
+- Serial debugging output.
+- PIT timer and uptime reporting.
+- Table-driven interactive shell.
 
 ## Built-In Shell Commands
 
 | Command | Description |
 | --- | --- |
 | `help` | Shows the built-in command list. |
-| `about` | Prints project information, author, and license. |
-| `version` | Displays the kernel and system version. |
-| `echo <msg>` | Prints the provided message back to the screen. |
+| `about` | Displays project information. |
+| `echo <msg>` | Prints the provided message. |
 | `uptime` | Shows the number of seconds since boot. |
 | `clear` | Clears the VGA text screen. |
 | `reboot` | Reboots the machine. |
-| `shutdown` | Attempts to power off the machine through the shutdown port. |
-| `exception` | Triggers a divide-by-zero exception to test the exception handler. |
+| `shutdown` | Attempts to power off the machine. |
+| `exception` | Triggers a divide-by-zero exception for testing. |
+| `pagefault` | Triggers a page fault for testing the memory subsystem. |
 
 ## Project Structure
 
@@ -47,9 +56,10 @@ The bootable ISO is built locally as [miyaros.iso](miyaros.iso). The checked-in 
 Miyar-OS/
 ├── Makefile
 ├── LICENSE
-├── linker.ld
 ├── README.md
-├── miyaros.iso
+├── linker.ld
+├── release/
+│   └── MiyarOS-v0.2.iso
 ├── iso/
 │   └── boot/
 │       └── grub/
@@ -59,20 +69,26 @@ Miyar-OS/
 │   ├── gdt.asm
 │   └── isr.asm
 └── kernel/
-	├── kernel.c
-	├── gdt.c/.h
-	├── idt.c/.h
-	├── pic.c/.h
-	├── irq.c/.h
-	├── exceptions.c/.h
-	├── timer.c/.h
-	├── keyboard.c/.h
-	├── terminal.c/.h
-	├── vga.c/.h
-	├── serial.c/.h
-	├── shell.c/.h
-	├── panic.c/.h
-	└── io.h
+    ├── kernel.c
+    ├── gdt.c/.h
+    ├── idt.c/.h
+    ├── pic.c/.h
+    ├── irq.c/.h
+    ├── exceptions.c/.h
+    ├── page_fault.c/.h
+    ├── paging.c/.h
+    ├── vmm.c/.h
+    ├── pmm.c/.h
+    ├── memory_map.c/.h
+    ├── heap.c/.h
+    ├── timer.c/.h
+    ├── keyboard.c/.h
+    ├── terminal.c/.h
+    ├── vga.c/.h
+    ├── serial.c/.h
+    ├── shell.c/.h
+    ├── panic.c/.h
+    └── io.h
 ```
 
 ## Build Requirements
@@ -80,51 +96,72 @@ Miyar-OS/
 - GNU Make
 - NASM
 - GCC with 32-bit multilib support
-- GNU binutils, including `ld`
-- `grub-mkrescue`
-- `xorriso`
-- QEMU system emulator for i386, if you want to run it locally
-
-On Debian or Ubuntu, the required packages are typically available through the standard development toolchain and GRUB packages, plus 32-bit GCC support.
+- GNU binutils (`ld`)
+- GRUB (`grub-mkrescue`)
+- xorriso
+- QEMU (recommended for testing)
 
 ## Build Instructions
 
-From the project root, run:
+From the project root:
 
 ```bash
-make clean && make
+make clean
+make
 ```
 
-This builds the kernel, links it into `build/kernel.elf`, and packages a bootable ISO as `miyaros.iso`.
-
-Until v0.2 is complete and tested, the repository should avoid ISO-only updates on `main`. The release ISO will be replaced once the v0.2 build is validated.
+This builds the kernel and generates a bootable ISO.
 
 ## Run Instructions
 
-The easiest way to boot the system is:
+The easiest way to boot the operating system is:
 
 ```bash
 make run
 ```
 
-This launches QEMU with the generated ISO in text mode. The project also boots through GRUB, so you can inspect `iso/boot/grub/grub.cfg` if you want to adjust the boot entry or use the ISO in another emulator.
+Or run the generated ISO manually:
+
+```bash
+qemu-system-i386 -cdrom release/MiyarOS-v0.2.iso
+```
+
+For terminal-only environments:
+
+```bash
+qemu-system-i386 -curses -cdrom release/MiyarOS-v0.2.iso
+```
 
 ## Roadmap
 
-### Current State
+### Completed
 
-- Bootable x86 kernel with GRUB and Multiboot.
-- Text console, serial output, keyboard input, timer ticks, and interrupt handling.
-- A small shell with basic system commands.
+- **v0.1 — Core Kernel**
+  - Boot process
+  - Interrupts
+  - Drivers
+  - Terminal
+  - Shell
 
-### Future Work
+- **v0.2 — Memory Management**
+  - Physical Memory Manager
+  - Kernel heap
+  - Paging
+  - Virtual Memory Manager
+  - Page fault handling
+  - Read-only kernel memory protection
 
-- Memory management.
-- Multitasking.
-- A filesystem.
-- User programs and a richer command environment.
-- Additional drivers and hardware support.
+### Planned
+
+- Filesystem
+- Process management
+- User mode
+- System calls
+- Virtual File System (VFS)
+- Improved hardware support
+- Networking
+- Graphical user interface
 
 ## License
 
-MiyarOS is released under the GNU General Public License v3.0. See [LICENSE](LICENSE) for the full text.
+MiyarOS is released under the GNU General Public License v3.0. See [LICENSE](LICENSE) for the full license text.
