@@ -8,6 +8,12 @@ static void trigger_divide_error(void)
     __asm__ volatile("xor %%eax, %%eax; div %%eax" ::: "eax");
 }
 
+static void trigger_page_fault(void)
+{
+    volatile uint32_t *ptr = (volatile uint32_t *)0xFFFFFFFF;
+    *ptr = 123;
+}
+
 static void halt_forever(void)
 {
     __asm__ volatile("cli");
@@ -137,13 +143,13 @@ static void cmd_about(const char *args)
     terminal_writeIn("");
     terminal_writeIn("MiyarOS v0.2");
     terminal_writeIn("Kernel: 0.2");
-    terminal_writeIn("Architecture: x86 (32-bits)");
+    terminal_writeIn("Architecture: x86(32-bits)");
     terminal_writeIn("");
     terminal_writeIn("A hobby operating system written from scratch");
     terminal_writeIn("in C and x86 Assembly.");
     terminal_writeIn("");
     terminal_writeIn("Author: Tashfeen Miyar");
-    terminal_writeIn("License: GNU General Public License V3.0 (GPLv3)");
+    terminal_writeIn("License: GNU General Public License V3.0(GPLv3)");
     terminal_writeIn("");
 }
 
@@ -186,6 +192,12 @@ static void cmd_exception(const char *args)
     trigger_divide_error();
 }
 
+static void cmd_pagefault(const char *args)
+{
+    (void)args;
+    trigger_page_fault();
+}
+
 static const struct shell_command command_table[] =
     {
         {"help", cmd_help},
@@ -193,6 +205,7 @@ static const struct shell_command command_table[] =
         {"echo", cmd_echo},
         {"clear", cmd_clear},
         {"exception", cmd_exception},
+        {"pagefault", cmd_pagefault},
         {"reboot", cmd_reboot},
         {"shutdown", cmd_shutdown},
         {"uptime", cmd_uptime}};
