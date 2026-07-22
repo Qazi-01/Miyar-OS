@@ -47,6 +47,58 @@ static uint8_t ata_read_status(ata_channel_t channel)
     return inb(ata_base_port(channel) + ATA_REG_STATUS);
 }
 
+static void ata_delay(ata_channel_t channel)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        ata_read_status(channel);
+    }
+}
+
+static void ata_select_drive(ata_channel_t channel, ata_drive_t drive)
+{
+    uint16_t base = ata_base_port(channel);
+
+    outb(base + ATA_REG_HDDEVSEL, 0xA0 | (drive << 4));
+    ata_delay(channel);
+}
+
+static int ata_wait_busy(ata_channel_t channel)
+{
+    uint8_t status;
+
+    do
+    {
+        status = ata_read_status(channel);
+    }
+    while (status & ATA_SR_BSY);
+
+    return 0;
+}
+
+static int ata_identify(ata_channel_t channel, ata_drive_t drive)
+{
+    uint16_t base = ata_base_port(channel);
+    
+    ata_select_drive(channel, drive);
+
+    outb(base + ATA_REG_SECTOR_COUNT, 0);
+    outb(base + ATA_REG_LBA_LOW, 0);
+    outb(base + ATA_REG_LBA_MID, 0);
+    outb(base + ATA_REG_LBA_HIGH, 0);
+    outb(base + ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
+
+    io_wait();
+
+    if (inb(base + ATA_REG_STATUS) == 0)
+    {
+        return 0;
+    }
+
+    ata_wait_busy(channel);
+    return 1;
+}
+
 void ata_init(void)
 {
 }

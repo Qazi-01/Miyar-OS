@@ -32,4 +32,16 @@ io_wait(void) {
     __asm__ volatile ("outb %%al, $0x80" : : "a"(0));
 }
 
+static inline void
+insw(uint16_t port, void *addr, uint32_t count)
+{
+    __asm__ volatile ("cld; rep insw" : "+D"(addr), "+c"(count) : "d"(port) : "memory");
+}
+
+static inline void
+outsw(uint16_t port, const void *addr, uint32_t count)
+{
+    __asm__ volatile ("cld; rep outsw" : "+S"(addr), "+c"(count) : "d"(port) : "memory");
+}
+
 #endif
