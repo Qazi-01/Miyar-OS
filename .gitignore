@@ -7,6 +7,12 @@
 *.obj
 *.elf
 
+build/
+miyaros.iso
+*.o
+*.d
+*.elf
+
 # Linker output
 *.ilk
 *.map
