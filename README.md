@@ -63,6 +63,7 @@ Miyar-OS/
 ├── Makefile
 ├── README.md
 ├── LICENSE
+├── linker.ld
 ├── .gitignore
 ├── miyaros.iso
 │   (after compilation or in release)
@@ -79,8 +80,7 @@ Miyar-OS/
 │       └── x86/
 │           ├── boot.asm
 │           ├── gdt.asm
-│           ├── isr.asm
-│           └── linker.ld
+│           └── isr.asm
 │
 └── kernel/
     ├── arch/
