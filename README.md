@@ -50,45 +50,94 @@ A bootable release ISO is available in the `release/` directory and on the proje
 | `exception` | Triggers a divide-by-zero exception for testing. |
 | `pagefault` | Triggers a page fault for testing the memory subsystem. |
 
-## Project Structure
+## Repository Structure
 
 ```text
 Miyar-OS/
 ├── Makefile
-├── LICENSE
 ├── README.md
-├── linker.ld
-├── release/
-│   └── MiyarOS-v0.2.iso
+├── LICENSE
+├── .gitignore
+├── miyaros.iso
+├── build/
+│
 ├── iso/
 │   └── boot/
 │       └── grub/
 │           └── grub.cfg
+│
 ├── src/
-│   ├── boot.asm
-│   ├── gdt.asm
-│   └── isr.asm
+│   └── arch/
+│       └── x86/
+│           ├── boot.asm
+│           ├── gdt.asm
+│           ├── isr.asm
+│           └── linker.ld
+│
 └── kernel/
+    ├── arch/
+    │   └── x86/
+    │       ├── gdt.c
+    │       ├── gdt.h
+    │       ├── idt.c
+    │       ├── idt.h
+    │       ├── irq.c
+    │       ├── irq.h
+    │       ├── exceptions.c
+    │       └── exceptions.h
+    │
+    ├── drivers/
+    │   ├── ata.c
+    │   ├── ata.h
+    │   ├── disk.c
+    │   ├── disk.h
+    │   ├── keyboard.c
+    │   ├── keyboard.h
+    │   ├── pic.c
+    │   ├── pic.h
+    │   ├── serial.c
+    │   ├── serial.h
+    │   ├── timer.c
+    │   ├── timer.h
+    │   ├── vga.c
+    │   ├── vga.h
+    │   └── io.h
+    │
+    ├── memory/
+    │   ├── multiboot.c
+    │   ├── multiboot.h
+    │   ├── memory_map.c
+    │   ├── memory_map.h
+    │   ├── pmm.c
+    │   ├── pmm.h
+    │   ├── heap.c
+    │   ├── heap.h
+    │   ├── paging.c
+    │   ├── paging.h
+    │   ├── vmm.c
+    │   ├── vmm.h
+    │   ├── page_fault.c
+    │   └── page_fault.h
+    │
+    ├── fs/
+    │   ├── directory.c
+    │   ├── directory.h
+    │   ├── fat32.c
+    │   ├── fat32.h
+    │   ├── file.c
+    │   ├── file.h
+    │   ├── fs.c
+    │   ├── fs.h
+    │   ├── path.c
+    │   └── path.h
+    │
     ├── kernel.c
-    ├── gdt.c/.h
-    ├── idt.c/.h
-    ├── pic.c/.h
-    ├── irq.c/.h
-    ├── exceptions.c/.h
-    ├── page_fault.c/.h
-    ├── paging.c/.h
-    ├── vmm.c/.h
-    ├── pmm.c/.h
-    ├── memory_map.c/.h
-    ├── heap.c/.h
-    ├── timer.c/.h
-    ├── keyboard.c/.h
-    ├── terminal.c/.h
-    ├── vga.c/.h
-    ├── serial.c/.h
-    ├── shell.c/.h
-    ├── panic.c/.h
-    └── io.h
+    ├── panic.c
+    ├── panic.h
+    ├── shell.c
+    ├── shell.h
+    ├── terminal.c
+    └── terminal.h
 ```
 
 ## Build Requirements
