@@ -1,6 +1,6 @@
-#include "serial.h"
+#include "drivers/serial.h"
 #include "terminal.h"
-#include "vga.h"
+#include "drivers/vga.h"
 
 #include <stdint.h>
 

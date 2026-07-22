@@ -1,18 +1,18 @@
 #include <stdint.h>
 
-#include "gdt.h"
-#include "heap.h"
-#include "idt.h"
-#include "keyboard.h"
-#include "multiboot.h"
-#include "paging.h"
-#include "pic.h"
-#include "pmm.h"
-#include "serial.h"
+#include "arch/x86/gdt.h"
+#include "memory/heap.h"
+#include "arch/x86/idt.h"
+#include "drivers/keyboard.h"
+#include "memory/multiboot.h"
+#include "memory/paging.h"
+#include "drivers/pic.h"
+#include "memory/pmm.h"
+#include "drivers/serial.h"
 #include "shell.h"
-#include "timer.h"
+#include "drivers/timer.h"
 #include "terminal.h"
-#include "vga.h"
+#include "drivers/vga.h"
 
 __attribute__((used))
 void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {

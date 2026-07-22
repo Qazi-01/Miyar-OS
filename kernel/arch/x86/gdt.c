@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "gdt.h"
+#include "arch/x86/gdt.h"
 
 struct gdt_entry
 {

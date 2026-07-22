@@ -1,5 +1,5 @@
-#include "exceptions.h"
-#include "page_fault.h"
+#include "arch/x86/exceptions.h"
+#include "memory/page_fault.h"
 #include "panic.h"
 #include "terminal.h"
 

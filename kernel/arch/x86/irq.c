@@ -1,8 +1,8 @@
-#include "irq.h"
-#include "timer.h"
-#include "pic.h"
-#include "io.h"
-#include "keyboard.h"
+#include "arch/x86/irq.h"
+#include "drivers/timer.h"
+#include "drivers/pic.h"
+#include "drivers/io.h"
+#include "drivers/keyboard.h"
 #include "terminal.h"
 
 static const char scancode_table[128] =

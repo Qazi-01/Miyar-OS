@@ -1,7 +1,7 @@
 #include "shell.h"
-#include "timer.h"
+#include "drivers/timer.h"
 #include "terminal.h"
-#include "io.h"
+#include "drivers/io.h"
 
 static void trigger_divide_error(void)
 {

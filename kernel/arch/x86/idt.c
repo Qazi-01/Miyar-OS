@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "idt.h"
+#include "arch/x86/idt.h"
 
 #define DECLARE_ISR(n) extern void isr_stub_##n(void)
 
