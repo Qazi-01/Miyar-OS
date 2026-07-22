@@ -8,10 +8,7 @@
 *.elf
 
 build/
-miyaros.iso
-*.o
-*.d
-*.elf
+/miyaros.iso
 
 # Linker output
 *.ilk
@@ -59,8 +56,6 @@ dkms.conf
 
 # debug information files
 *.dwo
-build/
-*.iso
 serial.log
 
 # Disk images
