@@ -11,7 +11,7 @@ CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra
 -I$(KERNELDIR)/memory \
 -I$(KERNELDIR)/fs
 
-LDFLAGS=-m elf_i386 -T src/arch/x86/linker.ld -z max-page-size=0x1000
+LDFLAGS=-m elf_i386 -T linker.ld -z max-page-size=0x1000
 
 SRCDIR=src
 KERNELDIR=kernel
