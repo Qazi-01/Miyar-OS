@@ -50,7 +50,7 @@ A bootable release ISO is available in the `release/` directory and on the proje
 | `exception` | Triggers a divide-by-zero exception for testing. |
 | `pagefault` | Triggers a page fault for testing the memory subsystem. |
 
-## Repository Structure
+## Repository Structure(v0.3, in progress)
 
 ```text
 Miyar-OS/
