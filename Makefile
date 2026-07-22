@@ -55,25 +55,25 @@ $(BOOT_OBJ): $(SRCDIR)/boot.asm | $(BUILDDIR)
 $(BUILDDIR)/kernel.o: $(KERNELDIR)/kernel.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/serial.o: $(KERNELDIR)/serial.c | $(BUILDDIR)
+$(BUILDDIR)/serial.o: $(KERNELDIR)/drivers/serial.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/vga.o: $(KERNELDIR)/vga.c | $(BUILDDIR)
+$(BUILDDIR)/vga.o: $(KERNELDIR)/drivers/vga.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/terminal.o: $(KERNELDIR)/terminal.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/keyboard.o: $(KERNELDIR)/keyboard.c | $(BUILDDIR)
+$(BUILDDIR)/keyboard.o: $(KERNELDIR)/drivers/keyboard.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/shell.o: $(KERNELDIR)/shell.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/timer.o: $(KERNELDIR)/timer.c | $(BUILDDIR)
+$(BUILDDIR)/timer.o: $(KERNELDIR)/drivers/timer.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/idt.o: $(KERNELDIR)/idt.c | $(BUILDDIR)
+$(BUILDDIR)/idt.o: $(KERNELDIR)/kernel/arch/x86/idt.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/panic.o: $(KERNELDIR)/panic.c | $(BUILDDIR)
@@ -82,16 +82,16 @@ $(BUILDDIR)/panic.o: $(KERNELDIR)/panic.c | $(BUILDDIR)
 $(BUILDDIR)/isr.o: $(SRCDIR)/isr.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 
-$(BUILDDIR)/exceptions.o: $(KERNELDIR)/exceptions.c | $(BUILDDIR)
+$(BUILDDIR)/exceptions.o: $(KERNELDIR)/kernel/arch/x86/exceptions.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/pic.o: $(KERNELDIR)/pic.c | $(BUILDDIR)
+$(BUILDDIR)/pic.o: $(KERNELDIR)/drivers/pic.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/irq.o: $(KERNELDIR)/irq.c | $(BUILDDIR)
+$(BUILDDIR)/irq.o: $(KERNELDIR)/kernel/arch/x86/irq.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/gdt.o: $(KERNELDIR)/gdt.c | $(BUILDDIR)
+$(BUILDDIR)/gdt.o: $(KERNELDIR)/kernel/arch/x86/gdt.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/multiboot.o: $(KERNELDIR)/multiboot.c | $(BUILDDIR)
