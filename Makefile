@@ -3,8 +3,15 @@ CC=gcc
 LD=ld
 
 ASMFLAGS=-f elf32
-CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra -MMD -MP
-LDFLAGS=-m elf_i386 -T linker.ld -z max-page-size=0x1000
+
+CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra -MMD -MP \
+-I$(KERNELDIR) \
+-I$(KERNELDIR)/arch/x86 \
+-I$(KERNELDIR)/drivers \
+-I$(KERNELDIR)/memory \
+-I$(KERNELDIR)/fs
+
+LDFLAGS=-m elf_i386 -T src/arch/x86/linker.ld -z max-page-size=0x1000
 
 SRCDIR=src
 KERNELDIR=kernel
@@ -49,7 +56,7 @@ all: $(ISO)
 $(BUILDDIR):
 > mkdir -p $(BUILDDIR)
 
-$(BOOT_OBJ): $(SRCDIR)/boot.asm | $(BUILDDIR)
+$(BOOT_OBJ): $(SRCDIR)/arch/x86/boot.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 
 $(BUILDDIR)/kernel.o: $(KERNELDIR)/kernel.c | $(BUILDDIR)
@@ -73,49 +80,49 @@ $(BUILDDIR)/shell.o: $(KERNELDIR)/shell.c | $(BUILDDIR)
 $(BUILDDIR)/timer.o: $(KERNELDIR)/drivers/timer.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/idt.o: $(KERNELDIR)/kernel/arch/x86/idt.c | $(BUILDDIR)
+$(BUILDDIR)/idt.o: $(KERNELDIR)/arch/x86/idt.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/panic.o: $(KERNELDIR)/panic.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/isr.o: $(SRCDIR)/isr.asm | $(BUILDDIR)
+$(BUILDDIR)/isr.o: $(SRCDIR)/arch/x86/isr.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 
-$(BUILDDIR)/exceptions.o: $(KERNELDIR)/kernel/arch/x86/exceptions.c | $(BUILDDIR)
+$(BUILDDIR)/exceptions.o: $(KERNELDIR)/arch/x86/exceptions.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/pic.o: $(KERNELDIR)/drivers/pic.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/irq.o: $(KERNELDIR)/kernel/arch/x86/irq.c | $(BUILDDIR)
+$(BUILDDIR)/irq.o: $(KERNELDIR)/arch/x86/irq.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/gdt.o: $(KERNELDIR)/kernel/arch/x86/gdt.c | $(BUILDDIR)
+$(BUILDDIR)/gdt.o: $(KERNELDIR)/arch/x86/gdt.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/multiboot.o: $(KERNELDIR)/multiboot.c | $(BUILDDIR)
+$(BUILDDIR)/multiboot.o: $(KERNELDIR)/memory/multiboot.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/memory_map.o: $(KERNELDIR)/memory_map.c | $(BUILDDIR)
+$(BUILDDIR)/memory_map.o: $(KERNELDIR)/memory/memory_map.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/pmm.o: $(KERNELDIR)/pmm.c | $(BUILDDIR)
+$(BUILDDIR)/pmm.o: $(KERNELDIR)/memory/pmm.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/heap.o: $(KERNELDIR)/heap.c | $(BUILDDIR)
+$(BUILDDIR)/heap.o: $(KERNELDIR)/memory/heap.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/paging.o: $(KERNELDIR)/paging.c | $(BUILDDIR)
+$(BUILDDIR)/paging.o: $(KERNELDIR)/memory/paging.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/vmm.o: $(KERNELDIR)/vmm.c | $(BUILDDIR)
+$(BUILDDIR)/vmm.o: $(KERNELDIR)/memory/vmm.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/page_fault.o: $(KERNELDIR)/page_fault.c | $(BUILDDIR)
+$(BUILDDIR)/page_fault.o: $(KERNELDIR)/memory/page_fault.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/gdtasm.o: $(SRCDIR)/gdt.asm | $(BUILDDIR)
+$(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 
 $(KERNEL_ELF): $(BOOT_OBJ) $(KERNEL_OBJS)
