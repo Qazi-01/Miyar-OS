@@ -12,6 +12,12 @@ I built MiyarOS to understand how a kernel comes together from the first boot in
 
 A bootable release ISO is available in the `release/` directory and on the project's GitHub Releases page.
 
+## Releases
+
+Each tagged release includes a bootable ISO that can be downloaded from the GitHub Releases page.
+
+Alternatively, you can clone the repository and build MiyarOS from source using the provided Makefile. This allows you to experiment with the codebase, modify the kernel, and generate your own bootable ISO.
+
 ## Features
 
 - Multiboot-compliant 32-bit x86 boot flow through GRUB.
@@ -59,7 +65,9 @@ Miyar-OS/
 ├── LICENSE
 ├── .gitignore
 ├── miyaros.iso
+│   (after compilation or in release)
 ├── build/
+│   (after compilation)
 │
 ├── iso/
 │   └── boot/
