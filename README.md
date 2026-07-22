@@ -8,7 +8,7 @@ I built MiyarOS to understand how a kernel comes together from the first boot in
 
 ## Current Version
 
-**v0.2 – Memory Management**
+## v0.2 – Memory Management
 
 A bootable release ISO is available in the `release/` directory and on the project's GitHub Releases page.
 
