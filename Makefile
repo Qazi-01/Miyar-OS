@@ -42,7 +42,8 @@ $(BUILDDIR)/pmm.o \
 $(BUILDDIR)/heap.o \
 $(BUILDDIR)/paging.o \
 $(BUILDDIR)/vmm.o \
-$(BUILDDIR)/page_fault.o
+$(BUILDDIR)/page_fault.o \
+$(BUILDDIR)/ata.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -120,6 +121,9 @@ $(BUILDDIR)/vmm.o: $(KERNELDIR)/memory/vmm.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/page_fault.o: $(KERNELDIR)/memory/page_fault.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/ata.o: $(KERNELDIR)/drivers/ata.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)
