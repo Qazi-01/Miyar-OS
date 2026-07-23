@@ -30,8 +30,8 @@ typedef struct {
 
 void ata_init(void);
 void ata_detect_devices(void);
-int ata_read_sector(uint8_t drive_index, uint32_t lba, void *buffer);
-int ata_write_sector(uint8_t drive_index, uint32_t lba, const void *buffer);
 const ata_device_t *ata_get_device(uint8_t index);
+int ata_read_sector(const ata_device_t *device, uint32_t lba, uint8_t *buffer);
+int ata_write_sector(const ata_device_t *device, uint32_t lba, const uint8_t *buffer);
 
 #endif

@@ -70,8 +70,60 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     terminal_writeIn("Initializing Timer................ [ OK ]");
 
     ata_init();
-    ata_detect_devices();
     terminal_writeIn("Initializing ATA.................. [ OK ]");
+    ata_detect_devices();
+
+    uint8_t write_buffer[512];
+    uint8_t read_buffer[512];
+    
+    for (int i = 0; i < 512; i++)
+    {
+        write_buffer[i] = (uint8_t)i;
+        read_buffer[i] = 0;
+    }
+
+    const ata_device_t *disk = ata_get_device(0);
+
+    if (disk && disk->present)
+    {
+        if (ata_write_sector(disk, 100, write_buffer) == 0)
+        {
+            terminal_write("Write successful\n");
+        }
+
+        else
+        {
+            terminal_write("Write failed\n");
+        }
+        
+        if (ata_read_sector(disk, 100, read_buffer) == 0)
+        {
+            terminal_write("Read successful\n");
+        }
+
+        else
+        {
+            terminal_write("Read failed\n");
+        }
+    }
+
+    uint8_t sector[512];
+
+    if (disk && disk->present)
+    {
+        if (ata_read_sector(disk, 0, sector) == 0)
+        {
+            terminal_write("First 16 bytes:\n");
+
+            for (int i = 0; i < 16; i++)
+            {
+                terminal_write_hex(sector[i]);
+                terminal_write(" ");
+            }
+            
+            terminal_write("\n");
+        }
+    }
 
     __asm__ volatile("sti");
 

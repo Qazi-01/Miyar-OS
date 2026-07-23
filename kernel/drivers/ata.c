@@ -41,6 +41,8 @@ static void ata_delay_400ns(ata_channel_t channel);
 static int ata_poll(ata_channel_t channel);
 static void ata_select_drive(ata_channel_t channel, ata_drive_t drive);
 static uint16_t ata_read_data(uint16_t base);
+static void ata_parse_identify(ata_device_t *device);
+static void ata_swap_model(char *model);
 
 static uint16_t ata_base_port(ata_channel_t channel)
 {
@@ -131,8 +133,18 @@ void ata_detect_devices(void)
             if (ata_identify(channel, drive))
             {
                 ata_devices[index].present = true;
+                ata_parse_identify(&ata_devices[index]);
             
                 terminal_write("ATA: Device Detected\n");
+                terminal_write("Model: ");
+                terminal_write(ata_devices[index].model);
+                terminal_write("\n");
+                terminal_write("Sectors: ");
+                terminal_write_hex(ata_devices[index].sector_count);
+                terminal_write("\n");
+                terminal_write("Capacity (MB): ");
+                terminal_write_hex(ata_devices[index].sector_count / 2048);
+                terminal_write("\n");
             }
 
             else
@@ -203,6 +215,32 @@ static int ata_poll(ata_channel_t channel)
     return 0;
 }
 
+static void ata_swap_model(char *model)
+{
+    for (int i = 0; i < 40; i += 2)
+    {
+        char temp = model[i];
+        model[i] = model[i + 1];
+        model[i + 1] = temp;
+    }
+
+    model[40] = '\0';
+}
+
+static void ata_parse_identify(ata_device_t *device)
+{
+    for (int i = 0; i < 20; i++)
+    {
+        uint16_t word = ata_identify_buffer[27 + i];
+        device->model[i * 2] = (word >> 8) & 0xFF;
+        device->model[i * 2 + 1] = word & 0xFF;
+    }
+
+    device->model[40] = '\0';
+
+    device->sector_count = ((uint32_t)ata_identify_buffer[61] << 16) | ata_identify_buffer[60];
+}
+
 static uint16_t ata_read_data(uint16_t base)
 {
     uint16_t value;
@@ -210,4 +248,104 @@ static uint16_t ata_read_data(uint16_t base)
     __asm__ volatile ("inw %1, %0" : "=a"(value) : "Nd"(base));
 
     return value;
+}
+
+int ata_read_sector(const ata_device_t *device, uint32_t lba, uint8_t *buffer)
+{
+    if (device == 0)
+    {
+        return -1;
+    }
+
+    if (!device->present)
+    {
+        return -1;
+    }
+
+    if (buffer == 0)
+    {
+        return -1;
+    }
+
+    if (lba >= device->sector_count)
+    {
+        return -1;
+    }
+
+    uint16_t base = ata_base_port(device->channel);
+
+    outb(base + ATA_REG_HDDEVSEL, 0xE0 | (device->drive << 4) | ((lba >> 24) & 0x0F));
+
+    ata_delay_400ns(device->channel);
+
+    outb(base + ATA_REG_SECTOR_COUNT, 1);
+    outb(base + ATA_REG_LBA_LOW, lba & 0xFF);
+    outb(base + ATA_REG_LBA_MID, (lba >> 8) & 0xFF);
+    outb(base + ATA_REG_LBA_HIGH, (lba >> 16) & 0xFF);
+    outb(base + ATA_REG_COMMAND, ATA_CMD_READ);
+
+    if (ata_poll(device->channel) != 0)
+    {
+        return -1;
+    }
+
+    uint16_t *words = (uint16_t *)buffer;
+
+    for (int i = 0; i < 256; i++)
+    {
+        words[i] = ata_read_data(base);
+    }
+
+    return 0;
+}
+
+int ata_write_sector(const ata_device_t *device, uint32_t lba, const uint8_t *buffer)
+{
+    if (device == 0)
+    {
+        return -1;
+    }
+
+    if (!device->present)
+    {
+        return -1;
+    }
+
+    if (buffer == 0)
+    {
+        return -1;
+    }
+
+    if (lba >= device->sector_count)
+    {
+        return -1;
+    }
+
+    uint16_t base = ata_base_port(device->channel);
+
+    outb(base + ATA_REG_HDDEVSEL, 0xE0 | (device->drive << 4) | ((lba >> 24) & 0x0F));
+
+    ata_delay_400ns(device->channel);
+
+    outb(base + ATA_REG_SECTOR_COUNT, 1);
+    outb(base + ATA_REG_LBA_LOW, lba & 0xFF);
+    outb(base + ATA_REG_LBA_MID, (lba >> 8) & 0xFF);
+    outb(base + ATA_REG_LBA_HIGH, (lba >> 16) & 0xFF);
+    outb(base + ATA_REG_COMMAND, ATA_CMD_WRITE);
+
+    if (ata_poll(device->channel) != 0)
+    {
+        return -1;
+    }
+
+    const uint16_t *words = (const uint16_t *)buffer;
+
+    for (int i = 0; i < 256; i++)
+    {
+        outw(base + ATA_REG_DATA, words[i]);
+    }
+
+    ata_delay_400ns(device->channel);
+
+    return ata_poll(device->channel);
 }
