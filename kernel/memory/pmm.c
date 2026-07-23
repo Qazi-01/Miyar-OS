@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#include "pmm.h"
-#include "memory_map.h"
+#include "memory/pmm.h"
+#include "memory/memory_map.h"
 
 #define PAGE_SIZE 4096
 #define MAX_MEMORY_BYTES (4ULL * 1024 * 1024 * 1024)

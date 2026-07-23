@@ -1,7 +1,7 @@
-#include "ata.h"
-#include "io.h"
+#include "drivers/ata.h"
+#include "drivers/io.h"
 #include "terminal.h"
-#include "serial.h"
+#include "drivers/serial.h"
 #include "lib/string.h"
 
 #include <stdint.h>

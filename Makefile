@@ -4,7 +4,7 @@ LD=ld
 
 ASMFLAGS=-f elf32
 
-CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra -MMD -MP \
+CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra -MMD -MP -Ikernel/include \
 -I$(KERNELDIR) \
 -I$(KERNELDIR)/arch/x86 \
 -I$(KERNELDIR)/drivers \

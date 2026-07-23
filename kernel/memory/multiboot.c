@@ -1,5 +1,5 @@
-#include "memory_map.h"
-#include "multiboot.h"
+#include "memory/memory_map.h"
+#include "memory/multiboot.h"
 #include "terminal.h"
 
 void multiboot_print_memory_map(multiboot_info_t *mbi)

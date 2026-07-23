@@ -1,5 +1,5 @@
-#include "io.h"
-#include "pic.h"
+#include "drivers/io.h"
+#include "drivers/pic.h"
 
 #define PIC1_COMMAND 0x20
 #define PIC1_DATA    0x21

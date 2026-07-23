@@ -1,4 +1,4 @@
-#include "paging.h"
+#include "memory/paging.h"
 
 #include <stdint.h>
 

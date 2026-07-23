@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "page_fault.h"
+#include "memory/page_fault.h"
 #include "terminal.h"
 
 void page_fault_handler(uint32_t error_code)

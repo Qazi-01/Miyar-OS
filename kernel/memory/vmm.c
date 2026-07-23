@@ -1,6 +1,6 @@
-#include "paging.h"
-#include "pmm.h"
-#include "vmm.h"
+#include "memory/paging.h"
+#include "memory/pmm.h"
+#include "memory/vmm.h"
 
 static uint32_t *page_tables[1024];
 
