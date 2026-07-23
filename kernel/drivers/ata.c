@@ -2,6 +2,10 @@
 #include "io.h"
 #include "terminal.h"
 #include "serial.h"
+#include "common/string.h"
+
+#include <stdint.h>
+#include <stdbool.h>
 
 #define ATA_PRIMARY_IO             0x1F0
 #define ATA_SECONDARY_IO           0x170
