@@ -13,6 +13,7 @@
 #include "drivers/timer.h"
 #include "terminal.h"
 #include "drivers/vga.h"
+#include "drivers/ata.h"
 
 __attribute__((used))
 void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
@@ -67,6 +68,10 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
 
     timer_init();
     terminal_writeIn("Initializing Timer................ [ OK ]");
+
+    ata_init();
+    ata_detect_devices();
+    terminal_writeIn("Initializing ATA.................. [ OK ]");
 
     __asm__ volatile("sti");
 

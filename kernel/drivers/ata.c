@@ -35,10 +35,12 @@
 #define ATA_SR_BSY                 0x80
 
 static ata_device_t ata_devices[4];
+static uint16_t ata_identify_buffer[256];
 
 static void ata_delay_400ns(ata_channel_t channel);
 static int ata_poll(ata_channel_t channel);
 static void ata_select_drive(ata_channel_t channel, ata_drive_t drive);
+static uint16_t ata_read_data(uint16_t base);
 
 static uint16_t ata_base_port(ata_channel_t channel)
 {
@@ -53,22 +55,6 @@ static uint16_t ata_base_port(ata_channel_t channel)
 static uint8_t ata_read_status(ata_channel_t channel)
 {
     return inb(ata_base_port(channel) + ATA_REG_STATUS);
-}
-
-static void ata_delay(ata_channel_t channel)
-{
-    for (int i = 0; i < 4; i++)
-    {
-        ata_read_status(channel);
-    }
-}
-
-static void ata_select_drive(ata_channel_t channel, ata_drive_t drive)
-{
-    uint16_t base = ata_base_port(channel);
-
-    outb(base + ATA_REG_HDDEVSEL, 0xA0 | (drive << 4));
-    ata_delay(channel);
 }
 
 static int ata_wait_busy(ata_channel_t channel)
@@ -90,32 +76,93 @@ static int ata_identify(ata_channel_t channel, ata_drive_t drive)
     
     ata_select_drive(channel, drive);
 
+    ata_delay_400ns(channel);
+
     outb(base + ATA_REG_SECTOR_COUNT, 0);
     outb(base + ATA_REG_LBA_LOW, 0);
     outb(base + ATA_REG_LBA_MID, 0);
     outb(base + ATA_REG_LBA_HIGH, 0);
     outb(base + ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
 
-    io_wait();
-
     if (inb(base + ATA_REG_STATUS) == 0)
     {
         return 0;
     }
 
-    ata_wait_busy(channel);
+    while (ata_read_status(channel) & ATA_SR_BSY)
+    {
+    }
+
+    if (inb(base + ATA_REG_LBA_MID) != 0 || inb(base + ATA_REG_LBA_HIGH) != 0)
+    {
+        return 0;
+    }
+
+    io_wait();
+    
+    while (1)
+    {
+        uint8_t status = ata_read_status(channel);
+
+        if (status & ATA_SR_ERR)
+        {
+            return 0;
+        }
+
+        if (status & ATA_SR_DRQ)
+        {
+            break;
+        }
+    }
+
+    for (int i = 0; i < 256; i++)
+    {
+        ata_identify_buffer[i] = ata_read_data(base);
+    }
+
+    if (ata_poll(channel) != 0)
+    {
+        return 0;
+    }
+    
     return 1;
 }
 
 void ata_init(void)
 {
+    memset(ata_devices, 0, sizeof(ata_devices));
+    memset(ata_identify_buffer, 0, sizeof(ata_identify_buffer));
 }
 
 void ata_detect_devices(void)
 {
+    uint8_t index = 0;
+
+    for (ata_channel_t channel = ATA_PRIMARY; channel <= ATA_SECONDARY; channel++)
+    {
+        for (ata_drive_t drive = ATA_MASTER; drive <= ATA_SLAVE; drive++)
+        {
+            ata_devices[index].channel = channel;
+            ata_devices[index].drive = drive;
+
+            if (ata_identify(channel, drive))
+            {
+                ata_devices[index].present = true;
+            
+                terminal_write("ATA: Device Detected\n");
+            }
+
+            else
+            {
+                ata_devices[index].present = false;
+            }
+
+            index++;
+        }
+    }
 }
 
-const ata_device_t *ata_get_devices(uint8_t index)
+const ata_device_t *ata_get_device(uint8_t index)
 {
     if (index >= 4)
     {
@@ -142,4 +189,42 @@ static void ata_select_drive(ata_channel_t channel, ata_drive_t drive)
     outb(io + ATA_REG_HDDEVSEL, 0xA0 | (drive << 4));
 
     ata_delay_400ns(channel);
+}
+
+static int ata_poll(ata_channel_t channel)
+{
+    uint8_t status;
+    ata_delay_400ns(channel);
+
+    do
+    {
+        status = ata_read_status(channel);
+    }
+    while (status & ATA_SR_BSY);
+
+    if (status & ATA_SR_ERR)
+    {
+        return -1;
+    }
+
+    if (status & ATA_SR_DF)
+    {
+        return -1;
+    }
+
+    if (!(status & ATA_SR_DRQ))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+static uint16_t ata_read_data(uint16_t base)
+{
+    uint16_t value;
+
+    __asm__ volatile ("inw %1, %0" : "=a"(value) : "Nd"(base));
+
+    return value;
 }

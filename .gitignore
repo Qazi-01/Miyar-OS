@@ -60,6 +60,7 @@ serial.log
 
 # Disk images
 *.img
+disk.img
 
 # IDE settings
 .vscode/

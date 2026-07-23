@@ -141,7 +141,7 @@ $(ISO): $(KERNEL_ELF)
 > grub-mkrescue -o $@ $(ISODIR)
 
 run: $(ISO)
-> qemu-system-i386 -cdrom $(ISO) -nographic
+> qemu-system-i386 -cdrom $(ISO) -drive file=disk.img,format=raw,if=ide -nographic
 
 clean:
 > rm -rf $(BUILDDIR) $(ISO)
