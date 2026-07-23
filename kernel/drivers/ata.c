@@ -36,6 +36,10 @@
 
 static ata_device_t ata_devices[4];
 
+static void ata_delay_400ns(ata_channel_t channel);
+static int ata_poll(ata_channel_t channel);
+static void ata_select_drive(ata_channel_t channel, ata_drive_t drive);
+
 static uint16_t ata_base_port(ata_channel_t channel)
 {
     if (channel == ATA_PRIMARY)
@@ -119,4 +123,23 @@ const ata_device_t *ata_get_devices(uint8_t index)
     }
 
     return &ata_devices[index];
+}
+
+static void ata_delay_400ns(ata_channel_t channel)
+{
+    uint16_t io = ata_base_port(channel);
+
+    inb(io + ATA_REG_STATUS);
+    inb(io + ATA_REG_STATUS);
+    inb(io + ATA_REG_STATUS);
+    inb(io + ATA_REG_STATUS);
+}
+
+static void ata_select_drive(ata_channel_t channel, ata_drive_t drive)
+{
+    uint16_t io = ata_base_port(channel);
+
+    outb(io + ATA_REG_HDDEVSEL, 0xA0 | (drive << 4));
+
+    ata_delay_400ns(channel);
 }

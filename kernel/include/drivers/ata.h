@@ -1,6 +1,8 @@
 #ifndef ATA_H
 #define ATA_H
 
+#define ATA_SECTOR_SIZE 512
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -23,10 +25,13 @@ typedef struct {
     char model[41];
 
     uint32_t sector_count;
+    uint32_t size_mb;
 } ata_device_t;
 
 void ata_init(void);
 void ata_detect_devices(void);
+int ata_read_sector(uint8_t drive_index, uint32_t lba, void *buffer);
+int ata_write_sector(uint8_t drive_index, uint32_t lba, const void *buffer);
 const ata_device_t *ata_get_device(uint8_t index);
 
 #endif
