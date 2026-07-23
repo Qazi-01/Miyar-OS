@@ -57,19 +57,6 @@ static uint8_t ata_read_status(ata_channel_t channel)
     return inb(ata_base_port(channel) + ATA_REG_STATUS);
 }
 
-static int ata_wait_busy(ata_channel_t channel)
-{
-    uint8_t status;
-
-    do
-    {
-        status = ata_read_status(channel);
-    }
-    while (status & ATA_SR_BSY);
-
-    return 0;
-}
-
 static int ata_identify(ata_channel_t channel, ata_drive_t drive)
 {
     uint16_t base = ata_base_port(channel);
@@ -84,7 +71,8 @@ static int ata_identify(ata_channel_t channel, ata_drive_t drive)
     outb(base + ATA_REG_LBA_HIGH, 0);
     outb(base + ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
 
-    if (inb(base + ATA_REG_STATUS) == 0)
+    uint8_t status = ata_read_status(channel);
+    if (status == 0)
     {
         return 0;
     }
@@ -99,7 +87,7 @@ static int ata_identify(ata_channel_t channel, ata_drive_t drive)
     }
 
     io_wait();
-    
+
     while (1)
     {
         uint8_t status = ata_read_status(channel);
@@ -118,11 +106,6 @@ static int ata_identify(ata_channel_t channel, ata_drive_t drive)
     for (int i = 0; i < 256; i++)
     {
         ata_identify_buffer[i] = ata_read_data(base);
-    }
-
-    if (ata_poll(channel) != 0)
-    {
-        return 0;
     }
     
     return 1;
