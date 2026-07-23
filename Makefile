@@ -127,7 +127,7 @@ $(BUILDDIR)/page_fault.o: $(KERNELDIR)/memory/page_fault.c | $(BUILDDIR)
 $(BUILDDIR)/ata.o: $(KERNELDIR)/drivers/ata.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/string.o: $(KERNELDIR)/common/string.c | $(BUILDDIR)
+$(BUILDDIR)/string.o: $(KERNELDIR)/lib/string.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)

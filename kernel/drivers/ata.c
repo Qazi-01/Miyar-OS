@@ -2,7 +2,7 @@
 #include "io.h"
 #include "terminal.h"
 #include "serial.h"
-#include "common/string.h"
+#include "lib/string.h"
 
 #include <stdint.h>
 #include <stdbool.h>
