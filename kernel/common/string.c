@@ -42,3 +42,26 @@ int memcmp(const void *a, const void *b, size_t count)
 
     return 0;
 }
+
+size_t strlen(const char *str)
+{
+    size_t length = 0;
+
+    while (str[length] != '\0')
+    {
+        length++;
+    }
+
+    return length;
+}
+
+int strcmp(const char *a, const char *b)
+{
+    while (*a && (*a == *b))
+    {
+        a++;
+        b++;
+    }
+
+    return (unsigned char)*a - (unsigned char)*b;
+}
