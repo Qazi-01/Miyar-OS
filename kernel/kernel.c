@@ -72,6 +72,24 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     ata_init();
     terminal_writeIn("Initializing ATA.................. [ OK ]");
     ata_detect_devices();
+    
+    uint8_t sector[512];
+
+    if (disk && disk->present)
+    {
+        if (ata_read_sector(disk, 0, sector) == 0)
+        {
+            terminal_write("First 16 bytes:\n");
+
+            for (int i = 0; i < 16; i++)
+            {
+                terminal_write_hex(sector[i]);
+                terminal_write(" ");
+            }
+            
+            terminal_write("\n");
+        }
+    }
 
     uint8_t write_buffer[512];
     uint8_t read_buffer[512];
@@ -104,24 +122,6 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
         else
         {
             terminal_write("Read failed\n");
-        }
-    }
-
-    uint8_t sector[512];
-
-    if (disk && disk->present)
-    {
-        if (ata_read_sector(disk, 0, sector) == 0)
-        {
-            terminal_write("First 16 bytes:\n");
-
-            for (int i = 0; i < 16; i++)
-            {
-                terminal_write_hex(sector[i]);
-                terminal_write(" ");
-            }
-            
-            terminal_write("\n");
         }
     }
 
