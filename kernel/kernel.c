@@ -15,10 +15,11 @@
 #include "drivers/vga.h"
 #include "drivers/ata.h"
 
+#define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
+
 __attribute__((used))
 void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
-    #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
-
+    
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
     {
         terminal_init();
@@ -72,6 +73,18 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     ata_init();
     terminal_writeIn("Initializing ATA.................. [ OK ]");
     ata_detect_devices();
+
+    const ata_device_t *disk = ata_get_device(0);
+
+    if (disk && disk->present)
+    {
+        terminal_writeIn("ATA Drive......................... [ OK ]");
+    }
+    
+    else
+    {
+        terminal_writeIn("ATA Drive......................... [FAIL]");
+    }
 
     __asm__ volatile("sti");
 
