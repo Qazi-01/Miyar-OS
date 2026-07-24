@@ -16,6 +16,7 @@
 #include "drivers/ata.h"
 #include "drivers/disk.h"
 #include "fs/fs.h"
+#include "fs/directory.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -99,6 +100,8 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     {
         terminal_writeIn("ATA Drive......................... [FAIL]");
     }
+
+    directory_read_root(disk);
 
     __asm__ volatile("sti");
 

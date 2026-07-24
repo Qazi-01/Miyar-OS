@@ -44,6 +44,20 @@ typedef struct
 
 #pragma pack(pop)
 
+typedef struct {
+    uint16_t bytes_per_sector;
+    uint8_t sectors_per_cluster;
+    uint16_t reserved_sector_count;
+    uint8_t fat_count;
+    uint32_t fat_size;
+    uint32_t root_cluster;
+    uint32_t first_data_sector;
+} fat32_filesystem_t;
+
 bool fat32_detect(const disk_t *disk);
+const fat32_filesystem_t *fat32_get_filesystem(void);
+uint32_t fat32_cluster_to_sector(uint32_t cluster);
+uint32_t fat32_read_fat_entry(const disk_t *disk, uint32_t cluster);
+uint32_t fat32_next_cluster(const disk_t *disk, uint32_t cluster);
 
 #endif

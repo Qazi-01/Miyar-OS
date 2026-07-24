@@ -47,7 +47,8 @@ $(BUILDDIR)/ata.o \
 $(BUILDDIR)/string.o \
 $(BUILDDIR)/disk.o \
 $(BUILDDIR)/fs.o \
-$(BUILDDIR)/fat32.o
+$(BUILDDIR)/fat32.o \
+$(BUILDDIR)/directory.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -142,6 +143,9 @@ $(BUILDDIR)/fs.o: $(KERNELDIR)/fs/fs.c | $(BUILDDIR)
 $(BUILDDIR)/fat32.o: $(KERNELDIR)/fs/fat32.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILDDIR)/directory.o: $(KERNELDIR)/fs/directory.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 
@@ -153,7 +157,12 @@ $(ISO): $(KERNEL_ELF)
 > grub-mkrescue -o $@ $(ISODIR)
 
 run: $(ISO)
-> qemu-system-i386 -cdrom $(ISO) -drive file=disk.img,format=raw,if=ide -nographic
+> qemu-system-i386 \
+    -cdrom miyaros.iso \
+    -drive file=disk.img,format=raw,if=ide,index=0 \
+    -boot d \
+    -m 256M \
+    -display curses
 
 clean:
 > rm -rf $(BUILDDIR) $(ISO)

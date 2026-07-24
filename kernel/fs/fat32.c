@@ -1,6 +1,8 @@
 #include "fs/fat32.h"
 #include "lib/string.h"
 
+static fat32_filesystem_t fat32_fs;
+
 bool fat32_detect(const disk_t *disk)
 {
     if (disk == 0)
@@ -27,5 +29,52 @@ bool fat32_detect(const disk_t *disk)
         return false;
     }
     
+    fat32_fs.bytes_per_sector = boot->bytes_per_sector;
+    fat32_fs.sectors_per_cluster = boot->sectors_per_cluster;
+    fat32_fs.reserved_sector_count = boot->reserved_sector_count;
+    fat32_fs.fat_count = boot->fat_count;
+    fat32_fs.fat_size = boot->fat_size32;
+    fat32_fs.root_cluster = boot->root_cluster;
+    fat32_fs.first_data_sector = boot->reserved_sector_count + (boot->fat_count * boot->fat_size32);
+
     return true;
+}
+
+const fat32_filesystem_t *fat32_get_filesystem(void)
+{
+    return &fat32_fs;
+}
+
+uint32_t fat32_cluster_to_sector(uint32_t cluster)
+{
+    return fat32_fs.first_data_sector + ((cluster - 2) * fat32_fs.sectors_per_cluster);
+}
+
+uint32_t fat32_read_fat_entry(const disk_t *disk, uint32_t cluster)
+{
+    uint8_t sector[512];
+
+    uint32_t fat_sector = fat32_fs.reserved_sector_count + ((cluster * 4) / fat32_fs.bytes_per_sector);
+
+    if (disk_read(disk, fat_sector, sector) != 0)
+    {
+        return 0xFFFFFFFF;
+    }
+
+    uint32_t offset = (cluster * 4) % fat32_fs.bytes_per_sector;
+    uint32_t value = *(uint32_t *)(sector + offset);
+
+    return value & 0xFFFFFFFF;
+}
+
+uint32_t fat32_next_cluster(const disk_t *disk, uint32_t cluster)
+{
+    uint32_t next = fat32_read_fat_entry(disk, cluster);
+
+    if (next >= 0x0FFFFFF8)
+    {
+        return 0xFFFFFFFF;
+    }
+
+    return next;
 }
