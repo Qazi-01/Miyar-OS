@@ -43,7 +43,6 @@ static int ata_poll(ata_channel_t channel);
 static void ata_select_drive(ata_channel_t channel, ata_drive_t drive);
 static uint16_t ata_read_data(uint16_t base);
 static void ata_parse_identify(ata_device_t *device);
-static void ata_swap_model(char *model);
 
 static uint16_t ata_base_port(ata_channel_t channel)
 {
@@ -227,18 +226,6 @@ static int ata_wait_ready(ata_channel_t channel)
     }
 
     return 0;
-}
-
-static void ata_swap_model(char *model)
-{
-    for (int i = 0; i < 40; i += 2)
-    {
-        char temp = model[i];
-        model[i] = model[i + 1];
-        model[i + 1] = temp;
-    }
-
-    model[40] = '\0';
 }
 
 static void ata_parse_identify(ata_device_t *device)

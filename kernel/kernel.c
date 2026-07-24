@@ -14,6 +14,7 @@
 #include "terminal.h"
 #include "drivers/vga.h"
 #include "drivers/ata.h"
+#include "drivers/disk.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -73,10 +74,11 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     ata_init();
     terminal_writeIn("Initializing ATA.................. [ OK ]");
     ata_detect_devices();
+    disk_init();
 
-    const ata_device_t *disk = ata_get_device(0);
+    const disk_t *disk = disk_get(0);
 
-    if (disk && disk->present)
+    if (disk)
     {
         terminal_writeIn("ATA Drive......................... [ OK ]");
     }
