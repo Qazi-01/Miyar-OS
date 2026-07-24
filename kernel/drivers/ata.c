@@ -135,17 +135,6 @@ void ata_detect_devices(void)
             {
                 ata_devices[index].present = true;
                 ata_parse_identify(&ata_devices[index]);
-            
-                terminal_write("ATA: Device Detected\n");
-                terminal_write("Model: ");
-                terminal_write(ata_devices[index].model);
-                terminal_write("\n");
-                terminal_write("Sectors: ");
-                terminal_write_hex(ata_devices[index].sector_count);
-                terminal_write("\n");
-                terminal_write("Capacity (MB): ");
-                terminal_write_hex(ata_devices[index].sector_count / 2048);
-                terminal_write("\n");
             }
 
             else
