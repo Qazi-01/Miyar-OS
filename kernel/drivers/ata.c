@@ -27,6 +27,7 @@
 #define ATA_CMD_IDENTIFY           0xEC
 #define ATA_CMD_READ               0x20
 #define ATA_CMD_WRITE              0x30
+#define ATA_CMD_CACHE_FLUSH        0xE7
 
 #define ATA_SR_ERR                 0x01
 #define ATA_SR_DRQ                 0x08
@@ -215,6 +216,30 @@ static int ata_poll(ata_channel_t channel)
     return 0;
 }
 
+static int ata_wait_ready(ata_channel_t channel)
+{
+    uint8_t status;
+    ata_delay_400ns(channel);
+
+    do
+    {
+        status = ata_read_status(channel);
+    }
+    while (status & ATA_SR_BSY);
+
+    if (status & ATA_SR_ERR)
+    {
+        return -1;
+    }
+
+    if (status & ATA_SR_DF)
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
 static void ata_swap_model(char *model)
 {
     for (int i = 0; i < 40; i += 2)
@@ -345,7 +370,12 @@ int ata_write_sector(const ata_device_t *device, uint32_t lba, const uint8_t *bu
         outw(base + ATA_REG_DATA, words[i]);
     }
 
-    ata_delay_400ns(device->channel);
+    outb(base + ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH);
 
-    return ata_poll(device->channel);
+    if (ata_wait_ready(device->channel) != 0)
+    {
+        return -1;
+    }
+
+    return 0;
 }

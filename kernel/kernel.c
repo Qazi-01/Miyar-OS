@@ -75,6 +75,8 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     
     uint8_t sector[512];
 
+    const ata_device_t *disk = ata_get_device(0);
+
     if (disk && disk->present)
     {
         if (ata_read_sector(disk, 0, sector) == 0)
@@ -100,8 +102,6 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
         read_buffer[i] = 0;
     }
 
-    const ata_device_t *disk = ata_get_device(0);
-
     if (disk && disk->present)
     {
         if (ata_write_sector(disk, 100, write_buffer) == 0)
@@ -117,6 +117,26 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
         if (ata_read_sector(disk, 100, read_buffer) == 0)
         {
             terminal_write("Read successful\n");
+
+            bool match = true;
+
+            for (int i = 0; i < 512; i++)
+            {
+                if (write_buffer[i] != read_buffer[i])
+                {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match)
+            {
+                terminal_write("ATA: Read/Write verified\n");
+            }
+            else
+            {
+                terminal_write("ATA: verification failed\n");
+            }
         }
 
         else
