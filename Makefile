@@ -45,7 +45,9 @@ $(BUILDDIR)/vmm.o \
 $(BUILDDIR)/page_fault.o \
 $(BUILDDIR)/ata.o \
 $(BUILDDIR)/string.o \
-$(BUILDDIR)/disk.o
+$(BUILDDIR)/disk.o \
+$(BUILDDIR)/fs.o \
+$(BUILDDIR)/fat32.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -132,6 +134,12 @@ $(BUILDDIR)/string.o: $(KERNELDIR)/lib/string.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/disk.o: $(KERNELDIR)/drivers/disk.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/fs.o: $(KERNELDIR)/fs/fs.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/fat32.o: $(KERNELDIR)/fs/fat32.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)
