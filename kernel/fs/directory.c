@@ -2,7 +2,7 @@
 #include "fs/fat32.h"
 #include "terminal.h"
 
-static void directory_format_name(const fat32_directory_entry_t *entry, char *output)
+bool directory_get_name(const fat32_directory_entry_t *entry, char *output)
 {
     int pos = 0;
 
@@ -32,6 +32,7 @@ static void directory_format_name(const fat32_directory_entry_t *entry, char *ou
     }
 
     output[pos] = '\0';
+    return true;
 }
 
 bool directory_read_root(const disk_t *disk)
@@ -48,7 +49,7 @@ bool directory_read_root(const disk_t *disk)
     {
         char filename[13];
 
-        directory_format_name(&entry, filename);
+        directory_get_name(&entry, filename);
 
         terminal_write("Entry: ");
         terminal_write(filename);
@@ -70,6 +71,7 @@ bool directory_open_root(const disk_t *disk, directory_t *dir)
     const fat32_filesystem_t *fs = fat32_get_filesystem();
 
     dir->cluster = fs->root_cluster;
+    dir->current_cluster = fs->root_cluster;
     dir->index = 0;
 
     uint32_t sector = fat32_cluster_to_sector(dir->cluster);
@@ -108,5 +110,22 @@ bool directory_next(directory_t *dir, fat32_directory_entry_t *entry)
         return true;
     }
     
-    return false;
+    uint32_t next = fat32_next_cluster(dir->disk, dir->current_cluster);
+    
+    if (next == 0)
+    {
+        return false;
+    }
+
+    dir->current_cluster = next;
+    dir->index = 0;
+
+    uint32_t sector = fat32_cluster_to_sector(next);
+
+    if (disk_read(dir->disk, sector, dir->sector) != 0)
+    {
+        return false;
+    }
+
+    return directory_next(dir, entry);
 }

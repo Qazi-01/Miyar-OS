@@ -17,6 +17,8 @@
 #include "drivers/disk.h"
 #include "fs/fs.h"
 #include "fs/directory.h"
+#include "fs/file.h"
+#include "lib/string.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -102,6 +104,41 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     }
 
     directory_read_root(disk);
+
+    directory_t dir;
+    fat32_directory_entry_t entry;
+
+    if (directory_open_root(disk, &dir))
+    {
+        while (directory_next(&dir, &entry))
+        {
+            char filename[13];
+
+            directory_get_name(&entry, filename);
+
+            if (strcmp(filename, "README.TXT") == 0)
+            {
+                file_t file;
+
+                if (file_open(disk, &entry, &file))
+                {
+                    char buffer[513];
+                    int bytes = file_read(&file, buffer, 512);
+
+                    if (bytes > 0)
+                    {
+                        buffer[bytes] = '\0';
+
+                        terminal_write("\nREADME.TXT contents:\n");
+                        terminal_write(buffer);
+                        terminal_write("\n");
+                    }
+                }
+
+                break;
+            }
+        }
+    }
 
     __asm__ volatile("sti");
 

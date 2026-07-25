@@ -25,11 +25,15 @@ typedef struct {
 
 typedef struct {
     const disk_t *disk;
+
     uint32_t cluster;
+    uint32_t current_cluster;
     uint8_t sector[512];
+
     int index;
 } directory_t;
 
+bool directory_get_name(const fat32_directory_entry_t *entry, char *output);
 bool directory_read_root(const disk_t *disk);
 bool directory_open_root(const disk_t *disk, directory_t *dir);
 bool directory_next(directory_t *dir, fat32_directory_entry_t *entry);
