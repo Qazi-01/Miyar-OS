@@ -46,3 +46,49 @@ int file_read(file_t *file, void *buffer, uint32_t size)
 
     return bytes;
 }
+
+bool file_create(const disk_t *disk, const char *name)
+{
+    (void)disk;
+    (void)name;
+    return false;
+}
+
+bool file_delete(const disk_t *disk, const char *name)
+{
+    (void)disk;
+    (void)name;
+    return false;
+}
+
+int file_write(file_t *file, const void *buffer, uint32_t size)
+{
+    (void)file;
+    (void)buffer;
+    (void)size;
+    return -1;
+}
+
+int file_append(file_t *file, const void *buffer, uint32_t size)
+{
+    (void)file;
+    (void)buffer;
+    (void)size;
+    return -1;
+}
+
+bool file_copy(const disk_t *disk, const char *source, const char *destination)
+{
+    (void)disk;
+    (void)source;
+    (void)destination;
+    return false;
+}
+
+bool file_move(const disk_t *disk, const char *old_name, const char *new_name)
+{
+    (void)disk;
+    (void)old_name;
+    (void)new_name;
+    return false;
+}

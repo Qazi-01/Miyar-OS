@@ -2,6 +2,11 @@
 #include "drivers/timer.h"
 #include "terminal.h"
 #include "drivers/io.h"
+#include "drivers/disk.h"
+#include "fs/directory.h"
+#include "fs/file.h"
+#include "fs/path.h"
+#include "lib/string.h"
 
 static void trigger_divide_error(void)
 {
@@ -129,6 +134,8 @@ static void cmd_help(const char *args)
     terminal_writeIn("  help            Shows this help message");
     terminal_writeIn("  about           About MiyarOS");
     terminal_writeIn("  echo <msg>      Print text");
+    terminal_writeIn("  ls              List files in the current directory");
+    terminal_writeIn("  cat <file>      Display the contents of a file");
     terminal_writeIn("  uptime          Shows system uptime");
     terminal_writeIn("  clear           Clear the screen");
     terminal_writeIn("  reboot          Restart the system");
@@ -162,6 +169,83 @@ static void cmd_clear(const char *args)
 {
     (void)args;
     terminal_clear();
+}
+
+static void cmd_ls(const char *args)
+{
+    (void)args;
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    directory_t dir;
+    fat32_directory_entry_t entry;
+
+    if (!directory_open_root(disk, &dir))
+    {
+        terminal_writeIn("Unable to open root directory.");
+        return;
+    }
+
+    while (directory_next(&dir, &entry))
+    {
+        char filename[13];
+        directory_get_name(&entry, filename);
+        terminal_writeIn(filename);
+    }
+}
+
+static void cmd_cat(const char *args)
+{
+    if (*args == '\0')
+    {
+        terminal_writeIn("Usage: cat <file>");
+        return;
+    }
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    fat32_directory_entry_t entry;
+
+    if (!path_resolve_root(disk, args, &entry))
+    {
+        terminal_writeIn("File not found.");
+        return;
+    }
+
+    file_t file;
+
+    if (!file_open(disk, &entry, &file))
+    {
+        terminal_writeIn("Unable to open file.");
+        return;
+    }
+
+    char buffer[513];
+
+    int bytes = file_read(&file, buffer, sizeof(buffer) - 1);
+
+    if (bytes < 0)
+    {
+        terminal_writeIn("Read failed.");
+        return;
+    }
+
+    buffer[bytes] = '\0';
+
+    terminal_writeIn("");
+    terminal_write(buffer);
+    terminal_writeIn("");
 }
 
 static void cmd_uptime(const char *args)
@@ -204,6 +288,8 @@ static const struct shell_command command_table[] =
         {"about", cmd_about},
         {"echo", cmd_echo},
         {"clear", cmd_clear},
+        {"ls", cmd_ls},
+        {"cat", cmd_cat},
         {"exception", cmd_exception},
         {"pagefault", cmd_pagefault},
         {"reboot", cmd_reboot},
