@@ -62,8 +62,11 @@ uint32_t fat32_cluster_to_sector(uint32_t cluster);
 uint32_t fat32_read_fat_entry(const disk_t *disk, uint32_t cluster);
 bool fat32_write_fat_entry(const disk_t *disk, uint32_t cluster, uint32_t value);
 uint32_t fat32_next_cluster(const disk_t *disk, uint32_t cluster);
-uint32_t fat32_find_free_cluster(void);
-bool fat32_allocate_cluster(uint32_t cluster);
+uint32_t fat32_find_free_cluster(const disk_t *disk);
+uint32_t fat32_allocate_cluster(const disk_t *disk);
+uint32_t fat32_allocate_cluster_chain(const disk_t *disk, uint32_t cluster_count);
 bool fat32_free_cluster(uint32_t cluster);
+bool fat32_free_cluster_chain(const disk_t *disk, uint32_t first_cluster);
+bool fat32_zero_cluster(const disk_t *disk, uint32_t cluster);
 
 #endif
