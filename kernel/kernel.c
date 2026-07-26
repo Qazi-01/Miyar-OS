@@ -19,6 +19,8 @@
 #include "fs/directory.h"
 #include "fs/file.h"
 #include "lib/string.h"
+#include "fs/path.h"
+#include "fs/fat32.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -79,19 +81,8 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     terminal_writeIn("Initializing ATA.................. [ OK ]");
     ata_detect_devices();
     disk_init();
-    fs_init();
 
     const disk_t *disk = disk_get(0);
-
-    if (fs_mount(disk))
-    {
-        terminal_writeIn("Mounting filesystem............... [ OK ]");
-    }
-
-    else
-    {
-        terminal_writeIn("Mounting filesystem............... [FAIL]");
-    }
 
     if (disk)
     {
@@ -103,41 +94,16 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
         terminal_writeIn("ATA Drive......................... [FAIL]");
     }
 
-    directory_read_root(disk);
+    fs_init();
 
-    directory_t dir;
-    fat32_directory_entry_t entry;
-
-    if (directory_open_root(disk, &dir))
+    if (fs_mount(disk))
     {
-        while (directory_next(&dir, &entry))
-        {
-            char filename[13];
+        terminal_writeIn("Mounting filesystem............... [ OK ]");
+    }
 
-            directory_get_name(&entry, filename);
-
-            if (strcmp(filename, "README.TXT") == 0)
-            {
-                file_t file;
-
-                if (file_open(disk, &entry, &file))
-                {
-                    char buffer[513];
-                    int bytes = file_read(&file, buffer, 512);
-
-                    if (bytes > 0)
-                    {
-                        buffer[bytes] = '\0';
-
-                        terminal_write("\nREADME.TXT contents:\n");
-                        terminal_write(buffer);
-                        terminal_write("\n");
-                    }
-                }
-
-                break;
-            }
-        }
+    else
+    {
+        terminal_writeIn("Mounting filesystem............... [FAIL]");
     }
 
     __asm__ volatile("sti");

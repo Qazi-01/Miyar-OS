@@ -129,3 +129,39 @@ bool directory_next(directory_t *dir, fat32_directory_entry_t *entry)
 
     return directory_next(dir, entry);
 }
+
+bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *entry)
+{
+    if (disk == 0 || entry == 0)
+    {
+        return false;
+    }
+
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+    uint32_t sector = fat32_cluster_to_sector(fs->root_cluster);
+    uint8_t buffer[512];
+
+    if (disk_read(disk, sector, buffer) != 0)
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t *entries = (fat32_directory_entry_t *)buffer;
+
+    for (int i = 0; i < 16; i++)
+    {
+        if ((uint8_t)entries[i].name[0] == 0x00 || (uint8_t)entries[i].name[0] == 0xE5)
+        {
+            entries[i] = *entry;
+
+            if (disk_write(disk, sector, buffer) != 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}

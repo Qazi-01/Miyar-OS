@@ -49,7 +49,8 @@ $(BUILDDIR)/disk.o \
 $(BUILDDIR)/fs.o \
 $(BUILDDIR)/fat32.o \
 $(BUILDDIR)/directory.o \
-$(BUILDDIR)/file.o
+$(BUILDDIR)/file.o \
+$(BUILDDIR)/path.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -148,6 +149,9 @@ $(BUILDDIR)/directory.o: $(KERNELDIR)/fs/directory.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/file.o: $(KERNELDIR)/fs/file.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/path.o: $(KERNELDIR)/fs/path.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)
