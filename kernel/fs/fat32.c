@@ -2,11 +2,6 @@
 #include "memory/heap.h"
 #include "lib/string.h"
 
-#define FAT32_INVALID_CLUSTER 0xFFFFFFFF
-#define FAT32_CLUSTER_FREE    0x00000000
-#define FAT32_CLUSTER_EOC     0x0FFFFFFF
-#define FAT32_CLUSTER_LAST    0x0FFFFFF8
-
 static fat32_filesystem_t fat32_fs;
 
 bool fat32_detect(const disk_t *disk)

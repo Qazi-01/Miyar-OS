@@ -2,11 +2,22 @@
 #define DIRECTORY_H
 
 #include <stdint.h>
+#include <stdbool.h>
+
 #include "drivers/disk.h"
+
+#define FAT32_ATTR_READ_ONLY  0x01
+#define FAT32_ATTR_HIDDEN     0x02
+#define FAT32_ATTR_SYSTEM     0x04
+#define FAT32_ATTR_VOLUME_ID  0x08
+#define FAT32_ATTR_DIRECTORY  0x10
+#define FAT32_ATTR_ARCHIVE    0x20
+#define FAT32_ATTR_LFN        0x0F
 
 #pragma pack(push, 1)
 
-typedef struct {
+typedef struct
+{
     char name[11];
     uint8_t attributes;
     uint8_t reserved;
@@ -23,14 +34,17 @@ typedef struct {
 
 #pragma pack(pop)
 
-typedef struct {
+typedef struct
+{
     const disk_t *disk;
 
     uint32_t cluster;
     uint32_t current_cluster;
+
     uint8_t sector[512];
 
-    int index;
+    uint32_t sector_index;
+    uint32_t entry_index;
 } directory_t;
 
 bool directory_get_name(const fat32_directory_entry_t *entry, char *output);

@@ -2,6 +2,9 @@
 #include "fs/fat32.h"
 #include "terminal.h"
 
+#define DIRECTORY_ENTRIES_PER_SECTOR (512 / sizeof(fat32_directory_entry_t))
+
+
 bool directory_get_name(const fat32_directory_entry_t *entry, char *output)
 {
     int pos = 0;
@@ -72,7 +75,8 @@ bool directory_open_root(const disk_t *disk, directory_t *dir)
 
     dir->cluster = fs->root_cluster;
     dir->current_cluster = fs->root_cluster;
-    dir->index = 0;
+    dir->sector_index = 0;
+    dir->entry_index = 0;
 
     uint32_t sector = fat32_cluster_to_sector(dir->cluster);
 
@@ -81,10 +85,10 @@ bool directory_open_root(const disk_t *disk, directory_t *dir)
 
 bool directory_next(directory_t *dir, fat32_directory_entry_t *entry)
 {
-    while (dir->index < 16)
+    while (dir->entry_index < DIRECTORY_ENTRIES_PER_SECTOR)
     {
         fat32_directory_entry_t *entries = (fat32_directory_entry_t *)dir->sector;
-        fat32_directory_entry_t *current = &entries[dir->index++];
+        fat32_directory_entry_t *current = &entries[dir->entry_index++];
 
         if ((uint8_t)current->name[0] == 0x00)
         {
@@ -112,13 +116,14 @@ bool directory_next(directory_t *dir, fat32_directory_entry_t *entry)
     
     uint32_t next = fat32_next_cluster(dir->disk, dir->current_cluster);
     
-    if (next == 0)
+    if (next == FAT32_INVALID_CLUSTER)
     {
         return false;
     }
 
     dir->current_cluster = next;
-    dir->index = 0;
+    dir->sector_index = 0;
+    dir->entry_index = 0;
 
     uint32_t sector = fat32_cluster_to_sector(next);
 
@@ -148,7 +153,7 @@ bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *e
 
     fat32_directory_entry_t *entries = (fat32_directory_entry_t *)buffer;
 
-    for (int i = 0; i < 16; i++)
+    for (uint32_t i = 0; i < DIRECTORY_ENTRIES_PER_SECTOR; i++)
     {
         if ((uint8_t)entries[i].name[0] == 0x00 || (uint8_t)entries[i].name[0] == 0xE5)
         {

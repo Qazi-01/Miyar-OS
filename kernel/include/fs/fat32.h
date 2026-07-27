@@ -1,6 +1,11 @@
 #ifndef FAT32_H
 #define FAT32_H
 
+#define FAT32_INVALID_CLUSTER 0xFFFFFFFF
+#define FAT32_CLUSTER_FREE    0x00000000
+#define FAT32_CLUSTER_EOC     0x0FFFFFFF
+#define FAT32_CLUSTER_LAST    0x0FFFFFF8
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "drivers/disk.h"
