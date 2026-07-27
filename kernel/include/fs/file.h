@@ -11,6 +11,7 @@ typedef struct {
 
     uint32_t first_cluster;
     uint32_t current_cluster;
+    uint32_t current_cluster_index;
     uint32_t size;
     uint32_t position;
 } file_t;

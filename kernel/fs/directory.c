@@ -1,9 +1,7 @@
 #include "fs/directory.h"
 #include "fs/fat32.h"
 #include "terminal.h"
-
-#define DIRECTORY_ENTRIES_PER_SECTOR (512 / sizeof(fat32_directory_entry_t))
-
+#include "lib/string.h"
 
 bool directory_get_name(const fat32_directory_entry_t *entry, char *output)
 {
@@ -83,56 +81,81 @@ bool directory_open_root(const disk_t *disk, directory_t *dir)
     return disk_read(disk, sector, dir->sector) == 0;
 }
 
+#define DIRECTORY_ENTRIES_PER_SECTOR (512 / sizeof(fat32_directory_entry_t))
+
 bool directory_next(directory_t *dir, fat32_directory_entry_t *entry)
 {
-    while (dir->entry_index < DIRECTORY_ENTRIES_PER_SECTOR)
-    {
-        fat32_directory_entry_t *entries = (fat32_directory_entry_t *)dir->sector;
-        fat32_directory_entry_t *current = &entries[dir->entry_index++];
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
 
-        if ((uint8_t)current->name[0] == 0x00)
+    while (1)
+    {
+        while (dir->entry_index < DIRECTORY_ENTRIES_PER_SECTOR)
+        {
+            fat32_directory_entry_t *entries =
+                (fat32_directory_entry_t *)dir->sector;
+
+            fat32_directory_entry_t *current =
+                &entries[dir->entry_index++];
+
+            if ((uint8_t)current->name[0] == 0x00)
+            {
+                return false;
+            }
+
+            if ((uint8_t)current->name[0] == 0xE5)
+            {
+                continue;
+            }
+
+            if (current->attributes == FAT32_ATTR_LFN)
+            {
+                continue;
+            }
+
+            if (current->attributes & FAT32_ATTR_VOLUME_ID)
+            {
+                continue;
+            }
+
+            *entry = *current;
+            return true;
+        }
+
+        dir->entry_index = 0;
+        dir->sector_index++;
+
+        if (dir->sector_index < fs->sectors_per_cluster)
+        {
+            uint32_t sector =
+                fat32_cluster_to_sector(dir->current_cluster) +
+                dir->sector_index;
+
+            if (disk_read(dir->disk, sector, dir->sector) != 0)
+            {
+                return false;
+            }
+
+            continue;
+        }
+
+        uint32_t next = fat32_next_cluster(dir->disk, dir->current_cluster);
+
+        if (next == FAT32_INVALID_CLUSTER)
         {
             return false;
         }
 
-        if ((uint8_t)current->name[0] == 0xE5)
+        dir->current_cluster = next;
+        dir->sector_index = 0;
+        dir->entry_index = 0;
+
+        uint32_t sector = fat32_cluster_to_sector(next);
+
+        if (disk_read(dir->disk, sector, dir->sector) != 0)
         {
-            continue;
+            return false;
         }
-
-        if (current->attributes == 0x0F)
-        {
-            continue;
-        }
-
-        if (current->attributes & 0x08)
-        {
-            continue;
-        }
-
-        *entry = *current;
-        return true;
     }
-    
-    uint32_t next = fat32_next_cluster(dir->disk, dir->current_cluster);
-    
-    if (next == FAT32_INVALID_CLUSTER)
-    {
-        return false;
-    }
-
-    dir->current_cluster = next;
-    dir->sector_index = 0;
-    dir->entry_index = 0;
-
-    uint32_t sector = fat32_cluster_to_sector(next);
-
-    if (disk_read(dir->disk, sector, dir->sector) != 0)
-    {
-        return false;
-    }
-
-    return directory_next(dir, entry);
 }
 
 bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *entry)
@@ -164,6 +187,36 @@ bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *e
                 return false;
             }
 
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_t *entry)
+{
+    if (disk == 0 || name == 0 || entry == 0)
+    {
+        return false;
+    }
+
+    directory_t dir;
+    fat32_directory_entry_t current;
+    char filename[13];
+
+    if (!directory_open_root(disk, &dir))
+    {
+        return false;
+    }
+
+    while (directory_next(&dir, &current))
+    {
+        directory_get_name(&current, filename);
+
+        if (strcmp(filename, name) == 0)
+        {
+            *entry = current;
             return true;
         }
     }

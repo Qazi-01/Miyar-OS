@@ -73,5 +73,6 @@ uint32_t fat32_allocate_cluster_chain(const disk_t *disk, uint32_t cluster_count
 bool fat32_free_cluster(uint32_t cluster);
 bool fat32_free_cluster_chain(const disk_t *disk, uint32_t first_cluster);
 bool fat32_zero_cluster(const disk_t *disk, uint32_t cluster);
+bool fat32_read_cluster(const disk_t *disk, uint32_t cluster, void *buffer);
 
 #endif

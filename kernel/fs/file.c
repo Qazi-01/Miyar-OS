@@ -26,25 +26,58 @@ int file_read(file_t *file, void *buffer, uint32_t size)
         return -1;
     }
 
-    uint8_t sector[512];
-    uint32_t sector_number = fat32_cluster_to_sector(file->current_cluster);
-
-    if (disk_read(file->disk, sector_number, sector) != 0)
+    if (file->position >= file->size)
     {
-        return -1;
+        return 0;
     }
 
-    uint32_t bytes = size;
+    uint32_t remaining = file->size - file->position;
 
-    if (bytes > file->size)
+    if (size > remaining)
     {
-        bytes = file->size;
+        size = remaining;
     }
 
-    memcpy(buffer, sector, bytes);
-    file->position += bytes;
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+    uint32_t cluster_size = fs->bytes_per_sector * fs->sectors_per_cluster;
+    uint8_t cluster_buffer[4096];
+    uint8_t *destination = (uint8_t *)buffer;
+    uint32_t bytes_read = 0;
 
-    return bytes;
+    while (bytes_read < size)
+    {
+        if (!fat32_read_cluster(file->disk, file->current_cluster, cluster_buffer))
+        {
+            return (bytes_read > 0) ? (int)bytes_read : -1;
+        }
+
+        uint32_t offset = file->position % cluster_size;
+        uint32_t available = cluster_size - offset;
+        uint32_t to_copy = size - bytes_read;
+
+        if (to_copy > available)
+        {
+            to_copy = available;
+        }
+
+        memcpy(destination + bytes_read, cluster_buffer + offset, to_copy);
+        bytes_read += to_copy;
+        file->position += to_copy;
+
+        if ((file->position % cluster_size) == 0 && bytes_read < size)
+        {
+            uint32_t next = fat32_next_cluster(file->disk, file->current_cluster);
+
+            if (next >= FAT32_CLUSTER_LAST)
+            {
+                break;
+            }
+
+            file->current_cluster = next;
+        }
+    }
+
+    return (int)bytes_read;
 }
 
 bool file_create(const disk_t *disk, const char *name)

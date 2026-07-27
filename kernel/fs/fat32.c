@@ -320,3 +320,20 @@ bool fat32_zero_cluster(const disk_t *disk, uint32_t cluster)
 
     return true;
 }
+
+bool fat32_read_cluster(const disk_t *disk, uint32_t cluster, void *buffer)
+{
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+    uint32_t sector = fat32_cluster_to_sector(cluster);
+    uint8_t *data = (uint8_t *)buffer;
+    
+    for (uint32_t i = 0; i < fs->sectors_per_cluster; i++)
+    {
+        if (disk_read(disk, sector + i, data + i * fs->bytes_per_sector) != 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
