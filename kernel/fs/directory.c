@@ -277,3 +277,98 @@ void directory_set_name(fat32_directory_entry_t *entry, const char *name)
         entry->name[i++] = c;
     }
 }
+
+static bool directory_write_entry(const disk_t *disk, uint32_t cluster, const fat32_directory_entry_t *entry)
+{
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+    uint8_t sector[512];
+    uint32_t first_sector = fat32_cluster_to_sector(cluster);
+
+    for (uint32_t s = 0; s < fs->sectors_per_cluster; s++)
+    {
+        if (disk_read(disk, first_sector + s, sector) != 0)
+        {
+            return false;
+        }
+
+        fat32_directory_entry_t *entries = (fat32_directory_entry_t *)sector;
+
+        for (uint32_t i = 0; i < DIRECTORY_ENTRIES_PER_SECTOR; i++)
+        {
+            uint8_t first = (uint8_t)entries[i].name[0];
+
+            if (first == 0x00 || first == 0xE5)
+            {
+                entries[i] = *entry;
+
+                return disk_write(disk, first_sector + s, sector) == 0;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool directory_create(const disk_t *disk, const char *name)
+{
+    if (disk == 0 || name == 0)
+    {
+        return false;
+    }
+
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+
+    fat32_directory_entry_t existing;
+
+    if (directory_find(disk, name, &existing))
+    {
+        return false;
+    }
+
+    uint32_t cluster = fat32_allocate_cluster(disk);
+
+    if (cluster == 0)
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t entry;
+    memset(&entry, 0, sizeof(entry));
+    directory_set_name(&entry, name);
+
+    entry.attributes = FAT32_ATTR_DIRECTORY;
+    entry.first_cluster_high = cluster >> 16;
+    entry.first_cluster_low = cluster & 0xFFFF;
+
+    if (!directory_create_entry(disk, &entry))
+    {
+        fat32_free_cluster_chain(disk, cluster);
+        return false;
+    }
+
+    fat32_directory_entry_t dot;
+    memset(&dot, 0, sizeof(dot));
+    memcpy(dot.name, ".          ", 11);
+
+    dot.attributes = FAT32_ATTR_DIRECTORY;
+
+    fat32_directory_entry_t dotdot;
+    memset(&dotdot, 0, sizeof(dotdot));
+    memcpy(dotdot.name, "..         ", 11);
+
+    dotdot.attributes = FAT32_ATTR_DIRECTORY;
+    dotdot.first_cluster_high = fs->root_cluster >> 16;
+    dotdot.first_cluster_low = fs->root_cluster & 0xFFFF;
+
+    if (!directory_write_entry(disk, cluster, &dot))
+    {
+        return false;
+    }
+
+    if (!directory_write_entry(disk, cluster, &dotdot))
+    {
+        return false;
+    }
+
+    return true;
+}
