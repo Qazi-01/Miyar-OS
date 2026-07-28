@@ -137,7 +137,9 @@ static void cmd_help(const char *args)
     terminal_writeIn("  ls              List files in the current directory");
     terminal_writeIn("  touch <file>    Create a new file");
     terminal_writeIn("  cat <file>      Display the contents of a file");
+    terminal_writeIn("  rm <file>       Delete a file");
     terminal_writeIn("  mkdir <dir>     Create a new directory");
+    terminal_writeIn("  rmdir <dir>     Remove an empty directory");
     terminal_writeIn("  uptime          Shows system uptime");
     terminal_writeIn("  clear           Clear the screen");
     terminal_writeIn("  reboot          Restart the system");
@@ -296,6 +298,52 @@ static void cmd_mkdir(const char *args)
     }
 }
 
+static void cmd_rm(const char *args)
+{
+    if (*args == '\0')
+    {
+        terminal_writeIn("Usage: rm <file>");
+        return;
+    }
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    if (!file_delete(disk, args))
+    {
+        terminal_writeIn("Unable to delete file.");
+        return;
+    }
+}
+
+static void cmd_rmdir(const char *args)
+{
+    if (*args == '\0')
+    {
+        terminal_writeIn("Usage: rmdir <directory>");
+        return;
+    }
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    if (!directory_remove(disk, args))
+    {
+        terminal_writeIn("Unable to delete directory.");
+        return;
+    }
+}
+
 static void cmd_uptime(const char *args)
 {
     (void)args;
@@ -340,6 +388,8 @@ static const struct shell_command command_table[] =
         {"touch", cmd_touch},
         {"cat", cmd_cat},
         {"mkdir", cmd_mkdir},
+        {"rm", cmd_rm},
+        {"rmdir", cmd_rmdir},
         {"exception", cmd_exception},
         {"pagefault", cmd_pagefault},
         {"reboot", cmd_reboot},

@@ -56,5 +56,8 @@ bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_
 void directory_set_name(fat32_directory_entry_t *entry, const char *name);
 bool directory_create(const disk_t *disk, const char *name);
 static bool directory_write_entry(const disk_t *disk, uint32_t cluster, const fat32_directory_entry_t *entry);
+bool directory_delete(const disk_t *disk, const char *name);
+bool directory_is_empty(const disk_t *disk, const fat32_directory_entry_t *entry);
+bool directory_remove(const disk_t *disk, const char *name);
 
 #endif

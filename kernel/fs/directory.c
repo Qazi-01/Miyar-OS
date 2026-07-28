@@ -372,3 +372,165 @@ bool directory_create(const disk_t *disk, const char *name)
 
     return true;
 }
+
+bool directory_delete(const disk_t *disk, const char *name)
+{
+    if (disk == 0 || name == 0)
+    {
+        return false;
+    }
+
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+
+    uint32_t cluster = fs->root_cluster;
+    uint8_t sector[512];
+
+    while (cluster < FAT32_CLUSTER_LAST)
+    {
+        uint32_t first_sector = fat32_cluster_to_sector(cluster);
+
+        for (uint32_t s = 0; s < fs->sectors_per_cluster; s++)
+        {
+            if (disk_read(disk, first_sector + s, sector) != 0)
+            {
+                return false;
+            }
+
+            fat32_directory_entry_t *entries = (fat32_directory_entry_t *)sector;
+
+            for (uint32_t i = 0; i < DIRECTORY_ENTRIES_PER_SECTOR; i++)
+            {
+                uint8_t first = (uint8_t)entries[i].name[0];
+
+                if (first == 0x00)
+                {
+                    return false;
+                }
+
+                if (first == 0xE5)
+                {
+                    continue;
+                }
+
+                if (entries[i].attributes == FAT32_ATTR_LFN)
+                {
+                    continue;
+                }
+
+                if (entries[i].attributes == FAT32_ATTR_VOLUME_ID)
+                {
+                    continue;
+                }
+
+                char filename[13];
+                directory_get_name(&entries[i], filename);
+
+                if (strcmp(filename, name) == 0)
+                {
+                    entries[i].name[0] = (char)0xE5;
+                    return disk_write(disk, first_sector + s, sector) == 0;
+                }
+            }
+        }
+
+        cluster = fat32_next_cluster(disk, cluster);
+    }
+
+    return false;
+}
+
+bool directory_is_empty(const disk_t *disk, const fat32_directory_entry_t *entry)
+{
+    if (disk == 0 || entry == 0 )
+    {
+        return false;
+    }
+
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+
+    uint32_t cluster = ((uint32_t)entry->first_cluster_high << 16) | entry->first_cluster_low;
+    uint8_t sector[512];
+
+    while (cluster < FAT32_CLUSTER_LAST)
+    {
+        uint32_t first_sector = fat32_cluster_to_sector(cluster);
+
+        for (uint32_t s = 0; s < fs->sectors_per_cluster; s++)
+        {
+            if (disk_read(disk, first_sector + s, sector) != 0)
+            {
+                return false;
+            }
+
+            fat32_directory_entry_t *entries = (fat32_directory_entry_t *)sector;
+
+            for (uint32_t i = 0; i < DIRECTORY_ENTRIES_PER_SECTOR; i++)
+            {
+                uint8_t first = (uint8_t)entries[i].name[0];
+
+                if (first == 0x00)
+                {
+                    return true;
+                }
+
+                if (first == 0xE5)
+                {
+                    continue;
+                }
+
+                if (memcmp(entries[i].name, ".          ", 11) == 0)
+                {
+                    continue;
+                }
+
+                if (memcmp(entries[i].name, "..         ", 11) == 0)
+                {
+                    continue;
+                }
+
+                return false;
+            }
+        }
+
+        cluster = fat32_next_cluster(disk, cluster);
+    }
+
+    return true;
+}
+
+bool directory_remove(const disk_t *disk, const char *name)
+{
+    if (disk == 0 || name == 0)
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t entry;
+
+    if (!directory_find(disk, name, &entry))
+    {
+        return false;
+    }
+
+    if (!(entry.attributes & FAT32_ATTR_DIRECTORY))
+    {
+        return false;
+    }
+
+    if (!directory_is_empty(disk, &entry))
+    {
+        return false;
+    }
+
+    uint32_t first_cluster = ((uint32_t)entry.first_cluster_high << 16) | entry.first_cluster_low;
+
+    if (first_cluster != 0)
+    {
+        if (!fat32_free_cluster_chain(disk, first_cluster))
+        {
+            return false;
+        }
+    }
+
+    return directory_delete(disk, name);
+}

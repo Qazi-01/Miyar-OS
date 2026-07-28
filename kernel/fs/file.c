@@ -110,9 +110,34 @@ bool file_create(const disk_t *disk, const char *name)
 
 bool file_delete(const disk_t *disk, const char *name)
 {
-    (void)disk;
-    (void)name;
-    return false;
+    if (disk == 0 || name == 0)
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t entry;
+
+    if (!directory_find(disk, name, &entry))
+    {
+        return false;
+    }
+
+    if (entry.attributes & FAT32_ATTR_DIRECTORY)
+    {
+        return false;
+    }
+
+    uint32_t first_cluster = ((uint32_t)entry.first_cluster_high << 16) | entry.first_cluster_low;
+
+    if (first_cluster != 0)
+    {
+        if (!fat32_free_cluster_chain(disk, first_cluster))
+        {
+            return false;
+        }
+    }
+
+    return directory_delete(disk, name);
 }
 
 int file_write(file_t *file, const void *buffer, uint32_t size)
