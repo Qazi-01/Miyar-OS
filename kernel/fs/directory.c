@@ -166,29 +166,41 @@ bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *e
     }
 
     const fat32_filesystem_t *fs = fat32_get_filesystem();
-    uint32_t sector = fat32_cluster_to_sector(fs->root_cluster);
-    uint8_t buffer[512];
+    uint32_t cluster = fs->root_cluster;
+    uint8_t sector[512];
 
-    if (disk_read(disk, sector, buffer) != 0)
+    while (cluster < FAT32_CLUSTER_LAST)
     {
-        return false;
-    }
+        uint32_t first_sector = fat32_cluster_to_sector(cluster);
 
-    fat32_directory_entry_t *entries = (fat32_directory_entry_t *)buffer;
-
-    for (uint32_t i = 0; i < DIRECTORY_ENTRIES_PER_SECTOR; i++)
-    {
-        if ((uint8_t)entries[i].name[0] == 0x00 || (uint8_t)entries[i].name[0] == 0xE5)
+        for (uint32_t s = 0; s < fs->sectors_per_cluster; s++)
         {
-            entries[i] = *entry;
-
-            if (disk_write(disk, sector, buffer) != 0)
+            if (disk_read(disk, first_sector + s, sector) != 0)
             {
                 return false;
             }
 
-            return true;
+            fat32_directory_entry_t *entries = (fat32_directory_entry_t *)sector;
+
+            for (uint32_t i = 0; i < DIRECTORY_ENTRIES_PER_SECTOR; i++)
+            {
+                uint8_t first = (uint8_t)entries[i].name[0];
+
+                if (first == 0x00 || first == 0xE5)
+                {
+                    entries[i] = *entry;
+
+                    if (disk_write(disk, first_sector + s, sector) != 0)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
         }
+
+        cluster = fat32_next_cluster(disk, cluster);
     }
 
     return false;
@@ -222,4 +234,46 @@ bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_
     }
 
     return false;
+}
+
+void directory_set_name(fat32_directory_entry_t *entry, const char *name)
+{
+    if (entry == 0 || name == 0)
+    {
+        return;
+    }
+
+    memset(entry->name, ' ', 11);
+    uint32_t i = 0;
+
+    while (*name && *name != '.' && i < 8)
+    {
+        char c = *name++;
+
+        if (c >= 'a' && c <= 'z')
+        {
+            c -= 32;
+        }
+
+        entry->name[i++] = c;
+    }
+
+    if (*name == '.')
+    {
+        name++;
+    }
+
+    i = 8;
+
+    while (*name && i < 11)
+    {
+        char c = *name++;
+
+        if (c >= 'a' && c <= 'z')
+        {
+            c -= ('a' - 'A');
+        }
+
+        entry->name[i++] = c;
+    }
 }

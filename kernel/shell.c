@@ -135,6 +135,7 @@ static void cmd_help(const char *args)
     terminal_writeIn("  about           About MiyarOS");
     terminal_writeIn("  echo <msg>      Print text");
     terminal_writeIn("  ls              List files in the current directory");
+    terminal_writeIn("  touch <file>    Create a new file");
     terminal_writeIn("  cat <file>      Display the contents of a file");
     terminal_writeIn("  uptime          Shows system uptime");
     terminal_writeIn("  clear           Clear the screen");
@@ -197,6 +198,31 @@ static void cmd_ls(const char *args)
         directory_get_name(&entry, filename);
         terminal_writeIn(filename);
     }
+}
+
+static void cmd_touch(const char *args)
+{
+    if (*args == '\0')
+    {
+        terminal_writeIn("Usage: touch <file>");
+        return;
+    }
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    if (!file_create(disk, args))
+    {
+        terminal_writeIn("Unable to create file.");
+        return;
+    }
+
+    terminal_writeIn("File created.");
 }
 
 static void cmd_cat(const char *args)
@@ -289,6 +315,7 @@ static const struct shell_command command_table[] =
         {"echo", cmd_echo},
         {"clear", cmd_clear},
         {"ls", cmd_ls},
+        {"touch", cmd_touch},
         {"cat", cmd_cat},
         {"exception", cmd_exception},
         {"pagefault", cmd_pagefault},

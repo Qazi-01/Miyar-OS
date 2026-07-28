@@ -2,6 +2,7 @@
 #include "fs/file.h"
 #include "fs/fat32.h"
 #include "lib/string.h"
+#include "fs/directory.h"
 
 bool file_open(const disk_t *disk, const fat32_directory_entry_t *entry, file_t *file)
 {
@@ -82,9 +83,29 @@ int file_read(file_t *file, void *buffer, uint32_t size)
 
 bool file_create(const disk_t *disk, const char *name)
 {
-    (void)disk;
-    (void)name;
-    return false;
+    if (disk == 0 || name == 0)
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t existing;
+
+    if (directory_find(disk, name, &existing))
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t entry;
+    memset(&entry, 0, sizeof(entry));
+    directory_set_name(&entry, name);
+
+    entry.attributes = 0x20;
+
+    entry.first_cluster_high = 0;
+    entry.first_cluster_low = 0;
+    entry.file_size = 0;
+
+    return directory_create_entry(disk, &entry);
 }
 
 bool file_delete(const disk_t *disk, const char *name)
