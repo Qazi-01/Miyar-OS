@@ -337,3 +337,42 @@ bool fat32_read_cluster(const disk_t *disk, uint32_t cluster, void *buffer)
 
     return true;
 }
+
+bool fat32_append_cluster(const disk_t *disk, uint32_t chain, uint32_t cluster)
+{
+    if (disk == 0)
+    {
+        return false;
+    }
+
+    if (chain < 2 || cluster < 2)
+    {
+        return false;
+    }
+
+    uint32_t current = chain;
+
+    while (1)
+    {
+        uint32_t next = fat32_next_cluster(disk, current);
+
+        if (next == FAT32_INVALID_CLUSTER)
+        {
+            break;
+        }
+
+        current = next;
+    }
+
+    if (!fat32_write_fat_entry(disk, current, cluster))
+    {
+        return false;
+    }
+
+    if (!fat32_write_fat_entry(disk, cluster, FAT32_CLUSTER_EOC))
+    {
+        return false;
+    }
+
+    return fat32_zero_cluster(disk, cluster);
+}

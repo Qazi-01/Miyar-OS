@@ -1,14 +1,14 @@
-# MiyarOS
+# Miyar-OS
 
-MiyarOS is a hobby operating system for x86 that boots with GRUB and follows the Multiboot specification. The kernel is written in C and x86 Assembly, and now includes a basic memory management subsystem alongside a text-mode terminal, keyboard-driven shell, interrupt handling, paging, and serial debugging.
+MiyarOS is a hobby operating system for 32-bit x86 that boots with GRUB and follows the Multiboot specification. The kernel is written entirely in C and x86 Assembly and is developed from scratch as a learning project. It currently features memory management, a FAT32 filesystem, a command-line shell, device drivers, interrupt handling, and virtual memory.
 
 ## Why I Built It
 
-I built MiyarOS to understand how a kernel comes together from the first boot instruction through to a usable command line. It is a hands-on project for learning low-level x86 development, memory management, interrupt handling, and operating system design without relying on existing kernels or frameworks.
+MiyarOS was created to understand how an operating system works from the ground up, from the very first boot instruction to a functional kernel capable of managing memory, storage, and user interaction. Rather than building on an existing kernel, every subsystem is implemented from scratch to gain practical experience with low-level systems programming and operating system design.
 
 ## Current Version
 
-## v0.2 – Memory Management
+## v0.3 - Filesystem
 
 A bootable release ISO is available in the `release/` directory and on the project's GitHub Releases page.
 
@@ -16,47 +16,86 @@ A bootable release ISO is available in the `release/` directory and on the proje
 
 Each tagged release includes a bootable ISO that can be downloaded from the GitHub Releases page.
 
-Alternatively, you can clone the repository and build MiyarOS from source using the provided Makefile. This allows you to experiment with the codebase, modify the kernel, and generate your own bootable ISO.
+Alternatively, clone the repository and build MiyarOS from source using the provided Makefile.
 
 ## Features
 
-- Multiboot-compliant 32-bit x86 boot flow through GRUB.
-- Kernel written in C and x86 Assembly.
-- Global Descriptor Table (GDT).
-- Interrupt Descriptor Table (IDT).
-- PIC remapping and IRQ handling.
-- CPU exception handling.
-- Dedicated kernel panic screen with diagnostic information.
-- Dedicated page fault handler.
-- Multiboot memory map detection.
-- Physical Memory Manager (PMM).
-- Bitmap-based physical frame allocator.
-- Kernel heap (`kmalloc` / `kfree`).
-- Paging support.
-- Virtual Memory Manager (VMM).
-- Dynamic page table creation.
-- Read-only kernel memory protection.
-- PS/2 keyboard driver with Shift support.
-- VGA text-mode terminal with scrolling and backspace.
-- Serial debugging output.
-- PIT timer and uptime reporting.
-- Table-driven interactive shell.
+### Kernel
+
+* Multiboot-compliant 32-bit x86 boot flow through GRUB.
+* Kernel written entirely in C and x86 Assembly.
+* Global Descriptor Table (GDT).
+* Interrupt Descriptor Table (IDT).
+* PIC remapping and IRQ handling.
+* CPU exception handling.
+* Kernel panic screen with diagnostic information.
+* Dedicated page fault handler.
+
+### Memory Management
+
+* Multiboot memory map detection.
+* Physical Memory Manager (PMM).
+* Bitmap-based physical frame allocator.
+* Kernel heap (`kmalloc` / `kfree`).
+* Paging support.
+* Virtual Memory Manager (VMM).
+* Dynamic page table creation.
+* Read-only kernel memory protection.
+
+### Storage & Filesystem
+
+* ATA PIO disk driver.
+* Disk abstraction layer.
+* FAT32 filesystem detection.
+* FAT table management.
+* Cluster allocation and deallocation.
+* Multi-cluster file reading.
+* Multi-cluster file writing.
+* File appending.
+* FAT32 directory traversal.
+* File and directory lookup.
+* File creation and deletion.
+* Directory creation and deletion.
+* File copy.
+* File rename (move).
+* Path resolution.
+
+### Drivers
+
+* PS/2 keyboard driver with Shift support.
+* PIT timer and uptime reporting.
+* VGA text-mode terminal with scrolling and backspace.
+* Serial debugging output.
+
+### Shell
+
+* Table-driven interactive shell.
+* Filesystem integration.
+* Output redirection using `>` and `>>`.
 
 ## Built-In Shell Commands
 
-| Command | Description |
-| --- | --- |
-| `help` | Shows the built-in command list. |
-| `about` | Displays project information. |
-| `echo <msg>` | Prints the provided message. |
-| `uptime` | Shows the number of seconds since boot. |
-| `clear` | Clears the VGA text screen. |
-| `reboot` | Reboots the machine. |
-| `shutdown` | Attempts to power off the machine. |
-| `exception` | Triggers a divide-by-zero exception for testing. |
-| `pagefault` | Triggers a page fault for testing the memory subsystem. |
+| Command          | Description                             |
+| ---------------- | --------------------------------------- |
+| `help`           | Shows the built-in command list.        |
+| `about`          | Displays project information.           |
+| `echo <msg>`     | Prints text or redirects it to a file.  |
+| `ls`             | Lists files and directories.            |
+| `cat <file>`     | Displays a file's contents.             |
+| `touch <file>`   | Creates an empty file.                  |
+| `mkdir <dir>`    | Creates a directory.                    |
+| `rm <file>`      | Deletes a file.                         |
+| `rmdir <dir>`    | Deletes an empty directory.             |
+| `cp <src> <dst>` | Copies a file.                          |
+| `mv <old> <new>` | Renames a file.                         |
+| `uptime`         | Shows the number of seconds since boot. |
+| `clear`          | Clears the VGA text screen.             |
+| `reboot`         | Reboots the machine.                    |
+| `shutdown`       | Attempts to power off the machine.      |
+| `exception`      | Triggers a divide-by-zero exception.    |
+| `pagefault`      | Triggers a page fault.                  |
 
-## Repository Structure(v0.3, in progress)
+## Repository Structure
 
 ```text
 Miyar-OS/
@@ -86,81 +125,59 @@ Miyar-OS/
     ├── arch/
     │   └── x86/
     │       ├── gdt.c
-    │       ├── gdt.h
     │       ├── idt.c
-    │       ├── idt.h
     │       ├── irq.c
-    │       ├── irq.h
-    │       ├── exceptions.c
-    │       └── exceptions.h
+    │       └── exceptions.c
     │
     ├── drivers/
     │   ├── ata.c
-    │   ├── ata.h
     │   ├── disk.c
-    │   ├── disk.h
     │   ├── keyboard.c
-    │   ├── keyboard.h
     │   ├── pic.c
-    │   ├── pic.h
     │   ├── serial.c
-    │   ├── serial.h
     │   ├── timer.c
-    │   ├── timer.h
-    │   ├── vga.c
-    │   ├── vga.h
-    │   └── io.h
+    │   └── vga.c
     │
     ├── memory/
     │   ├── multiboot.c
-    │   ├── multiboot.h
     │   ├── memory_map.c
-    │   ├── memory_map.h
     │   ├── pmm.c
-    │   ├── pmm.h
     │   ├── heap.c
-    │   ├── heap.h
     │   ├── paging.c
-    │   ├── paging.h
     │   ├── vmm.c
-    │   ├── vmm.h
-    │   ├── page_fault.c
-    │   └── page_fault.h
+    │   └── page_fault.c
     │
     ├── fs/
     │   ├── directory.c
-    │   ├── directory.h
     │   ├── fat32.c
-    │   ├── fat32.h
     │   ├── file.c
-    │   ├── file.h
     │   ├── fs.c
-    │   ├── fs.h
-    │   ├── path.c
-    │   └── path.h
+    │   └── path.c
+    │
+    ├── lib/
+    │   └── string.c
+    │
+    ├── include/
+    │   └── ...
+    │   (all header files)
     │
     ├── kernel.c
     ├── panic.c
-    ├── panic.h
     ├── shell.c
-    ├── shell.h
-    ├── terminal.c
-    └── terminal.h
+    └── terminal.c
 ```
 
 ## Build Requirements
 
-- GNU Make
-- NASM
-- GCC with 32-bit multilib support
-- GNU binutils (`ld`)
-- GRUB (`grub-mkrescue`)
-- xorriso
-- QEMU (recommended for testing)
+* GNU Make
+* NASM
+* GCC with 32-bit multilib support
+* GNU Binutils (`ld`)
+* GRUB (`grub-mkrescue`)
+* xorriso
+* QEMU (recommended)
 
 ## Build Instructions
-
-From the project root:
 
 ```bash
 make clean
@@ -169,56 +186,83 @@ make
 
 This builds the kernel and generates a bootable ISO.
 
-## Run Instructions
-
-The easiest way to boot the operating system is:
+## Run
 
 ```bash
 make run
 ```
 
-Or run the generated ISO manually:
+Or manually:
 
 ```bash
-qemu-system-i386 -cdrom release/MiyarOS-v0.2.iso
+qemu-system-i386 -cdrom release/MiyarOS-v0.3.iso
 ```
 
-For terminal-only environments:
+Terminal-only:
 
 ```bash
-qemu-system-i386 -curses -cdrom release/MiyarOS-v0.2.iso
+qemu-system-i386 -curses -cdrom release/MiyarOS-v0.3.iso
 ```
 
 ## Roadmap
 
 ### Completed
 
-- **v0.1 — Core Kernel**
-  - Boot process
-  - Interrupts
-  - Drivers
-  - Terminal
-  - Shell
+#### v0.1 - Core Kernel
 
-- **v0.2 — Memory Management**
-  - Physical Memory Manager
-  - Kernel heap
-  - Paging
-  - Virtual Memory Manager
-  - Page fault handling
-  - Read-only kernel memory protection
+* Boot process
+* Interrupt handling
+* Drivers
+* VGA terminal
+* Interactive shell
+
+#### v0.2 - Memory Management
+
+* Physical Memory Manager
+* Kernel heap
+* Paging
+* Virtual Memory Manager
+* Page fault handling
+* Read-only kernel memory protection
+
+#### v0.3 - Filesystem
+
+* ATA disk driver
+* FAT32 filesystem
+* File management
+* Directory management
+* Path resolution
+* Multi-cluster file I/O
+* Filesystem shell commands
 
 ### Planned
 
-- Filesystem
-- Process management
-- User mode
-- System calls
-- Virtual File System (VFS)
-- Improved hardware support
-- Networking
-- Graphical user interface
+#### v0.4 - Process Management & Multitasking
+
+* Scheduler
+* Context switching
+* Kernel threads
+* Processes
+
+#### v0.5 - User Mode & System Calls
+
+* Ring 3 execution
+* ELF program loading
+* System call interface
+
+#### v0.6 - Virtual File System (VFS)
+
+* Generic filesystem layer
+* Multiple filesystem support
+
+#### Future
+
+* USB drivers
+* Audio
+* Networking
+* Security improvements
+* Graphical user interface
 
 ## License
 
-MiyarOS is released under the GNU General Public License v3.0. See [LICENSE](LICENSE) for the full license text.
+MiyarOS is released under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.

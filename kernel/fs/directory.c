@@ -3,6 +3,8 @@
 #include "terminal.h"
 #include "lib/string.h"
 
+static bool directory_write_entry(const disk_t *disk, uint32_t cluster, const fat32_directory_entry_t *entry);
+
 bool directory_get_name(const fat32_directory_entry_t *entry, char *output)
 {
     int pos = 0;
@@ -533,4 +535,83 @@ bool directory_remove(const disk_t *disk, const char *name)
     }
 
     return directory_delete(disk, name);
+}
+
+bool directory_update_entry(const disk_t *disk, const fat32_directory_entry_t *entry)
+{
+    if (disk == 0 || entry == 0)
+    {
+        return false;
+    }
+
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+    uint32_t cluster = fs->root_cluster;
+    uint8_t sector[512];
+
+    while (cluster < FAT32_CLUSTER_LAST)
+    {
+        uint32_t first_sector = fat32_cluster_to_sector(cluster);
+
+        for (uint32_t s = 0; s < fs->sectors_per_cluster; s++)
+        {
+            if (disk_read(disk, first_sector + s, sector) != 0)
+            {
+                return false;
+            }
+
+            fat32_directory_entry_t *entries = (fat32_directory_entry_t *)sector;
+
+            for (uint32_t i = 0; i < DIRECTORY_ENTRIES_PER_SECTOR; i++)
+            {
+                uint8_t first = (uint8_t)entries[i].name[0];
+
+                if (first == 0x00)
+                {
+                    return false;
+                }
+
+                if (first == 0xE5)
+                {
+                    continue;
+                }
+
+                if (memcmp(entries[i].name, entry->name, 11) == 0)
+                {
+                    entries[i] = *entry;
+
+                    return disk_write(disk, first_sector + s, sector) == 0;
+                }
+            }
+        }
+
+        cluster = fat32_next_cluster(disk, cluster);
+    }
+
+    return false;
+}
+
+bool directory_rename(const disk_t *disk, const char *old_name, const char *new_name)
+{
+    if (disk == 0 || old_name == 0 || new_name == 0)
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t entry;
+
+    if (!directory_find(disk, old_name, &entry))
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t existing;
+
+    if (directory_find(disk, new_name, &existing))
+    {
+        return false;
+    }
+
+    directory_set_name(&entry, new_name);
+
+    return directory_update_entry(disk, &entry);
 }

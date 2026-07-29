@@ -131,19 +131,23 @@ static void cmd_help(const char *args)
     terminal_writeIn("");
     terminal_writeIn("Available commands: ");
     terminal_writeIn("-------------------\n");
-    terminal_writeIn("  help            Shows this help message");
-    terminal_writeIn("  about           About MiyarOS");
-    terminal_writeIn("  echo <msg>      Print text");
-    terminal_writeIn("  ls              List files in the current directory");
-    terminal_writeIn("  touch <file>    Create a new file");
-    terminal_writeIn("  cat <file>      Display the contents of a file");
-    terminal_writeIn("  rm <file>       Delete a file");
-    terminal_writeIn("  mkdir <dir>     Create a new directory");
-    terminal_writeIn("  rmdir <dir>     Remove an empty directory");
-    terminal_writeIn("  uptime          Shows system uptime");
-    terminal_writeIn("  clear           Clear the screen");
-    terminal_writeIn("  reboot          Restart the system");
-    terminal_writeIn("  shutdown        Halt the system");
+    terminal_writeIn("  help                    Shows this help message");
+    terminal_writeIn("  about                   About MiyarOS");
+    terminal_writeIn("  echo <msg>              Print text");
+    terminal_writeIn("             > <file>     Write text to a file");
+    terminal_writeIn("             >> <file>    Append text to a file");
+    terminal_writeIn("  ls                      List files in the current directory");
+    terminal_writeIn("  touch <file>            Create a new file");
+    terminal_writeIn("  cat <file>              Display the contents of a file");
+    terminal_writeIn("  rm <file>               Delete a file");
+    terminal_writeIn("  cp <src> <dest>         Copy a file");
+    terminal_writeIn("  mv <src> <dest>         Move or rename a file");
+    terminal_writeIn("  mkdir <dir>             Create a new directory");
+    terminal_writeIn("  rmdir <dir>             Remove an empty directory");
+    terminal_writeIn("  uptime                  Shows system uptime");
+    terminal_writeIn("  clear                   Clear the screen");
+    terminal_writeIn("  reboot                  Restart the system");
+    terminal_writeIn("  shutdown                Halt the system");
     terminal_writeIn("");
 }
 
@@ -166,7 +170,104 @@ static void cmd_about(const char *args)
 
 static void cmd_echo(const char *args)
 {
-    terminal_writeIn(args);
+    const char *redirect = 0;
+    bool append = false;
+
+    for (const char *p = args; *p; p++)
+    {
+        if (*p == '>')
+        {
+            redirect = p;
+
+            if (*(p + 1) == '>')
+            {
+                append = true;
+            }
+
+            break;
+        }
+    }
+
+    if (redirect == 0)
+    {
+        terminal_writeIn(args);
+        return;
+    }
+
+    char text[256];
+    char filename[128];
+
+    uint32_t text_length = (uint32_t)(redirect - args);
+
+    while (text_length > 0 && args[text_length - 1] == ' ')
+    {
+        text_length--;
+    }
+
+    memcpy(text, args, text_length);
+    text[text_length] = '\0';
+
+    const char *name = redirect + (append ? 2 : 1);
+
+    while (*name == ' ')
+    {
+        name++;
+    }
+
+    uint32_t i = 0;
+
+    while (*name && i < sizeof(filename) - 1)
+    {
+        filename[i++] = *name++;
+    }
+
+    filename[i] = '\0';
+
+    if (filename[0] == '\0')
+    {
+        terminal_writeIn("Usage: echo <text> > <file>");
+        return;
+    }
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    fat32_directory_entry_t entry;
+
+    if (!directory_find(disk, filename, &entry))
+    {
+        terminal_writeIn("File not found.");
+        return;
+    }
+
+    file_t file;
+
+    if (!file_open(disk, &entry, &file))
+    {
+        terminal_writeIn("Unable to open file.");
+        return;
+    }
+
+    int written;
+
+    if (append)
+    {
+        written = file_append(&file, text, strlen(text));
+    }
+    else
+    {
+        written = file_write(&file, text, strlen(text));
+    }
+
+    if (written < 0)
+    {
+        terminal_writeIn("Write failed.");
+    }
 }
 
 static void cmd_clear(const char *args)
@@ -344,6 +445,102 @@ static void cmd_rmdir(const char *args)
     }
 }
 
+static void cmd_cp(const char *args)
+{
+    char source[128];
+    char destination[128];
+
+    uint32_t i = 0;
+
+    while (*args && *args != ' ' && i < sizeof(source) - 1)
+    {
+        source[i++] = *args++;
+    }
+
+    source[i] = '\0';
+
+    while (*args == ' ')
+    {
+        args++;
+    }
+
+    i = 0;
+
+    while (*args && i < sizeof(destination) - 1)
+    {
+        destination[i++] = *args++;
+    }
+
+    destination[i] = '\0';
+
+    if (source[0] == '\0' || destination[0] == '\0')
+    {
+        terminal_writeIn("Usage: cp <source> <destination>");
+        return;
+    }
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    if (!file_copy(disk, source, destination))
+    {
+        terminal_writeIn("Copy failed.");
+    }
+}
+
+static void cmd_mv(const char *args)
+{
+    char old_name[128];
+    char new_name[128];
+
+    uint32_t i = 0;
+
+    while (*args && *args != ' ' && i < sizeof(old_name) - 1)
+    {
+        old_name[i++] = *args++;
+    }
+
+    old_name[i] = '\0';
+
+    while (*args == ' ')
+    {
+        args++;
+    }
+
+    i = 0;
+
+    while (*args && i < sizeof(new_name) - 1)
+    {
+        new_name[i++] = *args++;
+    }
+
+    new_name[i] = '\0';
+
+    if (old_name[0] == '\0' || new_name[0] == '\0')
+    {
+        terminal_writeIn("Usage: mv <old> <new>");
+        return;
+    }
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    if (!file_move(disk, old_name, new_name))
+    {
+        terminal_writeIn("Move failed.");
+    }
+}
+
 static void cmd_uptime(const char *args)
 {
     (void)args;
@@ -388,6 +585,8 @@ static const struct shell_command command_table[] =
         {"touch", cmd_touch},
         {"cat", cmd_cat},
         {"mkdir", cmd_mkdir},
+        {"cp", cmd_cp},
+        {"mv", cmd_mv},
         {"rm", cmd_rm},
         {"rmdir", cmd_rmdir},
         {"exception", cmd_exception},
