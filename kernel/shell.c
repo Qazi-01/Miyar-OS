@@ -119,6 +119,36 @@ static void split_command(const char *input, char *command, char *args)
     args[j] = '\0';
 }
 
+static bool get_next_argument(const char **input, char *output, uint32_t size)
+{
+    if (input == 0 || *input == 0 || output == 0)
+    {
+        return false;
+    }
+
+    while (**input == ' ')
+    {
+        (*input)++;
+    }
+
+    if (**input == '\0')
+    {
+        return false;
+    }
+
+    uint32_t i = 0;
+
+    while (**input && **input != ' ' && i < size - 1)
+    {
+        output[i++] = **input;
+        (*input)++;
+    }
+
+    output[i] = '\0';
+
+    return true;
+}
+
 typedef void (*command_func_t)(const char *args);
 
 struct shell_command
@@ -323,10 +353,15 @@ static void cmd_touch(const char *args)
         return;
     }
 
-    if (!file_create(disk, args))
+    char filename[64];
+
+    while (get_next_argument(&args, filename, sizeof(filename)))
     {
-        terminal_writeIn("Unable to create file.");
-        return;
+        if (!file_create(disk, filename))
+        {
+            terminal_write("Failed: ");
+            terminal_writeIn(filename);
+        }
     }
 }
 
@@ -395,10 +430,15 @@ static void cmd_mkdir(const char *args)
         return;
     }
 
-    if (!directory_create(disk, args))
+    char dirname[64];
+
+    while (get_next_argument(&args, dirname, sizeof(dirname)))
     {
-        terminal_writeIn("Unable to create directory.");
-        return;
+        if (!directory_create(disk, dirname))
+        {
+            terminal_write("Failed: ");
+            terminal_writeIn(dirname);
+        }
     }
 }
 
@@ -418,10 +458,15 @@ static void cmd_rm(const char *args)
         return;
     }
 
-    if (!file_delete(disk, args))
+    char filename[64];
+
+    while (get_next_argument(&args, filename, sizeof(filename)))
     {
-        terminal_writeIn("Unable to delete file.");
-        return;
+        if (!file_delete(disk, filename))
+        {
+            terminal_write("Failed: ");
+            terminal_writeIn(filename);
+        }
     }
 }
 
@@ -441,10 +486,15 @@ static void cmd_rmdir(const char *args)
         return;
     }
 
-    if (!directory_remove(disk, args))
+    char dirname[64];
+
+    while (get_next_argument(&args, dirname, sizeof(dirname)))
     {
-        terminal_writeIn("Unable to delete directory.");
-        return;
+        if (!directory_delete(disk, dirname))
+        {
+            terminal_write("Failed: ");
+            terminal_writeIn(dirname);
+        }
     }
 }
 
