@@ -7,6 +7,7 @@
 #include "fs/file.h"
 #include "fs/path.h"
 #include "lib/string.h"
+#include "fs/fs.h"
 
 static void trigger_divide_error(void)
 {
@@ -170,6 +171,8 @@ static void cmd_help(const char *args)
     terminal_writeIn("             > <file>     Write text to a file");
     terminal_writeIn("             >> <file>    Append text to a file");
     terminal_writeIn("  ls                      List files in the current directory");
+    terminal_writeIn("  cd <dir>                Change current directory");
+    terminal_writeIn("  pwd                     Print current working directory");
     terminal_writeIn("  touch <file>            Create a new file");
     terminal_writeIn("  cat <file>              Display the contents of a file");
     terminal_writeIn("  rm <file>               Delete a file");
@@ -602,6 +605,35 @@ static void cmd_mv(const char *args)
     }
 }
 
+static void cmd_pwd(const char *args)
+{
+    (void)args;
+
+    terminal_writeIn(fs_get_current_path());
+}
+
+static void cmd_cd(const char *args)
+{
+    if (*args == '\0')
+    {
+        terminal_writeIn("Usage: cd <directory>");
+        return;
+    }
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk == 0)
+    {
+        terminal_writeIn("No disk available.");
+        return;
+    }
+
+    if (!directory_change(disk, args))
+    {
+        terminal_writeIn("Directory not found.");
+    }
+}
+
 static void cmd_uptime(const char *args)
 {
     (void)args;
@@ -650,6 +682,8 @@ static const struct shell_command command_table[] =
         {"mv", cmd_mv},
         {"rm", cmd_rm},
         {"rmdir", cmd_rmdir},
+        {"pwd", cmd_pwd},
+        {"cd", cmd_cd},
         {"exception", cmd_exception},
         {"pagefault", cmd_pagefault},
         {"reboot", cmd_reboot},

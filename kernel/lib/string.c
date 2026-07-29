@@ -112,3 +112,22 @@ int strncmp(const char *a, const char *b, size_t count)
 
     return (unsigned char)*a - (unsigned char)*b;
 }
+
+char *strcat(char *destination, const char *source)
+{
+    char *dest = destination;
+
+    while (*dest)
+    {
+        dest++;
+    }
+
+    while (*source)
+    {
+        *dest++ = *source++;
+    }
+
+    *dest = '\0';
+
+    return destination;
+}

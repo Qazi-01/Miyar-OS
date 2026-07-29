@@ -32,8 +32,7 @@ bool path_parse(const char *path, path_t *result)
             result->components[result->count][length++] = *path++;
         }
 
-        result->components[result->count][length++] = '\0';
-        result->count++;
+        result->components[result->count][length] = '\0';
 
         if (result->count >= PATH_MAX_COMPONENTS)
         {

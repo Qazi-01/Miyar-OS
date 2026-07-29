@@ -60,5 +60,7 @@ bool directory_is_empty(const disk_t *disk, const fat32_directory_entry_t *entry
 bool directory_remove(const disk_t *disk, const char *name);
 bool directory_update_entry(const disk_t *disk, const fat32_directory_entry_t *entry);
 bool directory_rename(const disk_t *disk, const char *old_name, const char *new_name);
+bool directory_find_in_cluster(const disk_t *disk, uint32_t cluster, const char *name, fat32_directory_entry_t *entry);
+bool directory_change(const disk_t *disk, const char *name);
 
 #endif

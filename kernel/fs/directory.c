@@ -1,5 +1,6 @@
 #include "fs/directory.h"
 #include "fs/fat32.h"
+#include "fs/fs.h"
 #include "terminal.h"
 #include "lib/string.h"
 
@@ -208,7 +209,7 @@ bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *e
     return false;
 }
 
-bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_t *entry)
+bool directory_find_in_cluster(const disk_t *disk, uint32_t cluster, const char *name, fat32_directory_entry_t *entry)
 {
     if (disk == 0 || name == 0 || entry == 0)
     {
@@ -219,7 +220,15 @@ bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_
     fat32_directory_entry_t current;
     char filename[13];
 
-    if (!directory_open_root(disk, &dir))
+    dir.disk = disk;
+    dir.cluster = cluster;
+    dir.current_cluster = cluster;
+    dir.sector_index = 0;
+    dir.entry_index = 0;
+
+    uint32_t first_sector = fat32_cluster_to_sector(cluster);
+
+    if (disk_read(disk, first_sector, dir.sector) != 0)
     {
         return false;
     }
@@ -236,6 +245,12 @@ bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_
     }
 
     return false;
+}
+
+bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_t *entry)
+{
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+    return directory_find_in_cluster(disk, fs->root_cluster, name, entry);
 }
 
 void directory_set_name(fat32_directory_entry_t *entry, const char *name)
@@ -614,4 +629,42 @@ bool directory_rename(const disk_t *disk, const char *old_name, const char *new_
     directory_set_name(&entry, new_name);
 
     return directory_update_entry(disk, &entry);
+}
+
+bool directory_change(const disk_t *disk, const char *name)
+{
+    if (disk == 0 || name == 0)
+    {
+        return false;
+    }
+
+    fat32_directory_entry_t entry;
+
+    if (!directory_find_in_cluster(disk, fs_current_directory(), name, &entry))
+    {
+        return false;
+    }
+
+    if (!(entry.attributes & FAT32_ATTR_DIRECTORY))
+    {
+        return false;
+    }
+
+    uint32_t cluster = ((uint32_t)entry.first_cluster_high << 16) | entry.first_cluster_low;
+    char path[256];
+
+    if (strcmp(fs_get_current_path(), "/") == 0)
+    {
+        strcpy(path, "/");
+        strcat(path, name);
+    }
+
+    else
+    {
+        strcpy(path, fs_get_current_path());
+        strcat(path, "/");
+        strcat(path, name);
+    }
+
+    return fs_set_current_directory(cluster, path);
 }
