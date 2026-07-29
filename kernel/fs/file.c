@@ -209,6 +209,7 @@ static int file_write_internal(file_t *file, const void *buffer, uint32_t size)
         }
 
         file->first_cluster = cluster;
+        file->current_cluster = cluster;
         file->entry.first_cluster_high = cluster >> 16;
         file->entry.first_cluster_low = cluster & 0xFFFF;
     }

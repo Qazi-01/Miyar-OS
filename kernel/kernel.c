@@ -57,7 +57,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     terminal_init();
     terminal_writeIn("============================================================\n");
     terminal_writeIn("                        MIYAR OS");
-    terminal_writeIn("                          v0.1\n");
+    terminal_writeIn("                         v0.3.0\n");
     terminal_writeIn("============================================================\n");
     terminal_writeIn("");
     terminal_writeIn("Booting kernel...");

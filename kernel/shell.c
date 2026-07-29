@@ -96,24 +96,27 @@ static int streq(const char *a, const char *b)
 
 static void split_command(const char *input, char *command, char *args)
 {
-    while (*input && *input != ' ')
+    uint32_t i = 0;
+
+    while (*input && *input != ' ' && i < 31)
     {
-        *command++ = *input++;
+        command[i++] = *input++;
     }
 
-    *command = '\0';
+    command[i] = '\0';
 
     if (*input == ' ')
     {
         input++;
     }
 
-    while (*input)
+    uint32_t j = 0;
+    while (*input && j < 223)
     {
-        *args++ = *input++;
+        args[j++] = *input++;
     }
 
-    *args = '\0';
+    args[j] = '\0';
 }
 
 typedef void (*command_func_t)(const char *args);
@@ -156,8 +159,8 @@ static void cmd_about(const char *args)
     (void)args;
 
     terminal_writeIn("");
-    terminal_writeIn("MiyarOS v0.2");
-    terminal_writeIn("Kernel: 0.2");
+    terminal_writeIn("MiyarOS v0.3.0");
+    terminal_writeIn("Kernel: 0.3.0");
     terminal_writeIn("Architecture: x86(32-bits)");
     terminal_writeIn("");
     terminal_writeIn("A hobby operating system written from scratch");
@@ -535,6 +538,14 @@ static void cmd_mv(const char *args)
         return;
     }
 
+    fat32_directory_entry_t entry;
+
+    if (!directory_find(disk, source, &entry))
+    {
+        terminal_writeIn("File not found.");
+        return;
+    }
+
     if (!file_move(disk, old_name, new_name))
     {
         terminal_writeIn("Move failed.");
@@ -601,6 +612,7 @@ void shell_execute(const char *input)
 {
     if (*input == '\0')
     {
+        terminal_writeIn("");
         return;
     }
 
