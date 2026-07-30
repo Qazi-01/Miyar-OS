@@ -326,9 +326,9 @@ static void cmd_ls(const char *args)
     directory_t dir;
     fat32_directory_entry_t entry;
 
-    if (!directory_open_root(disk, &dir))
+    if (!directory_open(disk, fs_current_directory(), &dir))
     {
-        terminal_writeIn("Unable to open root directory.");
+        terminal_writeIn("Unable to open directory.");
         return;
     }
 

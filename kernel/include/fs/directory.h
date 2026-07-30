@@ -50,6 +50,7 @@ typedef struct
 bool directory_get_name(const fat32_directory_entry_t *entry, char *output);
 bool directory_read_root(const disk_t *disk);
 bool directory_open_root(const disk_t *disk, directory_t *dir);
+bool directory_open(const disk_t *disk, uint32_t cluster, directory_t *dir);
 bool directory_next(directory_t *dir, fat32_directory_entry_t *entry);
 bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *entry);
 bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_t *entry);

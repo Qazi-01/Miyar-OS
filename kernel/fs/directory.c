@@ -63,7 +63,7 @@ bool directory_read_root(const disk_t *disk)
     return true;
 }
 
-bool directory_open_root(const disk_t *disk, directory_t *dir)
+bool directory_open(const disk_t *disk, uint32_t cluster, directory_t *dir)
 {
     if (disk == 0 || dir == 0)
     {
@@ -71,17 +71,24 @@ bool directory_open_root(const disk_t *disk, directory_t *dir)
     }
 
     dir->disk = disk;
-
-    const fat32_filesystem_t *fs = fat32_get_filesystem();
-
-    dir->cluster = fs->root_cluster;
-    dir->current_cluster = fs->root_cluster;
+    dir->cluster = cluster;
+    dir->current_cluster = cluster;
     dir->sector_index = 0;
     dir->entry_index = 0;
 
-    uint32_t sector = fat32_cluster_to_sector(dir->cluster);
+    uint32_t sector = fat32_cluster_to_sector(cluster);
 
-    return disk_read(disk, sector, dir->sector) == 0;
+    if (disk_read(disk, sector, dir->sector) != 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool directory_open_root(const disk_t *disk, directory_t *dir)
+{
+    return directory_open(disk, fat32_get_filesystem()->root_cluster, dir);
 }
 
 #define DIRECTORY_ENTRIES_PER_SECTOR (512 / sizeof(fat32_directory_entry_t))
@@ -161,7 +168,7 @@ bool directory_next(directory_t *dir, fat32_directory_entry_t *entry)
     }
 }
 
-bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *entry)
+bool directory_create_entry_in_cluster(const disk_t *disk, uint32_t cluster, const fat32_directory_entry_t *entry)
 {
     if (disk == 0 || entry == 0)
     {
@@ -169,7 +176,6 @@ bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *e
     }
 
     const fat32_filesystem_t *fs = fat32_get_filesystem();
-    uint32_t cluster = fs->root_cluster;
     uint8_t sector[512];
 
     while (cluster < FAT32_CLUSTER_LAST)
@@ -209,6 +215,11 @@ bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *e
     return false;
 }
 
+bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *entry)
+{
+    return directory_create_entry_in_cluster(disk, fs_current_directory(), entry);
+}
+
 bool directory_find_in_cluster(const disk_t *disk, uint32_t cluster, const char *name, fat32_directory_entry_t *entry)
 {
     if (disk == 0 || name == 0 || entry == 0)
@@ -220,15 +231,7 @@ bool directory_find_in_cluster(const disk_t *disk, uint32_t cluster, const char 
     fat32_directory_entry_t current;
     char filename[13];
 
-    dir.disk = disk;
-    dir.cluster = cluster;
-    dir.current_cluster = cluster;
-    dir.sector_index = 0;
-    dir.entry_index = 0;
-
-    uint32_t first_sector = fat32_cluster_to_sector(cluster);
-
-    if (disk_read(disk, first_sector, dir.sector) != 0)
+    if (!directory_open(disk, cluster, &dir))
     {
         return false;
     }
@@ -333,11 +336,9 @@ bool directory_create(const disk_t *disk, const char *name)
         return false;
     }
 
-    const fat32_filesystem_t *fs = fat32_get_filesystem();
-
     fat32_directory_entry_t existing;
 
-    if (directory_find(disk, name, &existing))
+    if (directory_find_in_cluster(disk, fs_current_directory(), name, &existing))
     {
         return false;
     }
@@ -374,8 +375,11 @@ bool directory_create(const disk_t *disk, const char *name)
     memcpy(dotdot.name, "..         ", 11);
 
     dotdot.attributes = FAT32_ATTR_DIRECTORY;
-    dotdot.first_cluster_high = fs->root_cluster >> 16;
-    dotdot.first_cluster_low = fs->root_cluster & 0xFFFF;
+
+    uint32_t parent = fs_current_directory();
+
+    dotdot.first_cluster_high = parent >> 16;
+    dotdot.first_cluster_low = parent & 0xFFFF;
 
     if (!directory_write_entry(disk, cluster, &dot))
     {
