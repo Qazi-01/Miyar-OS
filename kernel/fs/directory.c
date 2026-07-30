@@ -556,7 +556,7 @@ bool directory_remove(const disk_t *disk, const char *name)
     return directory_delete(disk, name);
 }
 
-bool directory_update_entry(const disk_t *disk, const fat32_directory_entry_t *entry)
+bool directory_update_entry(const disk_t *disk, uint32_t parent_cluster, const fat32_directory_entry_t *entry)
 {
     if (disk == 0 || entry == 0)
     {
@@ -564,7 +564,7 @@ bool directory_update_entry(const disk_t *disk, const fat32_directory_entry_t *e
     }
 
     const fat32_filesystem_t *fs = fat32_get_filesystem();
-    uint32_t cluster = fs->root_cluster;
+    uint32_t cluster = parent_cluster;
     uint8_t sector[512];
 
     while (cluster < FAT32_CLUSTER_LAST)
@@ -632,7 +632,7 @@ bool directory_rename(const disk_t *disk, const char *old_name, const char *new_
 
     directory_set_name(&entry, new_name);
 
-    return directory_update_entry(disk, &entry);
+    return directory_update_entry(disk, fs_current_directory(), &entry);
 }
 
 bool directory_change(const disk_t *disk, const char *name)

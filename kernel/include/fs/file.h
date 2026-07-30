@@ -14,6 +14,7 @@ typedef struct {
     uint32_t current_cluster_index;
     uint32_t size;
     uint32_t position;
+    uint32_t parent_cluster;
     fat32_directory_entry_t entry;
 } file_t;
 
