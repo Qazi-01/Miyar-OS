@@ -132,7 +132,7 @@ char *strcat(char *destination, const char *source)
     return destination;
 }
 
-char *strchr(const char *str, int character)
+char *strrchr(const char *str, int character)
 {
     const char *last = 0;
 

@@ -642,6 +642,11 @@ bool directory_change(const disk_t *disk, const char *name)
         return false;
     }
 
+    if (strcmp(name, "..") == 0 && strcmp(fs_get_current_path(), "/") == 0)
+    {
+        return true;
+    }
+
     fat32_directory_entry_t entry;
 
     if (!directory_find_in_cluster(disk, fs_current_directory(), name, &entry))
