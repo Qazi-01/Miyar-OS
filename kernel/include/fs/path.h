@@ -15,6 +15,6 @@ typedef struct {
 } path_t;
 
 bool path_parse(const char *path, path_t *result);
-bool path_resolve_root(const disk_t *disk, const char *name, fat32_directory_entry_t *entry);
+bool path_resolve(const disk_t *disk, const char *name, fat32_directory_entry_t *entry);
 
 #endif

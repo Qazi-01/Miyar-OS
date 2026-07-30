@@ -1,4 +1,5 @@
 #include "fs/directory.h"
+#include "fs/fs.h"
 #include "fs/path.h"
 #include "lib/string.h"
 
@@ -48,25 +49,7 @@ bool path_parse(const char *path, path_t *result)
     return true;
 }
 
-bool path_resolve_root(const disk_t *disk, const char *name, fat32_directory_entry_t *entry)
+bool path_resolve(const disk_t *disk, const char *path, fat32_directory_entry_t *entry)
 {
-    directory_t dir;
-
-    if (!directory_open_root(disk, &dir))
-    {
-        return false;
-    }
-
-    while (directory_next(&dir, entry))
-    {
-        char filename[13];
-        directory_get_name(entry, filename);
-
-        if (strcmp(filename, name) == 0)
-        {
-            return true;
-        }
-    }
-    
-    return false;
+    return directory_find_in_cluster(disk, fs_current_directory(), path, entry);
 }

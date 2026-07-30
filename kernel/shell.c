@@ -275,10 +275,19 @@ static void cmd_echo(const char *args)
 
     fat32_directory_entry_t entry;
 
-    if (!directory_find(disk, filename, &entry))
+    if (!path_resolve(disk, filename, &entry))
     {
-        terminal_writeIn("File not found.");
-        return;
+        if (!file_create(disk, filename))
+        {
+            terminal_writeIn("Failed to create file.");
+            return;
+        }
+
+        if (!path_resolve(disk, filename, &entry))
+        {
+            terminal_writeIn("File not found.");
+            return;
+        }
     }
 
     file_t file;
@@ -386,7 +395,7 @@ static void cmd_cat(const char *args)
 
     fat32_directory_entry_t entry;
 
-    if (!path_resolve_root(disk, args, &entry))
+    if (!path_resolve(disk, args, &entry))
     {
         terminal_writeIn("File not found.");
         return;
@@ -668,27 +677,27 @@ static void cmd_pagefault(const char *args)
     trigger_page_fault();
 }
 
-static const struct shell_command command_table[] =
-    {
-        {"help", cmd_help},
-        {"about", cmd_about},
-        {"echo", cmd_echo},
-        {"clear", cmd_clear},
-        {"ls", cmd_ls},
-        {"touch", cmd_touch},
-        {"cat", cmd_cat},
-        {"mkdir", cmd_mkdir},
-        {"cp", cmd_cp},
-        {"mv", cmd_mv},
-        {"rm", cmd_rm},
-        {"rmdir", cmd_rmdir},
-        {"pwd", cmd_pwd},
-        {"cd", cmd_cd},
-        {"exception", cmd_exception},
-        {"pagefault", cmd_pagefault},
-        {"reboot", cmd_reboot},
-        {"shutdown", cmd_shutdown},
-        {"uptime", cmd_uptime}};
+static const struct shell_command command_table[] = {
+    {"help", cmd_help},
+    {"about", cmd_about},
+    {"echo", cmd_echo},
+    {"clear", cmd_clear},
+    {"ls", cmd_ls},
+    {"touch", cmd_touch},
+    {"cat", cmd_cat},
+    {"mkdir", cmd_mkdir},
+    {"cp", cmd_cp},
+    {"mv", cmd_mv},
+    {"rm", cmd_rm},
+    {"rmdir", cmd_rmdir},
+    {"pwd", cmd_pwd},
+    {"cd", cmd_cd},
+    {"exception", cmd_exception},
+    {"pagefault", cmd_pagefault},
+    {"reboot", cmd_reboot},
+    {"shutdown", cmd_shutdown},
+    {"uptime", cmd_uptime}
+};
 
 #define COMMAND_COUNT (sizeof(command_table) / sizeof(command_table[0]))
 
