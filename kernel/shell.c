@@ -629,6 +629,11 @@ static void cmd_cd(const char *args)
         return;
     }
 
+    if (strcmp(args, ".") == 0)
+    {
+        return;
+    }
+    
     const disk_t *disk = disk_get(0);
 
     if (disk == 0)

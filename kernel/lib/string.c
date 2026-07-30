@@ -131,3 +131,25 @@ char *strcat(char *destination, const char *source)
 
     return destination;
 }
+
+char *strchr(const char *str, int character)
+{
+    const char *last = 0;
+
+    while (*str)
+    {
+        if (*str == (char)character)
+        {
+            last = str;
+        }
+
+        str++;
+    }
+
+    if (character == '\0')
+    {
+        return (char *)str;
+    }
+
+    return (char *)last;
+}

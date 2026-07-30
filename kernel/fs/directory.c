@@ -657,6 +657,28 @@ bool directory_change(const disk_t *disk, const char *name)
     uint32_t cluster = ((uint32_t)entry.first_cluster_high << 16) | entry.first_cluster_low;
     char path[256];
 
+    if (strcmp(name, "..") == 0)
+    {
+        strcpy(path, fs_get_current_path());
+
+        if (strcmp(path, "/") != 0)
+        {
+            char *last = strrchr(path, '/');
+
+            if (last == path)
+            {
+                path[1] = '\0';
+            }
+
+            else if (last != 0)
+            {
+                *last = '\0';
+            }
+        }
+
+        return fs_set_current_directory(cluster, path);
+    }
+
     if (strcmp(fs_get_current_path(), "/") == 0)
     {
         strcpy(path, "/");
