@@ -1,6 +1,7 @@
 #include "drivers/disk.h"
 #include "fs/file.h"
 #include "fs/fat32.h"
+#include "fs/fs.h"
 #include "lib/string.h"
 #include "fs/directory.h"
 
@@ -54,6 +55,7 @@ bool file_open(const disk_t *disk, const fat32_directory_entry_t *entry, file_t 
     }
 
     file->disk = disk;
+    file->parent_cluster = fs_current_directory();
     file->first_cluster = ((uint32_t)entry->first_cluster_high << 16) | entry->first_cluster_low;
     file->current_cluster = file->first_cluster;
     file->size = entry->file_size;
@@ -139,7 +141,7 @@ bool file_create(const disk_t *disk, const char *name)
 
     fat32_directory_entry_t existing;
 
-    if (directory_find(disk, name, &existing))
+    if (directory_find_in_cluster(disk, fs_current_directory(), name, &existing))
     {
         return false;
     }
@@ -205,7 +207,7 @@ static int file_write_internal(file_t *file, const void *buffer, uint32_t size)
 
         if (cluster == 0)
         {
-            return -1;
+            return -101;
         }
 
         file->first_cluster = cluster;
@@ -218,7 +220,7 @@ static int file_write_internal(file_t *file, const void *buffer, uint32_t size)
 
     if (cluster_size > 4096)
     {
-        return -1;
+        return -102;
     }
 
     const uint8_t *source = (const uint8_t *)buffer;
@@ -228,7 +230,7 @@ static int file_write_internal(file_t *file, const void *buffer, uint32_t size)
     {
         if (!file_read_cluster(file->disk, file->current_cluster, cluster_buffer))
         {
-            return (bytes_written > 0) ? (int)bytes_written : -1;
+            return (bytes_written > 0) ? (int)bytes_written : -103;
         }
 
         uint32_t offset = file->position % cluster_size;
@@ -244,7 +246,7 @@ static int file_write_internal(file_t *file, const void *buffer, uint32_t size)
 
         if (!file_write_cluster(file->disk, file->current_cluster, cluster_buffer))
         {
-            return (bytes_written > 0) ? (int)bytes_written : -1;
+            return (bytes_written > 0) ? (int)bytes_written : -104;
         }
 
         bytes_written += to_copy;
@@ -284,7 +286,7 @@ static int file_write_internal(file_t *file, const void *buffer, uint32_t size)
 
     if (!directory_update_entry(file->disk, file->parent_cluster, &file->entry))
     {
-        return -1;
+        return -105;
     }
 
     return (int)bytes_written;

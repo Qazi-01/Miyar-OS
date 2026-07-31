@@ -312,6 +312,8 @@ static void cmd_echo(const char *args)
     if (written < 0)
     {
         terminal_writeIn("Write failed.");
+        terminal_write_hex(written);
+        terminal_writeIn("");
     }
 }
 
