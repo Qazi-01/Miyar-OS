@@ -604,7 +604,7 @@ static void cmd_mv(const char *args)
 
     fat32_directory_entry_t entry;
 
-    if (!directory_find(disk, old_name, &entry))
+    if (!path_resolve(disk, old_name, &entry))
     {
         terminal_writeIn("File not found.");
         return;

@@ -1,6 +1,7 @@
 #include "fs/directory.h"
 #include "fs/fat32.h"
 #include "fs/fs.h"
+#include "fs/path.h"
 #include "terminal.h"
 #include "lib/string.h"
 
@@ -394,7 +395,7 @@ bool directory_create(const disk_t *disk, const char *name)
     return true;
 }
 
-bool directory_delete(const disk_t *disk, const char *name)
+bool directory_delete_in_cluster(const disk_t *disk, uint32_t cluster, const char *name)
 {
     if (disk == 0 || name == 0)
     {
@@ -402,8 +403,6 @@ bool directory_delete(const disk_t *disk, const char *name)
     }
 
     const fat32_filesystem_t *fs = fat32_get_filesystem();
-
-    uint32_t cluster = fs->root_cluster;
     uint8_t sector[512];
 
     while (cluster < FAT32_CLUSTER_LAST)
@@ -458,6 +457,11 @@ bool directory_delete(const disk_t *disk, const char *name)
     }
 
     return false;
+}
+
+bool directory_delete(const disk_t *disk, const char *name)
+{
+    return directory_delete_in_cluster(disk, fs_current_directory(), name);
 }
 
 bool directory_is_empty(const disk_t *disk, const fat32_directory_entry_t *entry)
@@ -618,14 +622,14 @@ bool directory_rename(const disk_t *disk, const char *old_name, const char *new_
 
     fat32_directory_entry_t entry;
 
-    if (!directory_find(disk, old_name, &entry))
+    if (!path_resolve(disk, old_name, &entry))
     {
         return false;
     }
 
     fat32_directory_entry_t existing;
 
-    if (directory_find(disk, new_name, &existing))
+    if (path_resolve(disk, new_name, &existing))
     {
         return false;
     }

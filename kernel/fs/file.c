@@ -2,6 +2,7 @@
 #include "fs/file.h"
 #include "fs/fat32.h"
 #include "fs/fs.h"
+#include "fs/path.h"
 #include "lib/string.h"
 #include "fs/directory.h"
 
@@ -168,7 +169,7 @@ bool file_delete(const disk_t *disk, const char *name)
 
     fat32_directory_entry_t entry;
 
-    if (!directory_find(disk, name, &entry))
+    if (!path_resolve(disk, name, &entry))
     {
         return false;
     }
@@ -346,7 +347,7 @@ bool file_copy(const disk_t *disk, const char *source, const char *destination)
 
     fat32_directory_entry_t source_entry;
 
-    if (!directory_find(disk, source, &source_entry))
+    if (!path_resolve(disk, source, &source_entry))
     {
         return false;
     }
@@ -363,7 +364,7 @@ bool file_copy(const disk_t *disk, const char *source, const char *destination)
 
     fat32_directory_entry_t destination_entry;
 
-    if (!directory_find(disk, destination, &destination_entry))
+    if (!path_resolve(disk, destination, &destination_entry))
     {
         return false;
     }
@@ -413,7 +414,7 @@ bool file_move(const disk_t *disk, const char *old_name, const char *new_name)
 
     fat32_directory_entry_t entry;
 
-    if (directory_find(disk, new_name, &entry))
+    if (path_resolve(disk, new_name, &entry))
     {
         return false;
     }
