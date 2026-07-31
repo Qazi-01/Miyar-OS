@@ -304,7 +304,7 @@ int file_write(file_t *file, const void *buffer, uint32_t size)
     file->size = 0;
     file->current_cluster = file->first_cluster;
     file->entry.file_size = 0;
-
+    
     if (!directory_update_entry(file->disk, file->parent_cluster, &file->entry))
     {
         return -1;

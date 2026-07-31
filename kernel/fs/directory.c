@@ -444,9 +444,26 @@ bool directory_delete_in_cluster(const disk_t *disk, uint32_t cluster, const cha
 
                 char filename[13];
                 directory_get_name(&entries[i], filename);
+                uint32_t child_cluster = ((uint32_t)entries[i].first_cluster_high << 16) | entries[i].first_cluster_low;
 
                 if (strcmp(filename, name) == 0)
                 {
+                    if (entries[i].attributes & FAT32_ATTR_DIRECTORY)
+                    {
+                        if (!directory_is_empty(disk, &entries[i]))
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (child_cluster != 0)
+                    {
+                        if (!fat32_free_cluster_chain(disk, child_cluster))
+                        {
+                            return false;
+                        }
+                    }
+
                     entries[i].name[0] = (char)0xE5;
                     return disk_write(disk, first_sector + s, sector) == 0;
                 }
@@ -503,12 +520,25 @@ bool directory_is_empty(const disk_t *disk, const fat32_directory_entry_t *entry
                     continue;
                 }
 
-                if (memcmp(entries[i].name, ".          ", 11) == 0)
+                if (entries[i].attributes == FAT32_ATTR_LFN)
                 {
                     continue;
                 }
 
-                if (memcmp(entries[i].name, "..         ", 11) == 0)
+                if (entries[i].attributes == FAT32_ATTR_VOLUME_ID)
+                {
+                    continue;
+                }
+
+                char filename[13];
+                directory_get_name(&entries[i], filename);
+
+                if (strcmp(filename, ".") == 0)
+                {
+                    continue;
+                }
+
+                if (strcmp(filename, "..") == 0)
                 {
                     continue;
                 }
@@ -601,7 +631,61 @@ bool directory_update_entry(const disk_t *disk, uint32_t parent_cluster, const f
                 if (memcmp(entries[i].name, entry->name, 11) == 0)
                 {
                     entries[i] = *entry;
+                    return disk_write(disk, first_sector + s, sector) == 0;
+                }
+            }
+        }
 
+        cluster = fat32_next_cluster(disk, cluster);
+    }
+
+    return false;
+}
+
+bool directory_rename_entry(const disk_t *disk, uint32_t parent_cluster, const char *old_name, const fat32_directory_entry_t *entry)
+{
+    if (disk == 0 || entry == 0)
+    {
+        return false;
+    }
+
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+    uint32_t cluster = parent_cluster;
+    uint8_t sector[512];
+
+    while (cluster < FAT32_CLUSTER_LAST)
+    {
+        uint32_t first_sector = fat32_cluster_to_sector(cluster);
+
+        for (uint32_t s = 0; s < fs->sectors_per_cluster; s++)
+        {
+            if (disk_read(disk, first_sector + s, sector) != 0)
+            {
+                return false;
+            }
+
+            fat32_directory_entry_t *entries = (fat32_directory_entry_t *)sector;
+
+            for (uint32_t i = 0; i < DIRECTORY_ENTRIES_PER_SECTOR; i++)
+            {
+                uint8_t first = (uint8_t)entries[i].name[0];
+
+                if (first == 0x00)
+                {
+                    return false;
+                }
+
+                if (first == 0xE5)
+                {
+                    continue;
+                }
+
+                char filename[13];
+                directory_get_name(&entries[i], filename);
+                
+                if (strcmp(filename, old_name) == 0)
+                {
+                    entries[i] = *entry;
                     return disk_write(disk, first_sector + s, sector) == 0;
                 }
             }
@@ -636,7 +720,7 @@ bool directory_rename(const disk_t *disk, const char *old_name, const char *new_
 
     directory_set_name(&entry, new_name);
 
-    return directory_update_entry(disk, fs_current_directory(), &entry);
+    return directory_rename_entry(disk, fs_current_directory(), old_name, &entry);
 }
 
 bool directory_change(const disk_t *disk, const char *name)

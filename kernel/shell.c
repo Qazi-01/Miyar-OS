@@ -403,6 +403,12 @@ static void cmd_cat(const char *args)
         return;
     }
 
+    if (entry.attributes & FAT32_ATTR_DIRECTORY)
+    {
+        terminal_writeIn("Cannot read a directory.");
+        return;
+    }
+
     file_t file;
 
     if (!file_open(disk, &entry, &file))
