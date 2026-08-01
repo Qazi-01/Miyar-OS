@@ -337,9 +337,30 @@ static void cmd_ls(const char *args)
     directory_t dir;
     fat32_directory_entry_t entry;
 
-    if (!directory_open(disk, fs_current_directory(), &dir))
+    uint32_t cluster = fs_current_directory();
+
+    if (args != 0 && args[0] != '\0')
     {
-        terminal_writeIn("Unable to open directory.");
+        fat32_directory_entry_t directory;
+
+        if (!path_lookup(disk, args, 0, &directory, 0))
+        {
+            terminal_writeIn("Directory not found.");
+            return;
+        }
+
+        if (!(directory.attributes & FAT32_ATTR_DIRECTORY))
+        {
+            terminal_writeIn("Not a directory.");
+            return;
+        }
+
+        cluster = directory_entry_cluster(&directory);
+    }
+
+    if (!directory_open(disk, cluster, &dir))
+    {
+        terminal_writeIn("Failed to open directory.");
         return;
     }
 
