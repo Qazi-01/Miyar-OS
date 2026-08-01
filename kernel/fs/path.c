@@ -34,12 +34,13 @@ bool path_split(const char *path, path_t *result)
             result->components[result->count][length++] = *path++;
         }
 
-        result->components[result->count][length] = '\0';
-
         if (result->count >= PATH_MAX_COMPONENTS)
         {
             return false;
         }
+
+        result->components[result->count][length] = '\0';
+        result->count++;
 
         if (*path == '/')
         {
@@ -102,9 +103,6 @@ bool path_normalize(path_t *path)
 
 bool path_lookup(const disk_t *disk, const char *path, uint32_t *parent_cluster, fat32_directory_entry_t *entry, char *leaf_name)
 {
-    (void)parent_cluster;
-    (void)leaf_name;
-
     if (disk == 0 || path == 0 || entry == 0)
     {
         return false;

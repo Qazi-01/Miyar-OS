@@ -357,13 +357,17 @@ bool directory_create(const disk_t *disk, const char *name)
         return false;
     }
 
+    uint32_t parent_cluster;
+    char leaf_name[PATH_MAX_NAME];
     fat32_directory_entry_t existing;
 
-    if (directory_find_in_cluster(disk, fs_current_directory(), name, &existing))
+    bool exists = path_resolve(disk, name, &parent_cluster, &existing, leaf_name);
+
+    if (exists)
     {
         return false;
     }
-
+    
     uint32_t cluster = fat32_allocate_cluster(disk);
 
     if (cluster == 0)
@@ -373,13 +377,13 @@ bool directory_create(const disk_t *disk, const char *name)
 
     fat32_directory_entry_t entry;
     memset(&entry, 0, sizeof(entry));
-    directory_set_name(&entry, name);
+    directory_set_name(&entry, leaf_name);
 
     entry.attributes = FAT32_ATTR_DIRECTORY;
     entry.first_cluster_high = cluster >> 16;
     entry.first_cluster_low = cluster & 0xFFFF;
 
-    if (!directory_create_entry(disk, &entry))
+    if (!directory_create_entry_in_cluster(disk, parent_cluster, &entry))
     {
         fat32_free_cluster_chain(disk, cluster);
         return false;
@@ -397,7 +401,7 @@ bool directory_create(const disk_t *disk, const char *name)
 
     dotdot.attributes = FAT32_ATTR_DIRECTORY;
 
-    uint32_t parent = fs_current_directory();
+    uint32_t parent = parent_cluster;
 
     dotdot.first_cluster_high = parent >> 16;
     dotdot.first_cluster_low = parent & 0xFFFF;
