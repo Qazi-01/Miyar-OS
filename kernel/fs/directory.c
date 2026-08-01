@@ -361,7 +361,7 @@ bool directory_create(const disk_t *disk, const char *name)
     char leaf_name[PATH_MAX_NAME];
     fat32_directory_entry_t existing;
 
-    bool exists = path_resolve(disk, name, &parent_cluster, &existing, leaf_name);
+    bool exists = path_lookup(disk, name, &parent_cluster, &existing, leaf_name);
 
     if (exists)
     {
