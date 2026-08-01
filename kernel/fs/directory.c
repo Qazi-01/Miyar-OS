@@ -7,6 +7,27 @@
 
 static bool directory_write_entry(const disk_t *disk, uint32_t cluster, const fat32_directory_entry_t *entry);
 
+uint32_t directory_entry_cluster(const fat32_directory_entry_t *entry)
+{
+    if (entry == 0)
+    {
+        return 0;
+    }
+    
+    return ((uint32_t)entry->first_cluster_high << 16) | entry->first_cluster_low;
+}
+
+void directory_set_entry_cluster(fat32_directory_entry_t *entry, uint32_t cluster)
+{
+    if (entry == 0)
+    {
+        return;
+    }
+
+    entry->first_cluster_low = cluster & 0xFFFF;
+    entry->first_cluster_high = (cluster >> 16) & 0xFFFF;
+}
+
 bool directory_get_name(const fat32_directory_entry_t *entry, char *output)
 {
     int pos = 0;
@@ -253,8 +274,7 @@ bool directory_find_in_cluster(const disk_t *disk, uint32_t cluster, const char 
 
 bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_t *entry)
 {
-    const fat32_filesystem_t *fs = fat32_get_filesystem();
-    return directory_find_in_cluster(disk, fs->root_cluster, name, entry);
+    return directory_find_in_cluster(disk, fs_current_directory(), name, entry);
 }
 
 void directory_set_name(fat32_directory_entry_t *entry, const char *name)
@@ -444,26 +464,9 @@ bool directory_delete_in_cluster(const disk_t *disk, uint32_t cluster, const cha
 
                 char filename[13];
                 directory_get_name(&entries[i], filename);
-                uint32_t child_cluster = ((uint32_t)entries[i].first_cluster_high << 16) | entries[i].first_cluster_low;
 
                 if (strcmp(filename, name) == 0)
                 {
-                    if (entries[i].attributes & FAT32_ATTR_DIRECTORY)
-                    {
-                        if (!directory_is_empty(disk, &entries[i]))
-                        {
-                            return false;
-                        }
-                    }
-
-                    if (child_cluster != 0)
-                    {
-                        if (!fat32_free_cluster_chain(disk, child_cluster))
-                        {
-                            return false;
-                        }
-                    }
-
                     entries[i].name[0] = (char)0xE5;
                     return disk_write(disk, first_sector + s, sector) == 0;
                 }
@@ -628,6 +631,16 @@ bool directory_update_entry(const disk_t *disk, uint32_t parent_cluster, const f
                     continue;
                 }
 
+                if (entries[i].attributes == FAT32_ATTR_LFN)
+                {
+                    continue;
+                }
+
+                if (entries[i].attributes == FAT32_ATTR_VOLUME_ID)
+                {
+                    continue;
+                }
+
                 if (memcmp(entries[i].name, entry->name, 11) == 0)
                 {
                     entries[i] = *entry;
@@ -676,6 +689,16 @@ bool directory_rename_entry(const disk_t *disk, uint32_t parent_cluster, const c
                 }
 
                 if (first == 0xE5)
+                {
+                    continue;
+                }
+
+                if (entries[i].attributes == FAT32_ATTR_LFN)
+                {
+                    continue;
+                }
+
+                if (entries[i].attributes == FAT32_ATTR_VOLUME_ID)
                 {
                     continue;
                 }
@@ -786,4 +809,27 @@ bool directory_change(const disk_t *disk, const char *name)
     }
 
     return fs_set_current_directory(cluster, path);
+}
+
+bool directory_move_entry(const disk_t *disk, uint32_t source_cluster, uint32_t destination_cluster, const char *old_name, fat32_directory_entry_t *entry)
+{
+    if (disk == 0 || old_name == 0 || entry == 0)
+    {
+        return false;
+    }
+
+    if (!directory_create_entry_in_cluster(disk, destination_cluster, entry))
+    {
+        return false;
+    }
+
+    if (!directory_delete_in_cluster(disk, source_cluster, old_name))
+    {
+        char filename[13];
+        directory_get_name(entry, filename);
+        directory_delete_in_cluster(disk, destination_cluster, filename);
+        return false;
+    }
+
+    return true;
 }

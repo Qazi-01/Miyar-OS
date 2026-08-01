@@ -84,7 +84,7 @@ uint32_t fat32_cluster_to_sector(uint32_t cluster)
 uint32_t fat32_read_fat_entry(const disk_t *disk, uint32_t cluster)
 {
     if (disk == 0)
-{
+    {
         return FAT32_INVALID_CLUSTER;
     }
 

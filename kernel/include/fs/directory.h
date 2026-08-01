@@ -60,9 +60,12 @@ bool directory_delete(const disk_t *disk, const char *name);
 bool directory_is_empty(const disk_t *disk, const fat32_directory_entry_t *entry);
 bool directory_remove(const disk_t *disk, const char *name);
 bool directory_update_entry(const disk_t *disk, uint32_t parent_cluster, const fat32_directory_entry_t *entry);
+bool directory_move_entry(const disk_t *disk, uint32_t source_cluster, uint32_t destination_cluster, const char *old_name, fat32_directory_entry_t *entry);
 bool directory_rename_entry(const disk_t *disk, uint32_t parent_cluster, const char *old_name, const fat32_directory_entry_t *entry);
 bool directory_rename(const disk_t *disk, const char *old_name, const char *new_name);
 bool directory_find_in_cluster(const disk_t *disk, uint32_t cluster, const char *name, fat32_directory_entry_t *entry);
 bool directory_change(const disk_t *disk, const char *name);
+uint32_t directory_entry_cluster(const fat32_directory_entry_t *entry);
+void directory_set_entry_cluster(fat32_directory_entry_t *entry, uint32_t cluster);
 
 #endif
