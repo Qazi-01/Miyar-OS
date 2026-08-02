@@ -764,7 +764,7 @@ bool directory_change(const disk_t *disk, const char *name)
 
     fat32_directory_entry_t entry;
 
-    if (!directory_find_in_cluster(disk, fs_current_directory(), name, &entry))
+    if (!path_resolve(disk, name, &entry))
     {
         return false;
     }
@@ -774,7 +774,7 @@ bool directory_change(const disk_t *disk, const char *name)
         return false;
     }
 
-    uint32_t cluster = ((uint32_t)entry.first_cluster_high << 16) | entry.first_cluster_low;
+    uint32_t cluster = directory_entry_cluster(&entry);
     char path[256];
 
     if (strcmp(name, "..") == 0)

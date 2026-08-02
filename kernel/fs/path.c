@@ -122,7 +122,29 @@ bool path_lookup(const disk_t *disk, const char *path, uint32_t *parent_cluster,
 
     if (parsed.count == 0)
     {
-        return false;
+        if (!parsed.absolute)
+        {
+            return false;
+        }
+
+        const fat32_filesystem_t *fs = fat32_get_filesystem();
+
+        if (!directory_find_in_cluster(disk, fs->root_cluster, ".", entry))
+        {
+            return false;
+        }
+        
+        if (parent_cluster != 0)
+        {
+            *parent_cluster = fs->root_cluster;
+        }
+
+        if (leaf_name != 0)
+        {
+            leaf_name[0] = '\0'
+        }
+
+        return true;
     }
 
     if (leaf_name != 0)
