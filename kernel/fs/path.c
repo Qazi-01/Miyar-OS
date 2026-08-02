@@ -128,11 +128,6 @@ bool path_lookup(const disk_t *disk, const char *path, uint32_t *parent_cluster,
         }
 
         const fat32_filesystem_t *fs = fat32_get_filesystem();
-
-        if (!directory_find_in_cluster(disk, fs->root_cluster, ".", entry))
-        {
-            return false;
-        }
         
         if (parent_cluster != 0)
         {
@@ -141,8 +136,13 @@ bool path_lookup(const disk_t *disk, const char *path, uint32_t *parent_cluster,
 
         if (leaf_name != 0)
         {
-            leaf_name[0] = '\0'
+            leaf_name[0] = '\0';
         }
+
+        
+        memset(entry, 0, sizeof(*entry));
+        entry->attributes = FAT32_ATTR_DIRECTORY;
+        directory_set_entry_cluster(entry, fs->root_cluster);
 
         return true;
     }
