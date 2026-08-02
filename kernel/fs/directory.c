@@ -485,19 +485,49 @@ bool directory_delete_in_cluster(const disk_t *disk, uint32_t cluster, const cha
 
 bool directory_delete(const disk_t *disk, const char *name)
 {
-    return directory_delete_in_cluster(disk, fs_current_directory(), name);
+    if (disk == 0 || name == 0)
+    {
+        return false;
+    }
+
+    uint32_t parent_cluster;
+    char leaf_name[64];
+    fat32_directory_entry_t entry;
+
+    if (!path_lookup(disk, name, &parent_cluster, &entry, leaf_name))
+    {
+        return false;
+    }
+
+    if (!(entry.attributes & FAT32_ATTR_DIRECTORY))
+    {
+        return false;
+    }
+
+    uint32_t cluster = directory_entry_cluster(&entry);
+
+    if (!directory_is_empty(disk, cluster))
+    {
+        return false;
+    }
+
+    if (!fat32_free_cluster_chain(disk, cluster))
+    {
+        return false;
+    }
+
+    return directory_delete_in_cluster(disk, parent_cluster, leaf_name);
 }
 
-bool directory_is_empty(const disk_t *disk, const fat32_directory_entry_t *entry)
+bool directory_is_empty(const disk_t *disk, uint32_t cluster)
 {
-    if (disk == 0 || entry == 0 )
+    if (disk == 0)
     {
         return false;
     }
 
     const fat32_filesystem_t *fs = fat32_get_filesystem();
 
-    uint32_t cluster = ((uint32_t)entry->first_cluster_high << 16) | entry->first_cluster_low;
     uint8_t sector[512];
 
     while (cluster < FAT32_CLUSTER_LAST)
@@ -579,7 +609,9 @@ bool directory_remove(const disk_t *disk, const char *name)
         return false;
     }
 
-    if (!directory_is_empty(disk, &entry))
+    uint32_t cluster = directory_entry_cluster(&entry);
+
+    if (!directory_is_empty(disk, cluster))
     {
         return false;
     }
