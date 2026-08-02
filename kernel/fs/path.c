@@ -101,6 +101,61 @@ bool path_normalize(path_t *path)
     return true;
 }
 
+bool path_build_absolute(const char *current_path, const char *input, char *output)
+{
+    if (current_path == 0 || input == 0 || output == 0)
+    {
+        return false;
+    }
+
+    path_t path;
+
+    if (input[0] == '/')
+    {
+        if (!path_split(input, &path))
+        {
+            return false;
+        }
+    }
+
+    else
+    {
+        char combined[512];
+        strcpy(combined, current_path);
+
+        if (strcmp(combined, "/") != 0)
+        {
+            strcat(combined, "/");
+        }
+
+        strcat(combined, input);
+
+        if (!path_split(combined, &path))
+        {
+            return false;
+        }
+    }
+
+    if (!path_normalize(&path))
+    {
+        return false;
+    }
+
+    strcpy(output, "/");
+
+    for (int i = 0; i < path.count; i++)
+    {
+        if (i != 0)
+        {
+            strcat(output, "/");
+        }
+
+        strcat(output, path.components[i]);
+    }
+
+    return true;
+}
+
 bool path_lookup(const disk_t *disk, const char *path, uint32_t *parent_cluster, fat32_directory_entry_t *entry, char *leaf_name)
 {
     if (disk == 0 || path == 0 || entry == 0)
