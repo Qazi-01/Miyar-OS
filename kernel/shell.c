@@ -273,9 +273,10 @@ static void cmd_echo(const char *args)
         return;
     }
 
+    uint32_t parent_cluster;
     fat32_directory_entry_t entry;
 
-    if (!path_resolve(disk, filename, &entry))
+    if (!path_lookup(disk, filename, &parent_cluster, &entry, 0))
     {
         if (!file_create(disk, filename))
         {
@@ -283,7 +284,7 @@ static void cmd_echo(const char *args)
             return;
         }
 
-        if (!path_resolve(disk, filename, &entry))
+        if (!path_lookup(disk, filename, &parent_cluster, &entry, 0))
         {
             terminal_writeIn("File not found.");
             return;
@@ -298,7 +299,7 @@ static void cmd_echo(const char *args)
 
     file_t file;
 
-    if (!file_open(disk, &entry, &file))
+    if (!file_open(disk, parent_cluster, &entry, &file))
     {
         terminal_writeIn("Unable to open file.");
         return;
@@ -422,9 +423,10 @@ static void cmd_cat(const char *args)
         return;
     }
 
+    uint32_t parent_cluster;
     fat32_directory_entry_t entry;
 
-    if (!path_resolve(disk, args, &entry))
+    if (!path_lookup(disk, args, &parent_cluster, &entry, 0))
     {
         terminal_writeIn("File not found.");
         return;
@@ -438,7 +440,7 @@ static void cmd_cat(const char *args)
 
     file_t file;
 
-    if (!file_open(disk, &entry, &file))
+    if (!file_open(disk, parent_cluster, &entry, &file))
     {
         terminal_writeIn("Unable to open file.");
         return;

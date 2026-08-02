@@ -48,7 +48,7 @@ static bool file_write_cluster(const disk_t *disk, uint32_t cluster, const void 
     return true;
 }
 
-bool file_open(const disk_t *disk, const fat32_directory_entry_t *entry, file_t *file)
+bool file_open(const disk_t *disk, uint32_t parent_cluster, const fat32_directory_entry_t *entry, file_t *file)
 {
     if (disk == 0 || entry == 0 || file == 0)
     {
@@ -56,8 +56,8 @@ bool file_open(const disk_t *disk, const fat32_directory_entry_t *entry, file_t 
     }
 
     file->disk = disk;
-    file->parent_cluster = fs_current_directory();
-    file->first_cluster = ((uint32_t)entry->first_cluster_high << 16) | entry->first_cluster_low;
+    file->parent_cluster = parent_cluster;
+    file->first_cluster = directory_entry_cluster(entry);
     file->current_cluster = file->first_cluster;
     file->size = entry->file_size;
     file->position = 0;
@@ -351,9 +351,10 @@ bool file_copy(const disk_t *disk, const char *source, const char *destination)
         return false;
     }
 
+    uint32_t source_parent;
     fat32_directory_entry_t source_entry;
 
-    if (!path_resolve(disk, source, &source_entry))
+    if (!path_lookup(disk, source, &source_parent, &source_entry, 0))
     {
         return false;
     }
@@ -368,9 +369,10 @@ bool file_copy(const disk_t *disk, const char *source, const char *destination)
         return false;
     }
 
+    uint32_t destination_parent;
     fat32_directory_entry_t destination_entry;
 
-    if (!path_resolve(disk, destination, &destination_entry))
+    if (!path_lookup(disk, destination, &destination_parent, &destination_entry, 0))
     {
         return false;
     }
@@ -378,12 +380,12 @@ bool file_copy(const disk_t *disk, const char *source, const char *destination)
     file_t source_file;
     file_t destination_file;
 
-    if (!file_open(disk, &source_entry, &source_file))
+    if (!file_open(disk, source_parent, &source_entry, &source_file))
     {
         return false;
     }
 
-    if (!file_open(disk, &destination_entry, &destination_file))
+    if (!file_open(disk, destination_parent, &destination_entry, &destination_file))
     {
         return false;
     }
