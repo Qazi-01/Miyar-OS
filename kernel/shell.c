@@ -290,6 +290,12 @@ static void cmd_echo(const char *args)
         }
     }
 
+    if (entry.attributes & FAT32_ATTR_DIRECTORY)
+    {
+        terminal_writeIn("Cannot write to a directory.");
+        return;
+    }
+
     file_t file;
 
     if (!file_open(disk, &entry, &file))
