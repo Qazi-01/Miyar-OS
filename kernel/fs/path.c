@@ -175,14 +175,33 @@ bool path_lookup(const disk_t *disk, const char *path, uint32_t *parent_cluster,
         return false;
     }
 
+    const fat32_filesystem_t *fs = fat32_get_filesystem();
+
+    if (!parsed.absolute && parsed.count == 1 && strcmp(parsed.components[0], "..") == 0 && fs_current_directory() == fs->root_cluster)
+    {
+        memset(entry, 0, sizeof(*entry));
+        entry->attributes = FAT32_ATTR_DIRECTORY;
+        directory_set_entry_cluster(entry, fs->root_cluster);
+
+        if (parent_cluster != 0)
+        {
+            *parent_cluster = fs->root_cluster;
+        }
+
+        if (leaf_name != 0)
+        {
+            strcpy(leaf_name, "..");
+        }
+
+        return true;
+    }
+
     if (parsed.count == 0)
     {
         if (!parsed.absolute)
         {
             return false;
         }
-
-        const fat32_filesystem_t *fs = fat32_get_filesystem();
         
         if (parent_cluster != 0)
         {
@@ -207,7 +226,6 @@ bool path_lookup(const disk_t *disk, const char *path, uint32_t *parent_cluster,
         strcpy(leaf_name, parsed.components[parsed.count - 1]);
     }
 
-    const fat32_filesystem_t *fs = fat32_get_filesystem();
     uint32_t cluster = parsed.absolute ? fs->root_cluster : fs_current_directory();
     fat32_directory_entry_t current;
 
