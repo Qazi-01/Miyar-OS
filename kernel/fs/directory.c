@@ -757,17 +757,6 @@ bool directory_change(const disk_t *disk, const char *name)
         return false;
     }
 
-    if (strcmp(name, "/") == 0)
-    {
-        const fat32_filesystem_t *fs = fat32_get_filesystem();
-        return fs_set_current_directory(fs->root_cluster, "/");
-    }
-
-    if (strcmp(name, "..") == 0 && strcmp(fs_get_current_path(), "/") == 0)
-    {
-        return true;
-    }
-
     fat32_directory_entry_t entry;
 
     if (!path_resolve(disk, name, &entry))
@@ -783,39 +772,9 @@ bool directory_change(const disk_t *disk, const char *name)
     uint32_t cluster = directory_entry_cluster(&entry);
     char path[256];
 
-    if (strcmp(name, "..") == 0)
+    if (!path_build_absolute(fs_get_current_path(), name, path))
     {
-        strcpy(path, fs_get_current_path());
-
-        if (strcmp(path, "/") != 0)
-        {
-            char *last = strrchr(path, '/');
-
-            if (last == path)
-            {
-                path[1] = '\0';
-            }
-
-            else if (last != 0)
-            {
-                *last = '\0';
-            }
-        }
-
-        return fs_set_current_directory(cluster, path);
-    }
-
-    if (strcmp(fs_get_current_path(), "/") == 0)
-    {
-        strcpy(path, "/");
-        strcat(path, name);
-    }
-
-    else
-    {
-        strcpy(path, fs_get_current_path());
-        strcat(path, "/");
-        strcat(path, name);
+        return false;
     }
 
     return fs_set_current_directory(cluster, path);
