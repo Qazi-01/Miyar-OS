@@ -171,9 +171,11 @@ bool file_delete(const disk_t *disk, const char *name)
         return false;
     }
 
+    uint32_t parent_cluster;
+    char leaf_name[64];
     fat32_directory_entry_t entry;
 
-    if (!path_resolve(disk, name, &entry))
+    if (!path_lookup(disk, name, &parent_cluster, &entry, leaf_name))
     {
         return false;
     }
@@ -183,7 +185,7 @@ bool file_delete(const disk_t *disk, const char *name)
         return false;
     }
 
-    uint32_t first_cluster = ((uint32_t)entry.first_cluster_high << 16) | entry.first_cluster_low;
+    uint32_t first_cluster = directory_entry_cluster(&entry);
 
     if (first_cluster != 0)
     {
@@ -193,7 +195,7 @@ bool file_delete(const disk_t *disk, const char *name)
         }
     }
 
-    return directory_delete(disk, name);
+    return directory_delete_in_cluster(disk, parent_cluster, leaf_name);
 }
 
 static int file_write_internal(file_t *file, const void *buffer, uint32_t size)
