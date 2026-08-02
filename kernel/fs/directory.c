@@ -197,8 +197,14 @@ bool directory_create_entry_in_cluster(const disk_t *disk, uint32_t cluster, con
         return false;
     }
 
+    if (cluster < 2)
+    {
+        return false;
+    }
+
     const fat32_filesystem_t *fs = fat32_get_filesystem();
     uint8_t sector[512];
+    uint32_t start_cluster = cluster;
 
     while (cluster < FAT32_CLUSTER_LAST)
     {
@@ -234,7 +240,20 @@ bool directory_create_entry_in_cluster(const disk_t *disk, uint32_t cluster, con
         cluster = fat32_next_cluster(disk, cluster);
     }
 
-    return false;
+    uint32_t new_cluster = fat32_allocate_cluster(disk);
+
+    if (new_cluster == 0)
+    {
+        return false;
+    }
+
+    if (!fat32_append_cluster(disk, start_cluster, new_cluster))
+    {
+        fat32_free_cluster_chain(disk, new_cluster);
+        return false;
+    }
+
+    return directory_write_entry(disk, new_cluster, entry);
 }
 
 bool directory_create_entry(const disk_t *disk, const fat32_directory_entry_t *entry)
