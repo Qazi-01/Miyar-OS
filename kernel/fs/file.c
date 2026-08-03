@@ -6,6 +6,76 @@
 #include "lib/string.h"
 #include "fs/directory.h"
 
+static bool file_resolve_destination(const disk_t *disk, const char *new_name, uint32_t *parent_cluster, char *leaf_name)
+{
+    if (disk == 0 || new_name == 0 || parent_cluster == 0 || leaf_name == 0)
+    {
+        return false;
+    }
+
+    path_t parsed;
+
+    if (!path_split(new_name, &parsed) || !path_normalize(&parsed))
+    {
+        return false;
+    }
+
+    if (parsed.count == 0)
+    {
+        return false;
+    }
+
+    if (parsed.count == 1)
+    {
+        *parent_cluster = fs_current_directory();
+        strcpy(leaf_name, parsed.components[0]);
+        return true;
+    }
+
+    char parent_path[256];
+    int pos = 0;
+
+    if (parsed.absolute)
+    {
+        parent_path[pos++] = '/';
+    }
+
+    for (int i = 0; i < parsed.count - 1; i++)
+    {
+        if (i > 0 || parsed.absolute)
+        {
+            parent_path[pos++] = '/';
+        }
+
+        int component_length = strlen(parsed.components[i]);
+
+        if (pos + component_length >= (int)sizeof(parent_path))
+        {
+            return false;
+        }
+
+        memcpy(parent_path + pos, parsed.components[i], component_length);
+        pos += component_length;
+    }
+
+    parent_path[pos] = '\0';
+
+    if (parent_path[0] == '\0')
+    {
+        strcpy(parent_path, ".");
+    }
+
+    fat32_directory_entry_t parent_entry;
+
+    if (!path_lookup(disk, parent_path, parent_cluster, &parent_entry, 0))
+    {
+        return false;
+    }
+
+    strcpy(leaf_name, parsed.components[parsed.count - 1]);
+    return true;
+}
+
 static bool file_read_cluster(const disk_t *disk, uint32_t cluster, void *buffer)
 {
     if (disk == 0 || buffer == 0)
@@ -429,36 +499,47 @@ bool file_move(const disk_t *disk, const char *old_name, const char *new_name)
     }
 
     uint32_t source_parent = 0;
+    char source_leaf[PATH_MAX_NAME] = {0};
     fat32_directory_entry_t entry;
 
-    if (!path_lookup(disk, old_name, &source_parent, &entry, 0))
+    if (!path_lookup(disk, old_name, &source_parent, &entry, source_leaf))
     {
         return false;
     }
 
     uint32_t destination_parent = 0;
-    char leaf_name[PATH_MAX_NAME] = {0};
+    char destination_leaf[PATH_MAX_NAME] = {0};
     fat32_directory_entry_t existing;
 
-    if (path_lookup(disk, new_name, &destination_parent, &existing, leaf_name))
+    if (!file_resolve_destination(disk, new_name, &destination_parent, destination_leaf))
     {
         return false;
     }
 
-    if (destination_parent < 2 || leaf_name[0] == '\0')
+    if (path_lookup(disk, new_name, 0, &existing, 0))
     {
         return false;
     }
-    
-    if (!directory_set_name(&entry, leaf_name))
+
+    if (source_leaf[0] == '\0' || destination_leaf[0] == '\0')
+    {
+        return false;
+    }
+
+    if (destination_parent < 2)
+    {
+        return false;
+    }
+
+    if (!directory_set_name(&entry, destination_leaf))
     {
         return false;
     }
 
     if (source_parent == destination_parent)
     {
-        return directory_rename_entry(disk, source_parent, old_name, &entry);
+        return directory_rename_entry(disk, source_parent, source_leaf, &entry);
     }
 
-    return directory_move_entry(disk, source_parent, destination_parent, old_name, &entry);
+    return directory_move_entry(disk, source_parent, destination_parent, source_leaf, &entry);
 }
