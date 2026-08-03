@@ -296,18 +296,34 @@ bool directory_find(const disk_t *disk, const char *name, fat32_directory_entry_
     return directory_find_in_cluster(disk, fs_current_directory(), name, entry);
 }
 
-void directory_set_name(fat32_directory_entry_t *entry, const char *name)
+bool directory_set_name(fat32_directory_entry_t *entry, const char *name)
 {
     if (entry == 0 || name == 0)
     {
-        return;
+        return false;
     }
 
-    memset(entry->name, ' ', 11);
-    uint32_t i = 0;
+    char short_name[11];
+    memset(short_name, ' ', sizeof(short_name));
 
-    while (*name && *name != '.' && i < 8)
+    uint32_t base_length = 0;
+    uint32_t extension_length = 0;
+    bool in_extension = false;
+
+    while (*name)
     {
+        if (*name == '.')
+        {
+            if (in_extension || base_length == 0)
+            {
+                return false;
+            }
+
+            in_extension = true;
+            name++;
+            continue;
+        }
+
         char c = *name++;
 
         if (c >= 'a' && c <= 'z')
@@ -315,27 +331,35 @@ void directory_set_name(fat32_directory_entry_t *entry, const char *name)
             c -= 32;
         }
 
-        entry->name[i++] = c;
-    }
-
-    if (*name == '.')
-    {
-        name++;
-    }
-
-    i = 8;
-
-    while (*name && i < 11)
-    {
-        char c = *name++;
-
-        if (c >= 'a' && c <= 'z')
+        if (in_extension)
         {
-            c -= ('a' - 'A');
-        }
+            if (extension_length >= 3)
+            {
+                return false;
+            }
 
-        entry->name[i++] = c;
+            short_name[8 + extension_length] = c;
+            extension_length++;
+        }
+        else
+        {
+            if (base_length >= 8)
+            {
+                return false;
+            }
+
+            short_name[base_length] = c;
+            base_length++;
+        }
     }
+
+    if (base_length == 0 || (in_extension && extension_length == 0))
+    {
+        return false;
+    }
+
+    memcpy(entry->name, short_name, sizeof(short_name));
+    return true;
 }
 
 static bool directory_write_entry(const disk_t *disk, uint32_t cluster, const fat32_directory_entry_t *entry)
@@ -396,7 +420,11 @@ bool directory_create(const disk_t *disk, const char *name)
 
     fat32_directory_entry_t entry;
     memset(&entry, 0, sizeof(entry));
-    directory_set_name(&entry, leaf_name);
+    if (!directory_set_name(&entry, leaf_name))
+    {
+        fat32_free_cluster_chain(disk, cluster);
+        return false;
+    }
 
     entry.attributes = FAT32_ATTR_DIRECTORY;
     entry.first_cluster_high = cluster >> 16;
@@ -796,7 +824,10 @@ bool directory_rename(const disk_t *disk, const char *old_name, const char *new_
         return false;
     }
 
-    directory_set_name(&entry, new_name);
+    if (!directory_set_name(&entry, new_name))
+    {
+        return false;
+    }
 
     return directory_rename_entry(disk, fs_current_directory(), old_name, &entry);
 }

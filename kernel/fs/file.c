@@ -140,8 +140,8 @@ bool file_create(const disk_t *disk, const char *name)
         return false;
     }
 
-    uint32_t parent_cluster;
-    char leaf_name[PATH_MAX_NAME];
+    uint32_t parent_cluster = 0;
+    char leaf_name[PATH_MAX_NAME] = {0};
     fat32_directory_entry_t existing;
 
     bool exists = path_lookup(disk, name, &parent_cluster, &existing, leaf_name);
@@ -151,9 +151,17 @@ bool file_create(const disk_t *disk, const char *name)
         return false;
     }
 
+    if (parent_cluster < 2 || leaf_name[0] == '\0')
+    {
+        return false;
+    }
+
     fat32_directory_entry_t entry;
     memset(&entry, 0, sizeof(entry));
-    directory_set_name(&entry, leaf_name);
+    if (!directory_set_name(&entry, leaf_name))
+    {
+        return false;
+    }
 
     entry.attributes = 0x20;
 
@@ -420,12 +428,37 @@ bool file_move(const disk_t *disk, const char *old_name, const char *new_name)
         return false;
     }
 
+    uint32_t source_parent = 0;
     fat32_directory_entry_t entry;
 
-    if (path_resolve(disk, new_name, &entry))
+    if (!path_lookup(disk, old_name, &source_parent, &entry, 0))
     {
         return false;
     }
 
-    return directory_rename(disk, old_name, new_name);
+    uint32_t destination_parent = 0;
+    char leaf_name[PATH_MAX_NAME] = {0};
+    fat32_directory_entry_t existing;
+
+    if (path_lookup(disk, new_name, &destination_parent, &existing, leaf_name))
+    {
+        return false;
+    }
+
+    if (destination_parent < 2 || leaf_name[0] == '\0')
+    {
+        return false;
+    }
+    
+    if (!directory_set_name(&entry, leaf_name))
+    {
+        return false;
+    }
+
+    if (source_parent == destination_parent)
+    {
+        return directory_rename_entry(disk, source_parent, old_name, &entry);
+    }
+
+    return directory_move_entry(disk, source_parent, destination_parent, old_name, &entry);
 }

@@ -97,6 +97,11 @@ static int streq(const char *a, const char *b)
 
 static void split_command(const char *input, char *command, char *args)
 {
+    while (*input == ' ')
+    {
+        input++;
+    }
+
     uint32_t i = 0;
 
     while (*input && *input != ' ' && i < 31)
@@ -108,7 +113,10 @@ static void split_command(const char *input, char *command, char *args)
 
     if (*input == ' ')
     {
-        input++;
+        while (*input == ' ')
+        {
+            input++;
+        }
     }
 
     uint32_t j = 0;
@@ -238,6 +246,11 @@ static void cmd_echo(const char *args)
     while (text_length > 0 && args[text_length - 1] == ' ')
     {
         text_length--;
+    }
+
+    if (text_length >= sizeof(text))
+    {
+        text_length = sizeof(text) - 1;
     }
 
     memcpy(text, args, text_length);
@@ -552,29 +565,12 @@ static void cmd_cp(const char *args)
     char source[128];
     char destination[128];
 
-    uint32_t i = 0;
-
-    while (*args && *args != ' ' && i < sizeof(source) - 1)
+    if (!get_next_argument(&args, source, sizeof(source)) || !get_next_argument(&args, destination, sizeof(destination)))
     {
-        source[i++] = *args++;
+        terminal_writeIn("Usage: cp <source> <destination>");
+        return;
     }
-
-    source[i] = '\0';
-
-    while (*args == ' ')
-    {
-        args++;
-    }
-
-    i = 0;
-
-    while (*args && i < sizeof(destination) - 1)
-    {
-        destination[i++] = *args++;
-    }
-
-    destination[i] = '\0';
-
+    
     if (source[0] == '\0' || destination[0] == '\0')
     {
         terminal_writeIn("Usage: cp <source> <destination>");
@@ -600,28 +596,11 @@ static void cmd_mv(const char *args)
     char old_name[128];
     char new_name[128];
 
-    uint32_t i = 0;
-
-    while (*args && *args != ' ' && i < sizeof(old_name) - 1)
+    if (!get_next_argument(&args, old_name, sizeof(old_name)) || !get_next_argument(&args, new_name, sizeof(new_name)))
     {
-        old_name[i++] = *args++;
+        terminal_writeIn("Usage: mv <old> <new>");
+        return;
     }
-
-    old_name[i] = '\0';
-
-    while (*args == ' ')
-    {
-        args++;
-    }
-
-    i = 0;
-
-    while (*args && i < sizeof(new_name) - 1)
-    {
-        new_name[i++] = *args++;
-    }
-
-    new_name[i] = '\0';
 
     if (old_name[0] == '\0' || new_name[0] == '\0')
     {
