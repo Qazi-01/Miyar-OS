@@ -8,8 +8,7 @@ MiyarOS was created to understand how an operating system works from the ground 
 
 ## Current Version
 
-## v0.3 - Filesystem
-
+**v0.3 - Filesystem**:
 A bootable release ISO is available in the `release/` directory and on the project's GitHub Releases page.
 
 ## Highlights
