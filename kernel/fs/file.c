@@ -89,7 +89,7 @@ int file_read(file_t *file, void *buffer, uint32_t size)
     uint32_t cluster_size = fs->bytes_per_sector * fs->sectors_per_cluster;
     uint8_t cluster_buffer[4096];
 
-    if (cluster_size > 4096)
+    if (cluster_size == 0 || cluster_size > sizeof(cluster_buffer))
     {
         return -1;
     }
