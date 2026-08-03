@@ -445,7 +445,7 @@ bool directory_create(const disk_t *disk, const char *name)
     memcpy(dot.name, ".          ", 11);
 
     dot.attributes = FAT32_ATTR_DIRECTORY;
-
+    directory_set_entry_cluster(&dot, cluster);
     fat32_directory_entry_t dotdot;
     memset(&dotdot, 0, sizeof(dotdot));
     memcpy(dotdot.name, "..         ", 11);
