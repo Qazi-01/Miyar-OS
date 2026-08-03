@@ -130,7 +130,7 @@ static void split_command(const char *input, char *command, char *args)
 
 static bool get_next_argument(const char **input, char *output, uint32_t size)
 {
-    if (input == 0 || *input == 0 || output == 0)
+    if (input == 0 || *input == 0 || output == 0 || size == 0)
     {
         return false;
     }
