@@ -400,8 +400,8 @@ bool directory_create(const disk_t *disk, const char *name)
         return false;
     }
 
-    uint32_t parent_cluster;
-    char leaf_name[PATH_MAX_NAME];
+    uint32_t parent_cluster = 0;
+    char leaf_name[PATH_MAX_NAME] = {0};
     fat32_directory_entry_t existing;
 
     bool exists = path_lookup(disk, name, &parent_cluster, &existing, leaf_name);
@@ -410,7 +410,11 @@ bool directory_create(const disk_t *disk, const char *name)
     {
         return false;
     }
-    
+
+    if (parent_cluster < 2 || leaf_name[0] == '\0')
+    {
+        return false;
+    }
     uint32_t cluster = fat32_allocate_cluster(disk);
 
     if (cluster == 0)
