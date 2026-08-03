@@ -1,6 +1,6 @@
 # Miyar-OS
 
-MiyarOS is a hobby operating system for 32-bit x86 that boots with GRUB and follows the Multiboot specification. The kernel is written entirely in C and x86 Assembly and is developed from scratch as a learning project. It currently features memory management, a FAT32 filesystem, a command-line shell, device drivers, interrupt handling, and virtual memory.
+MiyarOS is a hobby operating system for 32-bit x86 that boots with GRUB and follows the Multiboot specification. The kernel is written entirely in C and x86 Assembly and is developed from scratch as a learning project. It currently features physical and virtual memory management, a fully functional FAT32 filesystem, an interactive command-line shell, hardware device drivers, interrupt handling, and paging.
 
 ## Why I Built It
 
@@ -11,6 +11,17 @@ MiyarOS was created to understand how an operating system works from the ground 
 ## v0.3 - Filesystem
 
 A bootable release ISO is available in the `release/` directory and on the project's GitHub Releases page.
+
+## Highlights
+
+* 32-bit x86 kernel written from scratch in C and x86 Assembly.
+* GRUB Multiboot compliant.
+* Physical and virtual memory management.
+* Fully functional FAT32 filesystem.
+* Unix-like shell with filesystem commands.
+* Absolute and relative path resolution.
+* Multi-cluster file support.
+* Open-source and built as a learning project.
 
 ## Releases
 
@@ -46,19 +57,19 @@ Alternatively, clone the repository and build MiyarOS from source using the prov
 
 * ATA PIO disk driver.
 * Disk abstraction layer.
-* FAT32 filesystem detection.
+* FAT32 filesystem detection and mounting.
 * FAT table management.
 * Cluster allocation and deallocation.
-* Multi-cluster file reading.
-* Multi-cluster file writing.
+* Multi-cluster file reading and writing.
 * File appending.
 * FAT32 directory traversal.
 * File and directory lookup.
-* File creation and deletion.
+* File creation, deletion, copying, and renaming.
 * Directory creation and deletion.
-* File copy.
-* File rename (move).
-* Path resolution.
+* Absolute and relative path resolution.
+* Current working directory support.
+* Path normalization (`.`, `..`, `/`).
+* FAT32 8.3 filename support.
 
 ### Drivers
 
@@ -69,31 +80,37 @@ Alternatively, clone the repository and build MiyarOS from source using the prov
 
 ### Shell
 
-* Table-driven interactive shell.
-* Filesystem integration.
+* Interactive command-line shell.
+* Table-driven command dispatcher.
+* FAT32 filesystem integration.
+* Absolute and relative path support.
 * Output redirection using `>` and `>>`.
 
 ## Built-In Shell Commands
 
-| Command          | Description                             |
-| ---------------- | --------------------------------------- |
-| `help`           | Shows the built-in command list.        |
-| `about`          | Displays project information.           |
-| `echo <msg>`     | Prints text or redirects it to a file.  |
-| `ls`             | Lists files and directories.            |
-| `cat <file>`     | Displays a file's contents.             |
-| `touch <file>`   | Creates an empty file.                  |
-| `mkdir <dir>`    | Creates a directory.                    |
-| `rm <file>`      | Deletes a file.                         |
-| `rmdir <dir>`    | Deletes an empty directory.             |
-| `cp <src> <dst>` | Copies a file.                          |
-| `mv <old> <new>` | Renames a file.                         |
-| `uptime`         | Shows the number of seconds since boot. |
-| `clear`          | Clears the VGA text screen.             |
-| `reboot`         | Reboots the machine.                    |
-| `shutdown`       | Attempts to power off the machine.      |
-| `exception`      | Triggers a divide-by-zero exception.    |
-| `pagefault`      | Triggers a page fault.                  |
+| Command                 | Description                                    |
+| ----------------------- | ---------------------------------------------- |
+| `help`                  | Shows the list of available commands.          |
+| `about`                 | Displays information about MiyarOS.            |
+| `clear`                 | Clears the VGA text screen.                    |
+| `uptime`                | Displays the time elapsed since boot.          |
+| `pwd`                   | Prints the current working directory.          |
+| `cd <dir>`              | Changes the current working directory.         |
+| `ls [dir]`              | Lists the contents of a directory.             |
+| `cat <file>`            | Displays the contents of a file.               |
+| `touch <file>`          | Creates an empty file.                         |
+| `mkdir <dir>`           | Creates a new directory.                       |
+| `rm <file>`             | Deletes a file.                                |
+| `rmdir <dir>`           | Deletes an empty directory.                    |
+| `cp <src> <dst>`        | Copies a file.                                 |
+| `mv <old> <new>`        | Renames or moves a file.                       |
+| `echo <text>`           | Prints text to the terminal.                   |
+| `echo <text> > <file>`  | Writes text to a file, replacing its contents. |
+| `echo <text> >> <file>` | Appends text to the end of a file.             |
+| `reboot`                | Reboots the machine.                           |
+| `shutdown`              | Attempts to power off the machine.             |
+| `exception`             | Triggers a divide-by-zero exception.           |
+| `pagefault`             | Triggers a page fault.                         |
 
 ## Repository Structure
 
@@ -227,13 +244,13 @@ qemu-system-i386 -curses -cdrom release/MiyarOS-v0.3.iso
 
 #### v0.3 - Filesystem
 
-* ATA disk driver
-* FAT32 filesystem
-* File management
-* Directory management
-* Path resolution
+* ATA PIO disk driver
+* FAT32 filesystem implementation
+* File and directory management
 * Multi-cluster file I/O
-* Filesystem shell commands
+* Absolute and relative path resolution
+* Current working directory
+* Integrated filesystem shell commands
 
 ### Planned
 
