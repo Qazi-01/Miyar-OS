@@ -155,6 +155,11 @@ static bool get_next_argument(const char **input, char *output, uint32_t size)
 
     output[i] = '\0';
 
+    while (**input && **input != ' ')
+    {
+        (*input)++;
+    }
+
     return true;
 }
 
