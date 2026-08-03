@@ -211,14 +211,39 @@ make run
 Or manually:
 
 ```bash
-qemu-system-i386 -cdrom release/MiyarOS-v0.3.iso
+qemu-system-i386 \
+    -cdrom release/MiyarOS-v0.3.iso \
+    -drive file=disk.img,format=raw
 ```
 
 Terminal-only:
 
 ```bash
-qemu-system-i386 -curses -cdrom release/MiyarOS-v0.3.iso
+qemu-system-i386 \
+    -curses \
+    -cdrom release/MiyarOS-v0.3.iso \
+    -drive file=disk.img,format=raw
 ```
+
+## Disk Image
+
+MiyarOS requires a FAT32-formatted disk image for filesystem support.
+
+Create a 64 MB disk image:
+
+```bash
+dd if=/dev/zero of=disk.img bs=1M count=64
+```
+
+Format it as FAT32:
+
+```bash
+mkfs.fat -F 32 disk.img
+```
+
+Place `disk.img` in the project root (alongside the `Makefile`).
+
+> **Note:** The disk image is not included in the repository and must be created before using the filesystem.
 
 ## Roadmap
 
