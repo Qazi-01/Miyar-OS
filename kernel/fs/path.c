@@ -22,6 +22,11 @@ bool path_split(const char *path, path_t *result)
 
     while (*path)
     {
+        if (result->count >= PATH_MAX_COMPONENTS)
+        {
+            return false;
+        }
+
         int length = 0;
 
         while (*path && *path != '/')
@@ -32,11 +37,6 @@ bool path_split(const char *path, path_t *result)
             }
 
             result->components[result->count][length++] = *path++;
-        }
-
-        if (result->count >= PATH_MAX_COMPONENTS)
-        {
-            return false;
         }
 
         result->components[result->count][length] = '\0';
