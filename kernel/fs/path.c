@@ -120,19 +120,30 @@ bool path_build_absolute(const char *current_path, const char *input, char *outp
 
     else
     {
-        char combined[512];
-        strcpy(combined, current_path);
+        path_t base_path;
+        path_t input_path;
 
-        if (strcmp(combined, "/") != 0)
-        {
-            strcat(combined, "/");
-        }
-
-        strcat(combined, input);
-
-        if (!path_split(combined, &path))
+        if (!path_split(current_path, &base_path) || !path_split(input, &input_path))
         {
             return false;
+        }
+
+        if (base_path.count + input_path.count > PATH_MAX_COMPONENTS)
+        {
+            return false;
+        }
+
+        path.absolute = base_path.absolute;
+        path.count = 0;
+
+        for (int i = 0; i < base_path.count; i++)
+        {
+            strcpy(path.components[path.count++], base_path.components[i]);
+        }
+
+        for (int i = 0; i < input_path.count; i++)
+        {
+            strcpy(path.components[path.count++], input_path.components[i]);
         }
     }
 
@@ -141,16 +152,28 @@ bool path_build_absolute(const char *current_path, const char *input, char *outp
         return false;
     }
 
-    strcpy(output, "/");
+    const int output_capacity = 256;
+    int output_length = 1;
+    output[0] = '/';
+    output[1] = '\0';
 
     for (int i = 0; i < path.count; i++)
     {
-        if (i != 0)
+        int separator_length = (i != 0) ? 1 : 0;
+        int component_length = strlen(path.components[i]);
+
+        if (output_length + separator_length + component_length >= output_capacity)
         {
-            strcat(output, "/");
+            return false;
         }
 
-        strcat(output, path.components[i]);
+        if (i != 0)
+        {
+            output[output_length++] = '/';
+        }
+
+        memcpy(output + output_length, path.components[i], component_length + 1);
+        output_length += component_length;
     }
 
     return true;
