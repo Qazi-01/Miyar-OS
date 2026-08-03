@@ -1,4 +1,4 @@
-#include "keyboard.h"
+#include "drivers/keyboard.h"
 
 #define KEYBOARD_BUFFER_SIZE 128
 

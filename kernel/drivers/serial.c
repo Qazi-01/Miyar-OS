@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#include "io.h"
-#include "serial.h"
+#include "drivers/io.h"
+#include "drivers/serial.h"
 
 void serial_init(void) {
     outb(0x3F8 + 1, 0x00);

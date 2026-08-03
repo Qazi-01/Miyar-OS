@@ -4,14 +4,14 @@ LD=ld
 
 ASMFLAGS=-f elf32
 
-CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra -MMD -MP \
+CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra -MMD -MP -Ikernel/include \
 -I$(KERNELDIR) \
 -I$(KERNELDIR)/arch/x86 \
 -I$(KERNELDIR)/drivers \
 -I$(KERNELDIR)/memory \
 -I$(KERNELDIR)/fs
 
-LDFLAGS=-m elf_i386 -T src/arch/x86/linker.ld -z max-page-size=0x1000
+LDFLAGS=-m elf_i386 -T linker.ld -z max-page-size=0x1000
 
 SRCDIR=src
 KERNELDIR=kernel
@@ -42,7 +42,15 @@ $(BUILDDIR)/pmm.o \
 $(BUILDDIR)/heap.o \
 $(BUILDDIR)/paging.o \
 $(BUILDDIR)/vmm.o \
-$(BUILDDIR)/page_fault.o
+$(BUILDDIR)/page_fault.o \
+$(BUILDDIR)/ata.o \
+$(BUILDDIR)/string.o \
+$(BUILDDIR)/disk.o \
+$(BUILDDIR)/fs.o \
+$(BUILDDIR)/fat32.o \
+$(BUILDDIR)/directory.o \
+$(BUILDDIR)/file.o \
+$(BUILDDIR)/path.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -122,6 +130,30 @@ $(BUILDDIR)/vmm.o: $(KERNELDIR)/memory/vmm.c | $(BUILDDIR)
 $(BUILDDIR)/page_fault.o: $(KERNELDIR)/memory/page_fault.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILDDIR)/ata.o: $(KERNELDIR)/drivers/ata.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/string.o: $(KERNELDIR)/lib/string.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/disk.o: $(KERNELDIR)/drivers/disk.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/fs.o: $(KERNELDIR)/fs/fs.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/fat32.o: $(KERNELDIR)/fs/fat32.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/directory.o: $(KERNELDIR)/fs/directory.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/file.o: $(KERNELDIR)/fs/file.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/path.o: $(KERNELDIR)/fs/path.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 
@@ -133,7 +165,12 @@ $(ISO): $(KERNEL_ELF)
 > grub-mkrescue -o $@ $(ISODIR)
 
 run: $(ISO)
-> qemu-system-i386 -cdrom $(ISO) -nographic
+> qemu-system-i386 \
+    -cdrom miyaros.iso \
+    -drive file=disk.img,format=raw,if=ide,index=0 \
+    -boot d \
+    -m 256M \
+    -display curses
 
 clean:
 > rm -rf $(BUILDDIR) $(ISO)

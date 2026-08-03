@@ -13,11 +13,20 @@
 #include "drivers/timer.h"
 #include "terminal.h"
 #include "drivers/vga.h"
+#include "drivers/ata.h"
+#include "drivers/disk.h"
+#include "fs/fs.h"
+#include "fs/directory.h"
+#include "fs/file.h"
+#include "lib/string.h"
+#include "fs/path.h"
+#include "fs/fat32.h"
+
+#define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
 __attribute__((used))
 void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
-    #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
-
+    
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
     {
         terminal_init();
@@ -48,7 +57,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     terminal_init();
     terminal_writeIn("============================================================\n");
     terminal_writeIn("                        MIYAR OS");
-    terminal_writeIn("                          v0.1\n");
+    terminal_writeIn("                         v0.3.0\n");
     terminal_writeIn("============================================================\n");
     terminal_writeIn("");
     terminal_writeIn("Booting kernel...");
@@ -67,6 +76,35 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
 
     timer_init();
     terminal_writeIn("Initializing Timer................ [ OK ]");
+
+    ata_init();
+    terminal_writeIn("Initializing ATA.................. [ OK ]");
+    ata_detect_devices();
+    disk_init();
+
+    const disk_t *disk = disk_get(0);
+
+    if (disk)
+    {
+        terminal_writeIn("ATA Drive......................... [ OK ]");
+    }
+    
+    else
+    {
+        terminal_writeIn("ATA Drive......................... [FAIL]");
+    }
+
+    fs_init();
+
+    if (fs_mount(disk))
+    {
+        terminal_writeIn("Mounting filesystem............... [ OK ]");
+    }
+
+    else
+    {
+        terminal_writeIn("Mounting filesystem............... [FAIL]");
+    }
 
     __asm__ volatile("sti");
 

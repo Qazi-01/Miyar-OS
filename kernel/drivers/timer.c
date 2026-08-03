@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#include "io.h"
-#include "timer.h"
+#include "drivers/io.h"
+#include "drivers/timer.h"
 
 #define PIT_FREQUENCY 100
 #define PIT_COMMAND_PORT 0x43
