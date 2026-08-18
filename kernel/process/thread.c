@@ -1,4 +1,5 @@
 #include "process/thread.h"
+#include "memory/heap.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -12,13 +13,83 @@ void thread_init(void)
 
 thread_t *thread_create(void (*entry)(void), const char *name)
 {
-    (void)entry;
-    (void)name;
+    if (entry == 0)
+    {
+        return 0;
+    }
+
+    thread_t *thread = (thread_t *)kmalloc(sizeof(thread_t));
+
+    if (thread == 0)
+    {
+        return 0;
+    }
+
+    uint8_t *stack = (uint8_t *)kmalloc(THREAD_STACK_SIZE);
+
+    if (stack == 0)
+    {
+        kfree(thread);
+        return 0;
+    }
+
+    thread->tid = next_tid++;
+    thread->state = THREAD_READY;
+    thread->kernel_stack = (uint32_t)stack;
+    thread->kernel_stack_top = (uint32_t)(stack + THREAD_STACK_SIZE);
+    thread->entry = entry;
+    thread->next = 0;
+
+    for (uint32_t i = 0; i < THREAD_NAME_MAX; i++)
+    {
+        thread->name[i] = 0;
+        
+        if (name != 0 && name[i] != 0)
+        {
+            thread->name[i] = name[i];
+        }
+        else
+        {
+            break;
+        }
+    }
     
-    return 0;
+    uint32_t frame_address = thread->kernel_stack_top - sizeof(x86_thread_frame_t);
+    thread->frame = (x86_thread_frame_t *)frame_address;
+
+    thread->frame->gs = 0;
+    thread->frame->fs = 0;
+    thread->frame->es = 0;
+    thread->frame->ds = 0;
+    thread->frame->edi = 0;
+    thread->frame->esi = 0;
+    thread->frame->ebp = 0;
+    thread->frame->esp = 0;
+    thread->frame->ebx = 0;
+    thread->frame->edx = 0;
+    thread->frame->ecx = 0;
+    thread->frame->eax = 0;
+    thread->frame->int_no = 0;
+    thread->frame->err_code = 0;
+    thread->frame->eip = (uint32_t)entry;
+    thread->frame->cs = 0x08;
+    thread->frame->eflags = 0x202;
+    thread->saved_esp = frame_address;
+
+    return thread;
 }
 
 void thread_destroy(thread_t *thread)
 {
-    (void)thread;
+    if (thread == 0)
+    {
+        return;
+    }
+
+    if (thread->kernel_stack != 0)
+    {
+        kfree((void *)thread->kernel_stack);
+    }
+
+    kfree(thread);
 }
