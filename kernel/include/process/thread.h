@@ -3,23 +3,23 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <arch/x86/context.h>
 
 #define THREAD_NAME_MAX 32
 
-typedef enum
-{
+typedef enum {
     THREAD_READY,
     THREAD_RUNNING,
     THREAD_BLOCKED,
     THREAD_TERMINATED
 } thread_state_t;
 
-typedef struct thread
-{
+typedef struct thread {
     uint32_t tid;
     thread_state_t state;
     uint32_t kernel_stack;
     uint32_t kernel_stack_top;
+    x86_context_t context;
     void (*entry)(void);
     char name[THREAD_NAME_MAX];
     struct thread *next;
