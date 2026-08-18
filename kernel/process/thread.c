@@ -2,8 +2,7 @@
 #include "memory/heap.h"
 #include "terminal.h"
 #include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
+
 
 static uint32_t next_tid = 1;
 
