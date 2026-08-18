@@ -1,5 +1,6 @@
 #include "process/thread.h"
 #include "memory/heap.h"
+#include "terminal.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -64,7 +65,7 @@ thread_t *thread_create(void (*entry)(void), const char *name)
     thread->frame->edi = 0;
     thread->frame->esi = 0;
     thread->frame->ebp = 0;
-    thread->frame->esp = 0;
+    thread->frame->esp = thread->kernel_stack_top;
     thread->frame->ebx = 0;
     thread->frame->edx = 0;
     thread->frame->ecx = 0;
@@ -77,6 +78,33 @@ thread_t *thread_create(void (*entry)(void), const char *name)
     thread->saved_esp = frame_address;
 
     return thread;
+}
+
+static void thread_test(void)
+{
+    terminal_writeIn("Kernel thread started succesfully.");
+
+    while (1)
+    {
+        __asm__ volatile("hlt");
+    }
+}
+
+void thread_test_start(void)
+{
+    thread_t *thread = thread_create(thread_test, "test");
+
+    if (thread == 0)
+    {
+        return;
+    }
+
+    x86_context_restore(thread->saved_esp);
+
+    while (1)
+    {
+        __asm__ volatile("hlt");
+    }
 }
 
 void thread_destroy(thread_t *thread)

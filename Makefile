@@ -51,7 +51,8 @@ $(BUILDDIR)/fat32.o \
 $(BUILDDIR)/directory.o \
 $(BUILDDIR)/file.o \
 $(BUILDDIR)/path.o \
-$(BUILDDIR)/thread.o
+$(BUILDDIR)/thread.o \
+$(BUILDDIR)/context.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -159,6 +160,9 @@ $(BUILDDIR)/thread.o: $(KERNELDIR)/process/thread.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)
+> $(ASM) $(ASMFLAGS) $< -o $@
+
+$(BUILDDIR)/context.o: $(SRCDIR)/arch/x86/context.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 
 $(KERNEL_ELF): $(BOOT_OBJ) $(KERNEL_OBJS)

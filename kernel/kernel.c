@@ -21,6 +21,7 @@
 #include "lib/string.h"
 #include "fs/path.h"
 #include "fs/fat32.h"
+#include "process/thread.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -105,6 +106,9 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     {
         terminal_writeIn("Mounting filesystem............... [FAIL]");
     }
+
+    thread_init();
+    thread_test_start();
 
     __asm__ volatile("sti");
 
