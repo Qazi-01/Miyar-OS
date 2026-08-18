@@ -6,6 +6,7 @@
 #include <arch/x86/context.h>
 
 #define THREAD_NAME_MAX 32
+#define  THREAD_STACK_SIZE 4096
 
 typedef enum {
     THREAD_READY,
@@ -19,7 +20,8 @@ typedef struct thread {
     thread_state_t state;
     uint32_t kernel_stack;
     uint32_t kernel_stack_top;
-    x86_context_t context;
+    uint32_t saved_esp;
+    x86_thread_frame_t *frame;
     void (*entry)(void);
     char name[THREAD_NAME_MAX];
     struct thread *next;
