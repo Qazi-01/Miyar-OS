@@ -17,6 +17,14 @@ x86_context_switch:
     ; Preserve the original argument stack pointer.
     mov edx, esp
 
+    ; Build an interrupt-style frame for the current thread. The
+    ; resume stub consumes the original C return address correctly.
+    push dword 0x202
+    push dword 0x08
+    push dword .resume
+    push dword 0
+    push dword 0
+
     ; Save the current CPU context.
     pusha
 
@@ -50,5 +58,8 @@ x86_context_switch:
 
     ; Restore EIP, CS and EFLAGS.
     iretd
+
+.resume:
+    ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits

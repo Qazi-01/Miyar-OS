@@ -7,6 +7,7 @@ static uint32_t next_tid = 1;
 static thread_t *current_thread = 0;
 static thread_t *ready_queue_head = 0;
 static thread_t *ready_queue_tail = 0;
+static uint8_t thread_test_startup_printed = 0;
 
 void thread_init(void)
 {
@@ -62,10 +63,10 @@ thread_t *thread_create(void (*entry)(void), const char *name)
     uint32_t frame_address = thread->kernel_stack_top - sizeof(x86_thread_frame_t);
     thread->frame = (x86_thread_frame_t *)frame_address;
 
-    thread->frame->gs = 0;
-    thread->frame->fs = 0;
-    thread->frame->es = 0;
-    thread->frame->ds = 0;
+    thread->frame->gs = 0x10;
+    thread->frame->fs = 0x10;
+    thread->frame->es = 0x10;
+    thread->frame->ds = 0x10;
     thread->frame->edi = 0;
     thread->frame->esi = 0;
     thread->frame->ebp = 0;
@@ -86,7 +87,11 @@ thread_t *thread_create(void (*entry)(void), const char *name)
 
 static void thread_test(void)
 {
-    terminal_writeIn("Kernel thread started succesfully.");
+    if (thread_test_startup_printed == 0)
+    {
+        terminal_writeIn("Kernel thread started succesfully.");
+        thread_test_startup_printed = 1;
+    }
 
     while (1)
     {
