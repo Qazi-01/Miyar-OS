@@ -23,6 +23,6 @@ typedef struct {
     uint32_t eflags;
 } x86_thread_frame_t;
 
-void x86_context_restore(uint32_t saved_esp);
+void x86_context_switch(uint32_t *old_esp, uint32_t new_esp);
 
 #endif

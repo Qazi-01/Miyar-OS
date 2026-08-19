@@ -5,11 +5,15 @@
 
 static uint32_t next_tid = 1;
 static thread_t *current_thread = 0;
+static thread_t *ready_queue_head = 0;
+static thread_t *ready_queue_tail = 0;
 
 void thread_init(void)
 {
     next_tid = 1;
     current_thread = 0;
+    ready_queue_head = 0;
+    ready_queue_tail = 0;
 }
 
 thread_t *thread_create(void (*entry)(void), const char *name)
@@ -86,23 +90,40 @@ static void thread_test(void)
 
     while (1)
     {
-        __asm__ volatile("hlt");
+        thread_yield();
     }
 }
 
 void thread_test_start(void)
 {
-    thread_t *thread = thread_create(thread_test, "test");
+    thread_t *thread_a = thread_create(thread_test, "thread_a");
 
-    if (thread == 0)
+    if (thread_a == 0)
     {
         return;
     }
 
-    thread_set_current(thread);
-    thread->state = THREAD_RUNNING;
-    
-    x86_context_restore(thread->saved_esp);
+    thread_t *thread_b = thread_create(thread_test, "thread_b");
+
+    if (thread_b == 0)
+    {
+        return;
+    }
+
+    thread_enqueue(thread_a);
+    thread_enqueue(thread_b);
+
+    thread_t *first = thread_dequeue();
+
+    if (first == 0)
+    {
+        return;
+    }
+
+    thread_set_current(first);
+    first->state = THREAD_RUNNING;
+    uint32_t old_esp = 0;
+    x86_context_switch(&old_esp, first->saved_esp);
 
     while (1)
     {
@@ -133,4 +154,71 @@ void thread_set_current(thread_t *thread)
 thread_t *thread_current(void)
 {
     return current_thread;
+}
+
+void thread_enqueue(thread_t *thread)
+{
+    if (thread == 0)
+    {
+        return;
+    }
+
+    thread->next = 0;
+    thread->state = THREAD_READY;
+
+    if (ready_queue_tail == 0)
+    {
+        ready_queue_head = thread;
+        ready_queue_tail = thread;
+        return;
+    }
+
+    else
+    {
+        ready_queue_tail->next = thread;
+        ready_queue_tail = thread;
+    }
+}
+
+thread_t *thread_dequeue(void)
+{
+    thread_t *thread = ready_queue_head;
+
+    if (thread == 0)
+    {
+        return 0;
+    }
+
+    ready_queue_head = thread->next;
+
+    if (ready_queue_head == 0)
+    {
+        ready_queue_tail = 0;
+    }
+
+    thread->next = 0;
+    return thread;
+}
+
+void thread_yield(void)
+{
+    thread_t *current = thread_current();
+
+    if (current == 0)
+    {
+        return;
+    }
+
+    thread_t *next = thread_dequeue();
+
+    if (next == 0)
+    {
+        return;
+    }
+
+    current->state = THREAD_READY;
+    thread_enqueue(current);
+    next->state = THREAD_RUNNING;
+    thread_set_current(next);
+    x86_context_switch(&current->saved_esp, next->saved_esp);
 }
