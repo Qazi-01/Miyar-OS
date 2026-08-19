@@ -31,5 +31,7 @@ void thread_init(void);
 thread_t *thread_create(void (*entry)(void), const char *name);
 void thread_destroy(thread_t *thread);
 void thread_test_start(void);
+void thread_set_current(thread_t *thread);
+thread_t *thread_current(void);
 
 #endif

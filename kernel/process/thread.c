@@ -3,12 +3,13 @@
 #include "terminal.h"
 #include <stdint.h>
 
-
 static uint32_t next_tid = 1;
+static thread_t *current_thread = 0;
 
 void thread_init(void)
 {
     next_tid = 1;
+    current_thread = 0;
 }
 
 thread_t *thread_create(void (*entry)(void), const char *name)
@@ -98,6 +99,9 @@ void thread_test_start(void)
         return;
     }
 
+    thread_set_current(thread);
+    thread->state = THREAD_RUNNING;
+    
     x86_context_restore(thread->saved_esp);
 
     while (1)
@@ -119,4 +123,14 @@ void thread_destroy(thread_t *thread)
     }
 
     kfree(thread);
+}
+
+void thread_set_current(thread_t *thread)
+{
+    current_thread = thread;
+}
+
+thread_t *thread_current(void)
+{
+    return current_thread;
 }
