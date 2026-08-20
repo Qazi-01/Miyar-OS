@@ -7,9 +7,13 @@ static uint32_t next_tid = 1;
 static thread_t *current_thread = 0;
 static thread_t *ready_queue_head = 0;
 static thread_t *ready_queue_tail = 0;
+static thread_t *idle_thread_instance = 0;
+static thread_t *blocking_test_target = 0;
 
 static void first_thread(void);
 static void second_thread(void);
+static void idle_thread(void);
+static void blocking_thread(void);
 
 void thread_init(void)
 {
@@ -17,6 +21,8 @@ void thread_init(void)
     current_thread = 0;
     ready_queue_head = 0;
     ready_queue_tail = 0;
+    
+    idle_thread_instance = thread_create(idle_thread, "idle");
 }
 
 thread_t *thread_create(void (*entry)(void), const char *name)
@@ -132,6 +138,11 @@ void thread_destroy(thread_t *thread)
         return;
     }
 
+    if (thread == current_thread)
+    {
+        return;
+    }
+
     if (thread->kernel_stack != 0)
     {
         kfree((void *)thread->kernel_stack);
@@ -197,8 +208,9 @@ thread_t *thread_dequeue(void)
 void thread_yield(void)
 {
     thread_t *current = thread_current();
+    thread_t *idle = thread_idle();
 
-    if (current == 0)
+    if (current == 0 || current == idle)
     {
         return;
     }
@@ -230,5 +242,149 @@ static void second_thread(void)
     while (1)
     {
         terminal_writeIn("Thread 2 is running.");
+    }
+}
+
+void thread_block(void)
+{
+    thread_t *current = thread_current();
+
+    if (current == 0)
+    {
+        return;
+    }
+
+    current->state = THREAD_BLOCKED;
+    thread_t *next = thread_dequeue();
+
+    if (next == 0)
+    {
+        next = thread_idle();
+
+        if (next == 0)
+        {
+            return;
+        }
+    }
+
+    next->state = THREAD_RUNNING;
+    thread_set_current(next);
+    x86_context_switch(&current->saved_esp, next->saved_esp);
+}
+
+void thread_unblock(thread_t *thread)
+{
+    if (thread == 0)
+    {
+        return;
+    }
+
+    if (thread->state != THREAD_BLOCKED)
+    {
+        return;
+    }
+
+    thread_enqueue(thread);
+}
+
+void thread_terminate(void)
+{
+    thread_t *current = thread_current();
+
+    if (current == 0)
+    {
+        return;
+    }
+
+    current->state = THREAD_TERMINATED;
+}
+
+static void idle_thread(void)
+{
+    while (1)
+    {
+        __asm__ volatile("hlt");
+    }
+}
+
+thread_t *thread_idle(void)
+{
+    return idle_thread_instance;
+}
+
+static void blocking_thread(void)
+{
+    terminal_writeIn("Blocking thread started.");
+    thread_block();
+    terminal_writeIn("Blocking thread resumed.");
+
+    while (1)
+    {
+        thread_yield();
+    }
+}
+
+static void blocking_test_controller(void)
+{
+    terminal_writeIn("Controller thread started.");
+
+    while (blocking_test_target == 0)
+    {
+        thread_yield();
+    }
+
+    while (blocking_test_target->state != THREAD_BLOCKED)
+    {
+        thread_yield();
+    }
+
+    terminal_writeIn("Unblocking thread.");
+    thread_unblock(blocking_test_target);
+    blocking_test_target = 0;
+
+    while (1)
+    {
+        thread_yield();
+    }
+}
+
+void thread_blocking_test_start(void)
+{
+    thread_t *blocked = thread_create(blocking_thread, "Blocked");
+    thread_t *controller = thread_create(blocking_test_controller, "Controller");
+
+    if (blocked == 0 || controller == 0)
+    {
+        if (blocked != 0)
+        {
+            thread_destroy(blocked);
+        }
+
+        if (controller != 0)
+        {
+            thread_destroy(controller);
+        }
+
+        return;
+    }
+
+    blocking_test_target = blocked;
+    thread_enqueue(blocked);
+    thread_enqueue(controller);
+    thread_t *first = thread_dequeue();
+
+    if (first == 0)
+    {
+        return;
+    }
+
+    thread_set_current(first);
+    first->state = THREAD_RUNNING;
+    uint32_t old_esp = 0;
+    x86_context_switch(&old_esp, first->saved_esp);
+
+    while (1)
+    {
+        __asm__ volatile("hlt");
     }
 }

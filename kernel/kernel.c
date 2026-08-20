@@ -108,9 +108,8 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
         terminal_writeIn("Mounting filesystem............... [FAIL]");
     }
 
-    thread_init();
     scheduler_init();
-    thread_test_start();
+    thread_blocking_test_start();
 
     __asm__ volatile("sti");
 

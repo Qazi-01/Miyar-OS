@@ -52,7 +52,8 @@ $(BUILDDIR)/directory.o \
 $(BUILDDIR)/file.o \
 $(BUILDDIR)/path.o \
 $(BUILDDIR)/thread.o \
-$(BUILDDIR)/context.o
+$(BUILDDIR)/context.o \
+$(BUILDDIR)/scheduler.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso

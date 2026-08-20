@@ -6,7 +6,7 @@
 #include <arch/x86/context.h>
 
 #define THREAD_NAME_MAX 32
-#define  THREAD_STACK_SIZE 4096
+#define THREAD_STACK_SIZE 4096
 
 typedef enum {
     THREAD_READY,
@@ -36,5 +36,10 @@ thread_t *thread_current(void);
 void thread_enqueue(thread_t *thread);
 thread_t *thread_dequeue(void);
 void thread_yield(void);
+void thread_block(void);
+void thread_unblock(thread_t *thread);
+void thread_terminate(void);
+thread_t *thread_idle(void);
+void thread_blocking_test_start(void);
 
 #endif
