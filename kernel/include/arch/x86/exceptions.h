@@ -27,6 +27,6 @@ struct registers
 };
 
 void exception_handler(struct registers *r);
-void irq_handler(struct registers *r);
+uint32_t irq_handler(struct registers *r);
 
 #endif

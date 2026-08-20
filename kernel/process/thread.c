@@ -222,7 +222,6 @@ static void first_thread(void)
     while (1)
     {
         terminal_writeIn("Thread 1 is running.");
-        thread_yield();
     }
 }
 
@@ -231,6 +230,5 @@ static void second_thread(void)
     while (1)
     {
         terminal_writeIn("Thread 2 is running.");
-        thread_yield();
     }
 }

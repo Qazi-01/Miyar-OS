@@ -4,6 +4,7 @@
 #include "drivers/io.h"
 #include "drivers/keyboard.h"
 #include "terminal.h"
+#include "process/scheduler.h"
 
 static const char scancode_table[128] =
 {
@@ -21,20 +22,26 @@ static const char scancode_table_shift[128] =
     'Z','X','C','V','B','N','M','<','>','?',0,'*',0,' ',
 };
 
-void irq_handler(struct registers *r) {
+uint32_t irq_handler(struct registers *r)
+{
     static unsigned char shift_pressed = 0;
 
-    if (r->int_no == 33) {
+    if (r->int_no == 33)
+    {
         unsigned char scancode = inb(0x60);
 
-        if (scancode == 0x2A || scancode == 0x36) {
+        if (scancode == 0x2A || scancode == 0x36)
+        {
             shift_pressed = 1;
         }
-        else if (scancode == 0xAA || scancode == 0xB6) {
+
+        else if (scancode == 0xAA || scancode == 0xB6)
+        {
             shift_pressed = 0;
         }
-        else if ((scancode & 0x80) == 0 && scancode < 128) {
-            /* Capture shift state to avoid potential race */
+
+        else if ((scancode & 0x80) == 0 && scancode < 128)
+        {
             unsigned char shifted = shift_pressed;
             char c = shifted ? scancode_table_shift[scancode] : scancode_table[scancode];
 
@@ -44,9 +51,14 @@ void irq_handler(struct registers *r) {
         }
     }
 
-    if (r->int_no == 32) {
+    uint32_t next_esp = (uint32_t)r;
+
+    if (r->int_no == 32)
+    {
         timer_tick();
+        next_esp = scheduler_schedule(r);
     }
 
     pic_send_eoi(r->int_no - 32);
+    return next_esp;
 }

@@ -98,6 +98,11 @@ irq_common:
     call irq_handler
     add esp,4
 
+; irq_handler() returns the ESP of the context
+; that should be restored.
+
+    mov esp, eax
+
     pop gs
     pop fs
     pop es

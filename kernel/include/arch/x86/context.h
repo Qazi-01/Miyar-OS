@@ -24,5 +24,6 @@ typedef struct {
 } x86_thread_frame_t;
 
 void x86_context_switch(uint32_t *old_esp, uint32_t new_esp);
+void x86_context_switch_interrupt(uint32_t **old_esp, uint32_t *new_esp);
 
 #endif

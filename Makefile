@@ -159,6 +159,9 @@ $(BUILDDIR)/path.o: $(KERNELDIR)/fs/path.c | $(BUILDDIR)
 $(BUILDDIR)/thread.o: $(KERNELDIR)/process/thread.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILDDIR)/scheduler.o: $(KERNELDIR)/process/scheduler.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)
 > $(ASM) $(ASMFLAGS) $< -o $@
 

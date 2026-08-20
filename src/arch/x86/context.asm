@@ -62,4 +62,46 @@ x86_context_switch:
 .resume:
     ret
 
+global x86_context_switch_interrupt
+
+; ---------------------------------------------------------
+; void x86_context_switch_interrupt(
+;     uint32_t **old_esp,
+;     uint32_t *new_esp)
+;
+; Switch between interrupt-created thread contexts.
+;
+; The current ESP points directly at the interrupt frame
+; created by irq_common.
+; ---------------------------------------------------------
+
+x86_context_switch_interrupt:
+
+    mov edx, esp
+
+    ; old_esp argument
+    mov eax, [edx + 4]
+
+    ; Save the current interrupt-frame ESP.
+    mov [eax], esp
+
+    ; new_esp argument
+    mov esp, [edx + 8]
+
+    ; Restore segment registers.
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
+    ; Restore general registers.
+    popa
+
+    ; Skip interrupt number and error code.
+    add esp, 8
+
+    ; Return from the interrupt using the restored
+    ; thread's EIP/CS/EFLAGS.
+    iretd
+
 section .note.GNU-stack noalloc noexec nowrite progbits
