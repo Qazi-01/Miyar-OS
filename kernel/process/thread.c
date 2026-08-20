@@ -7,7 +7,9 @@ static uint32_t next_tid = 1;
 static thread_t *current_thread = 0;
 static thread_t *ready_queue_head = 0;
 static thread_t *ready_queue_tail = 0;
-static uint8_t thread_test_startup_printed = 0;
+
+static void first_thread(void);
+static void second_thread(void);
 
 void thread_init(void)
 {
@@ -85,38 +87,25 @@ thread_t *thread_create(void (*entry)(void), const char *name)
     return thread;
 }
 
-static void thread_test(void)
-{
-    if (thread_test_startup_printed == 0)
-    {
-        terminal_writeIn("Kernel thread started succesfully.");
-        thread_test_startup_printed = 1;
-    }
-
-    while (1)
-    {
-        thread_yield();
-    }
-}
-
 void thread_test_start(void)
 {
-    thread_t *thread_a = thread_create(thread_test, "thread_a");
+    thread_t *thread1 = thread_create(first_thread, "First");
 
-    if (thread_a == 0)
+    if (thread1 == 0)
     {
         return;
     }
 
-    thread_t *thread_b = thread_create(thread_test, "thread_b");
+    thread_t *thread2 = thread_create(second_thread, "Second");
 
-    if (thread_b == 0)
+    if (thread2 == 0)
     {
+        thread_destroy(thread1);
         return;
     }
 
-    thread_enqueue(thread_a);
-    thread_enqueue(thread_b);
+    thread_enqueue(thread1);
+    thread_enqueue(thread2);
 
     thread_t *first = thread_dequeue();
 
@@ -226,4 +215,22 @@ void thread_yield(void)
     next->state = THREAD_RUNNING;
     thread_set_current(next);
     x86_context_switch(&current->saved_esp, next->saved_esp);
+}
+
+static void first_thread(void)
+{
+    while (1)
+    {
+        terminal_writeIn("Thread 1 is running.");
+        thread_yield();
+    }
+}
+
+static void second_thread(void)
+{
+    while (1)
+    {
+        terminal_writeIn("Thread 2 is running.");
+        thread_yield();
+    }
 }
