@@ -109,7 +109,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     }
 
     scheduler_init();
-    thread_blocking_test_start();
+    thread_test_start();
 
     __asm__ volatile("sti");
 

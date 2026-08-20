@@ -14,6 +14,8 @@ section .text
 
 x86_context_switch:
 
+    cli
+
     ; Preserve the original argument stack pointer.
     mov edx, esp
 

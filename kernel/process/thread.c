@@ -222,6 +222,7 @@ void thread_yield(void)
         return;
     }
 
+    __asm__ volatile("cli");
     current->state = THREAD_READY;
     thread_enqueue(current);
     next->state = THREAD_RUNNING;
@@ -254,6 +255,7 @@ void thread_block(void)
         return;
     }
 
+    __asm__ volatile("cli");
     current->state = THREAD_BLOCKED;
     thread_t *next = thread_dequeue();
 
@@ -263,6 +265,7 @@ void thread_block(void)
 
         if (next == 0)
         {
+            __asm__ volatile("sti");
             return;
         }
     }
@@ -284,7 +287,9 @@ void thread_unblock(thread_t *thread)
         return;
     }
 
+    __asm__ volatile("cli");
     thread_enqueue(thread);
+    __asm__ volatile("sti");
 }
 
 void thread_terminate(void)
