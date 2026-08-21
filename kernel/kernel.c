@@ -8,6 +8,7 @@
 #include "memory/paging.h"
 #include "drivers/pic.h"
 #include "memory/pmm.h"
+#include "memory/vmm.h"
 #include "drivers/serial.h"
 #include "shell.h"
 #include "drivers/timer.h"
@@ -23,6 +24,9 @@
 #include "fs/fat32.h"
 #include "process/thread.h"
 #include "process/scheduler.h"
+#include "process/process.h"
+#include "memory/address_space.h"
+#include "memory/address_space_test.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -52,6 +56,8 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     pmm_init();
     heap_init();
     paging_init();
+    address_space_init();
+    vmm_init();
 
     (void)multiboot_info;
 
@@ -108,8 +114,9 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
         terminal_writeIn("Mounting filesystem............... [FAIL]");
     }
 
+    process_init();
     scheduler_init();
-    thread_test_start();
+    address_isolation_test();
 
     __asm__ volatile("sti");
 

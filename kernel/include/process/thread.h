@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <arch/x86/context.h>
+#include <process/process.h>
 
 #define THREAD_NAME_MAX 32
 #define THREAD_STACK_SIZE 4096
@@ -22,6 +23,7 @@ typedef struct thread {
     uint32_t kernel_stack_top;
     uint32_t saved_esp;
     x86_thread_frame_t *frame;
+    process_t *process;
     void (*entry)(void);
     char name[THREAD_NAME_MAX];
     struct thread *next;
@@ -41,5 +43,6 @@ void thread_unblock(thread_t *thread);
 void thread_terminate(void);
 thread_t *thread_idle(void);
 void thread_blocking_test_start(void);
+thread_t *thread_create_in_process(process_t *process, void (*entry)(void), const char *name);
 
 #endif

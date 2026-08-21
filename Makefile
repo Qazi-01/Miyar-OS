@@ -53,7 +53,10 @@ $(BUILDDIR)/file.o \
 $(BUILDDIR)/path.o \
 $(BUILDDIR)/thread.o \
 $(BUILDDIR)/context.o \
-$(BUILDDIR)/scheduler.o
+$(BUILDDIR)/scheduler.o \
+$(BUILDDIR)/process.o \
+$(BUILDDIR)/address_space.o \
+$(BUILDDIR)/address_space_test.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -161,6 +164,15 @@ $(BUILDDIR)/thread.o: $(KERNELDIR)/process/thread.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/scheduler.o: $(KERNELDIR)/process/scheduler.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/process.o: $(KERNELDIR)/process/process.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/address_space.o: $(KERNELDIR)/memory/address_space.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/address_space_test.o: $(KERNELDIR)/memory/address_space_test.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)

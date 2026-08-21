@@ -1,5 +1,6 @@
 #include "process/scheduler.h"
 #include "process/thread.h"
+#include "memory/address_space.h"
 
 void scheduler_init(void)
 {
@@ -36,6 +37,12 @@ uint32_t scheduler_schedule(struct registers *r)
     
     next->state = THREAD_RUNNING;
     thread_set_current(next);
+
+    if (next->process != 0 &&current->process != next->process)
+    {
+        address_space_activate(next->process->address_space);
+    }
+
     current->saved_esp = (uint32_t)r;
 
     return next->saved_esp;

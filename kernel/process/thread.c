@@ -25,9 +25,14 @@ void thread_init(void)
     idle_thread_instance = thread_create(idle_thread, "idle");
 }
 
-thread_t *thread_create(void (*entry)(void), const char *name)
+thread_t *thread_create_in_process(process_t *process,void (*entry)(void), const char *name)
 {
-    if (entry == 0)
+    if (entry == 0 || process == 0)
+    {
+        return 0;
+    }
+
+    if (process->state != PROCESS_RUNNING)
     {
         return 0;
     }
@@ -49,6 +54,8 @@ thread_t *thread_create(void (*entry)(void), const char *name)
 
     thread->tid = next_tid++;
     thread->state = THREAD_READY;
+    thread->process = process_current();
+    process->thread_count++;
     thread->kernel_stack = (uint32_t)stack;
     thread->kernel_stack_top = (uint32_t)(stack + THREAD_STACK_SIZE);
     thread->entry = entry;
@@ -57,17 +64,18 @@ thread_t *thread_create(void (*entry)(void), const char *name)
     for (uint32_t i = 0; i < THREAD_NAME_MAX; i++)
     {
         thread->name[i] = 0;
-        
+
         if (name != 0 && name[i] != 0)
         {
             thread->name[i] = name[i];
         }
+
         else
         {
             break;
         }
     }
-    
+
     uint32_t frame_address = thread->kernel_stack_top - sizeof(x86_thread_frame_t);
     thread->frame = (x86_thread_frame_t *)frame_address;
 
@@ -88,9 +96,15 @@ thread_t *thread_create(void (*entry)(void), const char *name)
     thread->frame->eip = (uint32_t)entry;
     thread->frame->cs = 0x08;
     thread->frame->eflags = 0x202;
+
     thread->saved_esp = frame_address;
 
     return thread;
+}
+
+thread_t *thread_create(void (*entry)(void), const char *name)
+{
+    return thread_create_in_process(process_current(), entry, name);
 }
 
 void thread_test_start(void)
@@ -146,6 +160,11 @@ void thread_destroy(thread_t *thread)
     if (thread->kernel_stack != 0)
     {
         kfree((void *)thread->kernel_stack);
+    }
+
+    if (thread->process != 0 && thread->process->thread_count > 0)
+    {
+        thread->process->thread_count--;
     }
 
     kfree(thread);
