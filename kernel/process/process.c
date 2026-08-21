@@ -15,10 +15,33 @@ void process_init(void)
     current_process = 0;
     kernel_process = process_create("kernel");
 
-    if (kernel_process != 0)
+    if (kernel_process == 0)
     {
-        current_process = kernel_process;
+        return;
     }
+
+    kernel_process->pid = 0;
+    kernel_process->state = PROCESS_RUNNING;
+    kernel_process->address_space = address_space_current();
+    kernel_process->parent = 0;
+    kernel_process->thread_count = 0;
+    kernel_process->next = 0;
+
+    for (uint32_t i = 0; i < PROCESS_NAME_MAX; i++)
+    {
+        kernel_process->name[i] = 0;
+    }
+
+    kernel_process->name[0] = 'k';
+    kernel_process->name[1] = 'e';
+    kernel_process->name[2] = 'r';
+    kernel_process->name[3] = 'n';
+    kernel_process->name[4] = 'e';
+    kernel_process->name[5] = 'l';
+
+    current_process = kernel_process;
+    process_list_head = kernel_process;
+    process_list_tail = kernel_process;
 }
 
 process_t *process_create(const char *name)
@@ -46,8 +69,6 @@ process_t *process_create(const char *name)
 
     for (uint32_t i = 0; i < PROCESS_NAME_MAX; i++)
     {
-        process->name[i] = name[i];
-
         if (name != 0 && name[i] != 0)
         {
             process->name[i] = name[i];    
@@ -81,11 +102,6 @@ void process_destroy(process_t *process)
         return;
     }
 
-    if (process->address_space != 0)
-    {
-        address_space_destroy(process->address_space);
-    }
-
     if (process == kernel_process)
     {
         return;
@@ -96,9 +112,15 @@ void process_destroy(process_t *process)
         return;
     }
 
-    if (current_process == process)
+    if (process == current_process)
     {
         current_process = 0;
+    }
+
+    if (process->address_space != 0)
+    {
+        address_space_destroy(process->address_space);
+        process->address_space = 0;
     }
 
     process_t *previous = 0;
@@ -135,7 +157,14 @@ void process_destroy(process_t *process)
 
 process_t *process_current(void)
 {
-    return current_process;
+    thread_t *thread = thread_current();
+
+    if (thread != 0)
+    {
+        return 0;
+    }
+
+    return thread->process;
 }
 
 process_t *process_find(uint32_t pid)

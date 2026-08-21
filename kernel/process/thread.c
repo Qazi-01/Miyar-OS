@@ -54,7 +54,7 @@ thread_t *thread_create_in_process(process_t *process,void (*entry)(void), const
 
     thread->tid = next_tid++;
     thread->state = THREAD_READY;
-    thread->process = process_current();
+    thread->process = process;
     process->thread_count++;
     thread->kernel_stack = (uint32_t)stack;
     thread->kernel_stack_top = (uint32_t)(stack + THREAD_STACK_SIZE);

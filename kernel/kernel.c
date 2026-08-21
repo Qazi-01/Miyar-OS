@@ -27,6 +27,7 @@
 #include "process/process.h"
 #include "memory/address_space.h"
 #include "memory/address_space_test.h"
+#include "process/scheduler_test.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -117,6 +118,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     process_init();
     scheduler_init();
     address_isolation_test();
+    scheduler_test();
 
     __asm__ volatile("sti");
 

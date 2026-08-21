@@ -17,21 +17,21 @@ uint32_t scheduler_schedule(struct registers *r)
         return (uint32_t)r;
     }
 
+    current->saved_esp = (uint32_t)r;
     thread_t *next = thread_dequeue();
 
     if (next == 0)
     {
         next = idle;
-
-        if (next == 0)
-        {
-            return (uint32_t)r;
-        }
     }
 
-    if (current != idle &&current->state != THREAD_TERMINATED)
+    if (next == 0)
     {
-        current->state = THREAD_READY;
+        return current->saved_esp;
+    }
+
+    if (current != idle &&current->state != THREAD_TERMINATED && current->state != THREAD_BLOCKED)
+    {
         thread_enqueue(current);
     }
     
@@ -42,8 +42,6 @@ uint32_t scheduler_schedule(struct registers *r)
     {
         address_space_activate(next->process->address_space);
     }
-
-    current->saved_esp = (uint32_t)r;
 
     return next->saved_esp;
 }
