@@ -102,7 +102,7 @@ void address_space_activate(address_space_t *address_space)
 void address_space_init(void)
 {
     kernel_address_space.page_directory = paging_get_directory();
-    current_address_space = &kernel_address_space;
+    kernel_address_space.page_tables = kernel_page_tables;
 
     for (uint32_t i = 0; i < 1024; i++)
     {

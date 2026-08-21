@@ -40,7 +40,6 @@ process_t *process_create(const char *name)
 
     process->pid = next_pid++;
     process->state = PROCESS_RUNNING;
-    process->address_space = 0;
     process->parent = 0;
     process->thread_count = 0;
     process->next = 0;
@@ -85,7 +84,6 @@ void process_destroy(process_t *process)
     if (process->address_space != 0)
     {
         address_space_destroy(process->address_space);
-        process->address_space = 0;
     }
 
     if (process == kernel_process)
@@ -135,7 +133,7 @@ void process_destroy(process_t *process)
     kfree(process);
 }
 
-process_t *process_get_current(void)
+process_t *process_current(void)
 {
     return current_process;
 }
