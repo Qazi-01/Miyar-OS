@@ -115,14 +115,11 @@ process_t *process_create(const char *name)
 
     for (uint32_t i = 0; i < PROCESS_NAME_MAX; i++)
     {
+        process->name[i] = 0;
+
         if (name != 0 && name[i] != 0)
         {
             process->name[i] = name[i];    
-        }
-
-        else
-        {
-            break;
         }
     }
 
@@ -246,5 +243,24 @@ void process_exit(process_t *process)
     if (current != 0 && current->process == process)
     {
         thread_terminate();
+    }
+}
+
+void process_reap_terminated(void)
+{
+    process_t *process = process_list_head;
+
+    while (process != 0)
+    {
+        process_t *next = process->next;
+
+        if (process != kernel_process && process != current_process && process->state == PROCESS_TERMINATED && process->thread_count == 0)
+        {
+            terminal_writeIn("Process reaper: destroying terminated process.");
+            process_destroy(process);
+            terminal_writeIn("Process reaper: process destroyed.");
+        }
+
+        process = next;
     }
 }

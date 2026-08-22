@@ -14,6 +14,7 @@ uint32_t scheduler_schedule(struct registers *r)
     thread_t *idle = thread_idle();
 
     thread_reap_terminated(current);
+    process_reap_terminated();
 
     if (current == 0)
     {

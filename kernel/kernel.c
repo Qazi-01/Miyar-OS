@@ -28,6 +28,8 @@
 #include "memory/address_space.h"
 #include "memory/address_space_test.h"
 #include "process/scheduler_test.h"
+#include "process/process_scheduler_test.h"
+#include "process/process_termination_test.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -123,6 +125,8 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
 
     scheduler_test();
     thread_blocking_test_start();
+    process_scheduler_test();
+    process_termination_test();
 
     terminal_writeIn("");
     terminal_writeIn("");
