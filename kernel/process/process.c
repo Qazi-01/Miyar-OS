@@ -2,6 +2,7 @@
 #include "process/thread.h"
 #include "memory/heap.h"
 #include "memory/address_space.h"
+#include "terminal.h"
 
 static uint32_t next_pid = 1;
 static process_t *current_process = 0;
@@ -11,13 +12,28 @@ static process_t *process_list_tail = 0;
 
 void process_init(void)
 {
+    terminal_writeIn("process_init: START");
+
     next_pid = 1;
     current_process = 0;
+    kernel_process = 0;
+
+    terminal_writeIn("process_init: Creating kernel process.");
+
     kernel_process = process_create("kernel");
 
     if (kernel_process == 0)
     {
+        terminal_writeIn("process_init: Failed to create kernel process.");
         return;
+    }
+
+    terminal_writeIn("process_init: Kernel process created successfully.");
+
+    if (kernel_process->address_space != address_space_current())
+    {
+        address_space_destroy(kernel_process->address_space);
+        kernel_process->address_space = 0;
     }
 
     kernel_process->pid = 0;
@@ -39,27 +55,57 @@ void process_init(void)
     kernel_process->name[4] = 'e';
     kernel_process->name[5] = 'l';
 
+    terminal_writeIn("process_init: assigning kernel process as current process.");
     current_process = kernel_process;
+    terminal_writeIn("process_init: current process assigned.");
+
+    if (current_process == 0)
+    {
+        terminal_writeIn("process_init: current_process is NULL after assignment.");
+    }
+
+    else
+    {
+        terminal_writeIn("process_init: current_process assigned successfully.");
+    }
+
     process_list_head = kernel_process;
     process_list_tail = kernel_process;
+    terminal_writeIn("process_init: END");
+
+    if (current_process == 0)
+    {
+        terminal_writeIn("process_init: current_process is NULL at the end of initialization.");
+    }
+
+    else
+    {
+        terminal_writeIn("process_init: current_process is valid at the end of initialization.");
+    }
 }
 
 process_t *process_create(const char *name)
 {
+    terminal_writeIn("process_create: START");
     process_t *process = (process_t *)kmalloc(sizeof(process_t));
 
     if (process == 0)
     {
+        terminal_writeIn("process_create: Failed to allocate memory for process.");
         return 0;
     }
 
+    terminal_writeIn("process_create: Process allocated.");
     process->address_space = address_space_create();
 
     if (process->address_space == 0)
     {
         kfree(process);
+        terminal_writeIn("process_create: Failed to create address space for process.");
         return 0;
     }
+
+    terminal_writeIn("process_create: Address space created for process.");
 
     process->pid = next_pid++;
     process->state = PROCESS_RUNNING;
@@ -130,7 +176,7 @@ void process_destroy(process_t *process)
     {
         if (current == process)
         {
-            if (process == 0)
+            if (previous == 0)
             {
                 process_list_head = current->next;
             }
@@ -157,14 +203,12 @@ void process_destroy(process_t *process)
 
 process_t *process_current(void)
 {
-    thread_t *thread = thread_current();
+    return current_process;
+}
 
-    if (thread != 0)
-    {
-        return 0;
-    }
-
-    return thread->process;
+void process_set_current(process_t *process)
+{
+    current_process = process;
 }
 
 process_t *process_find(uint32_t pid)

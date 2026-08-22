@@ -15,5 +15,6 @@ void address_space_destroy(address_space_t *address_space);
 void address_space_activate(address_space_t *address_space);
 address_space_t *address_space_current(void);
 void address_space_init(void);
+address_space_t *address_space_kernel(void);
 
 #endif

@@ -44,5 +44,6 @@ void thread_terminate(void);
 thread_t *thread_idle(void);
 void thread_blocking_test_start(void);
 thread_t *thread_create_in_process(process_t *process, void (*entry)(void), const char *name);
+void thread_reap_terminated(thread_t *current);
 
 #endif

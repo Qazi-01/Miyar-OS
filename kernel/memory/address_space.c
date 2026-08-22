@@ -2,6 +2,7 @@
 #include "memory/pmm.h"
 #include "memory/paging.h"
 #include "memory/heap.h"
+#include "terminal.h"
 
 #include <stdint.h>
 
@@ -16,20 +17,26 @@ static void load_page_directory(uint32_t *page_directory)
 
 address_space_t *address_space_create(void)
 {
+    terminal_writeIn("address_space_create: START");
     address_space_t *address_space = (address_space_t *)pmm_alloc_frame();
 
     if (address_space == 0)
     {
+        terminal_writeIn("address_space_create: FAILED to allocate frame for address space.");
         return 0;
     }
 
+    terminal_writeIn("address_space_create: allocated frame OK.");
     address_space->page_tables = (uint32_t **)kmalloc(sizeof(uint32_t *) * 1024);
 
     if (address_space->page_tables == 0)
     {
+        terminal_writeIn("address_space_create: memory allocation failed.");
         pmm_free_frame(address_space);
         return 0;
     }
+
+    terminal_writeIn("address_space_create: memory allocation OK.");
 
     for (uint32_t i = 0; i < 1024; i++)
     {
@@ -40,11 +47,13 @@ address_space_t *address_space_create(void)
 
     if (page_directory == 0)
     {
+        terminal_writeIn("address_space_create: page directory frame FAILED.");
         kfree(address_space->page_tables);
         pmm_free_frame(address_space);
         return 0;
     }
 
+    terminal_writeIn("address_space_create: page directory frame OK.");
     uint32_t *kernel_page_directory = paging_get_directory();
 
     for (uint32_t i = 0; i < 1024; i++)
@@ -55,6 +64,7 @@ address_space_t *address_space_create(void)
     page_directory[0] = kernel_page_directory[0];
     address_space->page_tables[0] = paging_get_first_table();
     address_space->page_directory = page_directory;
+    terminal_writeIn("address_space_create: SUCCESS");
 
     return address_space;
 }
@@ -111,4 +121,9 @@ void address_space_init(void)
 
     kernel_page_tables[0] = paging_get_first_table();
     current_address_space = &kernel_address_space;
+}
+
+address_space_t *address_space_kernel(void)
+{
+    return &kernel_address_space;
 }

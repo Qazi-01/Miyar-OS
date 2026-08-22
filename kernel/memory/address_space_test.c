@@ -48,7 +48,29 @@ void address_isolation_test(void)
         return;
     }
 
+    terminal_writeIn("Checking current process before activation.");
+
+    if (process_current() == 0)
+    {
+        terminal_writeIn("process_current() = NULL");
+    }
+    
+    else
+    {
+        terminal_writeIn("process_current() = NOT NULL");
+    }
+
     address_space_activate(process_a->address_space);
+
+    if (process_current() == 0)
+    {
+        terminal_writeIn("After A activation: CURRENT PROCESS NULL.");
+    }
+    
+    else
+    {
+        terminal_writeIn("After A activation: CURRENT PROCESS OK.");
+    }
 
     if (address_space_current() != process_a->address_space)
     {
@@ -66,7 +88,29 @@ void address_isolation_test(void)
         return;
     }
 
+    terminal_writeIn("Checking current process before activation.");
+
+    if (process_current() == 0)
+    {
+        terminal_writeIn("process_current() = NULL");
+    }
+    
+    else
+    {
+        terminal_writeIn("process_current() = NOT NULL");
+    }
+
     address_space_activate(process_b->address_space);
+
+    if (process_current() == 0)
+    {
+        terminal_writeIn("After B activation: CURRENT PROCESS NULL.");
+    }
+    
+    else
+    {
+        terminal_writeIn("After B activation: CURRENT PROCESS OK.");
+    }
 
     if (address_space_current() != process_b->address_space)
     {
@@ -96,7 +140,30 @@ void address_isolation_test(void)
         return;
     }
 
+    terminal_writeIn("Checking current process before activation.");
+
+    if (process_current() == 0)
+    {
+        terminal_writeIn("process_current() = NULL");
+    }
+    
+    else
+    {
+        terminal_writeIn("process_current() = NOT NULL");
+    }
+
     address_space_activate(process_a->address_space);
+
+    if (process_current() == 0)
+    {
+        terminal_writeIn("After A restore: CURRENT PROCESS NULL.");
+    }
+    
+    else
+    {
+        terminal_writeIn("After A restore: CURRENT PROCESS OK.");
+    }
+
     uint32_t physical_a_again = vmm_get_physical_address(ISOLATION_TEST_ADDRESS);
     
     if (physical_a_again != (uint32_t)frame_a)
@@ -120,6 +187,53 @@ void address_isolation_test(void)
     terminal_writeIn("PROCESS ADDRESS TEST: PASSED");
     terminal_writeIn("========================================");
 
+    terminal_writeIn("Checking process list...");
+    process_t *list = process_current();
+
+    if (list == 0)
+    {
+        terminal_writeIn("process_current() = NULL");
+    }
+    
+    else
+    {
+        terminal_writeIn("process_current() = NOT NULL");
+    }
+
+    if (process_a != 0)
+    {
+        terminal_writeIn("Process A still exists.");
+    }
+
+    if (process_b != 0)
+    {
+        terminal_writeIn("Process B still exists.");
+    }
+
+    process_t *kernel_process = process_find(0);
+
+    if (kernel_process == 0)
+    {
+        terminal_writeIn("ERROR: Kernel process not found.");
+    }
+
+    else
+    {
+        terminal_writeIn("Kernel process restored.");
+        address_space_activate(kernel_process->address_space);
+        process_set_current(kernel_process);
+    }
+
+    if (kernel_process != 0)
+    {
+        address_space_activate(kernel_process->address_space);
+        process_set_current(kernel_process);
+    }
+
+    address_space_activate(address_space_kernel());
     pmm_free_frame(frame_a);
     pmm_free_frame(frame_b);
+
+    process_destroy(process_a);
+    process_destroy(process_b);
 }

@@ -118,9 +118,10 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     process_init();
     scheduler_init();
     address_isolation_test();
-    scheduler_test();
 
     __asm__ volatile("sti");
+
+    scheduler_test();
 
     terminal_writeIn("");
     terminal_writeIn("");

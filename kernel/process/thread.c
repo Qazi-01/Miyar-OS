@@ -1,4 +1,5 @@
 #include "process/thread.h"
+#include "process/process.h"
 #include "memory/heap.h"
 #include "terminal.h"
 #include <stdint.h>
@@ -9,6 +10,9 @@ static thread_t *ready_queue_head = 0;
 static thread_t *ready_queue_tail = 0;
 static thread_t *idle_thread_instance = 0;
 static thread_t *blocking_test_target = 0;
+static thread_t bootstrap_thread;
+static thread_t *terminated_queue_head = 0;
+static thread_t *terminated_queue_tail = 0;
 
 static void first_thread(void);
 static void second_thread(void);
@@ -17,12 +21,61 @@ static void blocking_thread(void);
 
 void thread_init(void)
 {
+    terminal_writeIn("Thread_init: Started");
+
     next_tid = 1;
     current_thread = 0;
     ready_queue_head = 0;
     ready_queue_tail = 0;
-    
+    terminated_queue_head = 0;
+    terminated_queue_tail = 0;
+
+    terminal_writeIn("Thread_init: checking process");
+
+    process_t *kernel_process = process_current();
+
+    if (kernel_process == 0)
+    {
+        terminal_writeIn("Thread_init: process is NULL");
+        return;
+    }
+
+    terminal_writeIn("Thread_init: process OK");
+
+    bootstrap_thread.tid = next_tid++;
+    bootstrap_thread.state = THREAD_RUNNING;
+    bootstrap_thread.process = kernel_process;
+    bootstrap_thread.kernel_stack = 0;
+    bootstrap_thread.kernel_stack_top = 0;
+    bootstrap_thread.saved_esp = 0;
+    bootstrap_thread.frame = 0;
+    bootstrap_thread.entry = 0;
+    bootstrap_thread.next = 0;
+
+    bootstrap_thread.name[0] = 'k';
+    bootstrap_thread.name[1] = 'e';
+    bootstrap_thread.name[2] = 'r';
+    bootstrap_thread.name[3] = 'n';
+    bootstrap_thread.name[4] = 'e';
+    bootstrap_thread.name[5] = 'l';
+    bootstrap_thread.name[6] = 0;
+
+    kernel_process->thread_count++;
+    current_thread = &bootstrap_thread;
+
+    terminal_writeIn("Thread_init: bootstrap OK");
+
     idle_thread_instance = thread_create(idle_thread, "idle");
+
+    terminal_writeIn("Thread_init: idle create returned");
+
+    if (idle_thread_instance == 0)
+    {
+        terminal_writeIn("Thread_init: idle FAILED");
+        return;
+    }
+
+    terminal_writeIn("Thread_init: idle OK");
 }
 
 thread_t *thread_create_in_process(process_t *process,void (*entry)(void), const char *name)
@@ -311,6 +364,58 @@ void thread_unblock(thread_t *thread)
     __asm__ volatile("sti");
 }
 
+void thread_reap_terminated(thread_t *current)
+{
+    thread_t *previous = 0;
+    thread_t *thread = terminated_queue_head;
+
+    while (thread != 0)
+    {
+        thread_t *next = thread->next;
+
+        if (thread != current)
+        {
+            if (previous == 0)
+            {
+                terminated_queue_head = next;
+            }
+
+            else
+            {
+                previous->next = next;
+            }
+
+            if (terminated_queue_tail == thread)
+            {
+                terminated_queue_tail = previous;
+            }
+
+            thread->next = 0;
+
+            if (thread->process != 0 && thread->process->thread_count > 0)
+            {
+                thread->process->thread_count--;
+            }
+
+            if (thread->kernel_stack != 0)
+            {
+                terminal_writeIn("Thread reaper: reaping terminated thread.");
+                kfree((void *)thread->kernel_stack);
+                terminal_writeIn("Thread reaper: terminated thread freed.");
+            }
+
+            kfree(thread);
+        }
+
+        else
+        {
+            previous = thread;
+        }
+
+        thread = next;
+    }
+}
+
 void thread_terminate(void)
 {
     thread_t *current = thread_current();
@@ -321,6 +426,19 @@ void thread_terminate(void)
     }
 
     current->state = THREAD_TERMINATED;
+    current->next = 0;
+
+    if (terminated_queue_tail == 0)
+    {
+        terminated_queue_head = current;
+        terminated_queue_tail = current;
+    }
+
+    else
+    {
+        terminated_queue_tail->next = current;
+        terminated_queue_tail = current;
+    }
 }
 
 static void idle_thread(void)

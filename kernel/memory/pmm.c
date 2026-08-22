@@ -2,6 +2,7 @@
 
 #include "memory/pmm.h"
 #include "memory/memory_map.h"
+#include "terminal.h"
 
 #define PAGE_SIZE 4096
 #define MAX_MEMORY_BYTES (4ULL * 1024 * 1024 * 1024)
@@ -25,28 +26,50 @@ void pmm_init(void)
     
     total_memory = 0;
     usable_memory = 0;
+    total_frames = 0;
+
+    uint64_t highest_address = 0;
 
     for (uint32_t i = 0; i < memory_region_count; i++)
     {
+        uint64_t end = memory_regions[i].base + memory_regions[i].length;
         total_memory += memory_regions[i].length;
 
         if (memory_regions[i].type == 1)
         {
             usable_memory += memory_regions[i].length;
         }
+
+        if (end > highest_address)
+        {
+            highest_address = end;
+        }
     }
 
-    total_frames = usable_memory/PAGE_SIZE;
+    total_frames = (uint32_t)((highest_address + PAGE_SIZE - 1) / PAGE_SIZE);
+
+    for (uint32_t frame = 0; frame < total_frames; frame++)
+    {
+        bitmap_set(frame);
+    }
 
     for (uint32_t i = 0; i < memory_region_count; i++)
     {
-        if (memory_regions[i].type != 1)
+        if (memory_regions[i].type == 1)
         {
-            reserve_region(memory_regions[i].base, memory_regions[i].length);
+            uint32_t first_frame = memory_regions[i].base / PAGE_SIZE;
+            uint32_t last_frame = (memory_regions[i].base + memory_regions[i].length + PAGE_SIZE - 1) / PAGE_SIZE;
+
+            for (uint32_t frame = first_frame; frame < last_frame && frame < total_frames; frame++)
+            {
+                bitmap_reset(frame);
+            }
         }
     }
 
     reserve_region((uintptr_t)&_kernel_start, (uintptr_t)(&_kernel_end -&_kernel_start));
+    bitmap_set(0);
+    terminal_writeIn("PMM initialized");
 }
 
 void *pmm_alloc_frame(void)
@@ -118,6 +141,11 @@ static void reserve_region(uint64_t base, uint64_t length)
 {
     uint32_t first_frame = base / PAGE_SIZE;
     uint32_t last_frame = (base + length + PAGE_SIZE - 1)/PAGE_SIZE;
+
+    if (last_frame > total_frames)
+    {
+        last_frame = total_frames;
+    }
 
     for (uint32_t frame = first_frame; frame < last_frame; frame++)
     {
