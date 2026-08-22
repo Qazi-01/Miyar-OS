@@ -122,6 +122,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     __asm__ volatile("sti");
 
     scheduler_test();
+    thread_blocking_test_start();
 
     terminal_writeIn("");
     terminal_writeIn("");

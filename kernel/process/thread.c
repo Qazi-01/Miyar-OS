@@ -13,6 +13,10 @@ static thread_t *blocking_test_target = 0;
 static thread_t bootstrap_thread;
 static thread_t *terminated_queue_head = 0;
 static thread_t *terminated_queue_tail = 0;
+static volatile uint32_t blocking_test_resumed = 0;
+static volatile uint32_t blocking_test_paused = 0;
+static volatile uint32_t blocking_test_complete = 0;
+static volatile uint32_t blocking_test_passed = 0;
 
 static void first_thread(void);
 static void second_thread(void);
@@ -460,6 +464,9 @@ static void blocking_thread(void)
     thread_block();
     terminal_writeIn("Blocking thread resumed.");
 
+    blocking_test_resumed = 1;
+    thread_terminate();
+
     while (1)
     {
         thread_yield();
@@ -482,7 +489,15 @@ static void blocking_test_controller(void)
 
     terminal_writeIn("Unblocking thread.");
     thread_unblock(blocking_test_target);
+    blocking_test_paused = 1;
     blocking_test_target = 0;
+
+    while (!blocking_test_resumed)
+    {
+        thread_yield();
+    }
+
+    thread_terminate();
 
     while (1)
     {
@@ -492,6 +507,12 @@ static void blocking_test_controller(void)
 
 void thread_blocking_test_start(void)
 {
+    blocking_test_target = 0;
+    blocking_test_resumed  = 0;
+    blocking_test_paused = 0;
+    blocking_test_complete = 0;
+    blocking_test_passed = 0;
+
     thread_t *blocked = thread_create(blocking_thread, "Blocked");
     thread_t *controller = thread_create(blocking_test_controller, "Controller");
 
@@ -507,26 +528,12 @@ void thread_blocking_test_start(void)
             thread_destroy(controller);
         }
 
+        terminal_writeIn("Blocking test: thread creation failed.");
         return;
     }
 
     blocking_test_target = blocked;
     thread_enqueue(blocked);
     thread_enqueue(controller);
-    thread_t *first = thread_dequeue();
-
-    if (first == 0)
-    {
-        return;
-    }
-
-    thread_set_current(first);
-    first->state = THREAD_RUNNING;
-    uint32_t old_esp = 0;
-    x86_context_switch(&old_esp, first->saved_esp);
-
-    while (1)
-    {
-        __asm__ volatile("hlt");
-    }
+    terminal_writeIn("Blocking test threads queued.");
 }
