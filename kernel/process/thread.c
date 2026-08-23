@@ -1,6 +1,7 @@
 #include "process/thread.h"
 #include "process/process.h"
 #include "memory/heap.h"
+#include "memory/address_space.h"
 #include "terminal.h"
 #include <stdint.h>
 
@@ -23,6 +24,29 @@ static void second_thread(void);
 static void idle_thread(void);
 static void blocking_thread(void);
 
+static void thread_enqueue_terminated(thread_t *thread)
+{
+    if (thread == 0)
+    {
+        return;
+    }
+
+    thread->state = THREAD_TERMINATED;
+    thread->next = 0;
+
+    if (terminated_queue_tail == 0)
+    {
+        terminated_queue_head = thread;
+        terminated_queue_tail = thread;
+    }
+
+    else
+    {
+        terminated_queue_tail->next = thread;
+        terminated_queue_tail = thread;
+    }
+}
+
 void thread_init(void)
 {
     terminal_writeIn("Thread_init: Started");
@@ -44,7 +68,7 @@ void thread_init(void)
         return;
     }
 
-    terminal_writeIn("Thread_init: process OK");
+    terminal_writeIn("Thread_init: Kernel process OK");
 
     bootstrap_thread.tid = next_tid++;
     bootstrap_thread.state = THREAD_RUNNING;
@@ -69,14 +93,25 @@ void thread_init(void)
 
     terminal_writeIn("Thread_init: bootstrap OK");
 
-    idle_thread_instance = thread_create(idle_thread, "idle");
+    idle_thread_instance = thread_create_in_process(kernel_process, idle_thread, "idle");
 
     terminal_writeIn("Thread_init: idle create returned");
 
-    if (idle_thread_instance == 0)
+    if (idle_thread_instance != 0)
     {
-        terminal_writeIn("Thread_init: idle FAILED");
-        return;
+        terminal_writeIn("Thread_init: idle process PID: ");
+        
+        if (idle_thread_instance->process != 0)
+        {
+            terminal_write_hex(idle_thread_instance->process->pid);
+        }
+
+        else
+        {
+            terminal_write("NULL");
+        }
+
+        terminal_write("\n");
     }
 
     terminal_writeIn("Thread_init: idle OK");
@@ -299,8 +334,18 @@ void thread_yield(void)
     }
 
     __asm__ volatile("cli");
-    current->state = THREAD_READY;
-    thread_enqueue(current);
+
+    if (current->state != THREAD_TERMINATED && current->state != THREAD_BLOCKED)
+    {
+        thread_enqueue(current);
+    }
+
+    if (next->process != 0 && current->process != next->process)
+    {
+        process_set_current(next->process);
+        address_space_activate(next->process->address_space);
+    }
+
     next->state = THREAD_RUNNING;
     thread_set_current(next);
     x86_context_switch(&current->saved_esp, next->saved_esp);
@@ -346,6 +391,12 @@ void thread_block(void)
         }
     }
 
+    if (next->process != 0 && current->process != next->process)
+    {
+        process_set_current(next->process);
+        address_space_activate(next->process->address_space);
+    }
+
     next->state = THREAD_RUNNING;
     thread_set_current(next);
     x86_context_switch(&current->saved_esp, next->saved_esp);
@@ -364,7 +415,64 @@ void thread_unblock(thread_t *thread)
     }
 
     __asm__ volatile("cli");
-    thread_enqueue(thread);
+
+    if (thread->process != 0 && thread->process->state == PROCESS_TERMINATED)
+    {
+        thread_enqueue_terminated(thread);
+    }
+
+    else
+    {
+        thread_enqueue(thread);
+    }
+
+    __asm__ volatile("sti");
+}
+
+void thread_terminate_process_threads(process_t *process)
+{
+    if (process == 0)
+    {
+        return;
+    }
+
+    __asm__ volatile("cli");
+
+    thread_t *previous = 0;
+    thread_t *thread = ready_queue_head;
+
+    while (thread != 0)
+    {
+        thread_t *next = thread->next;
+
+        if (thread->process == process && thread != current_thread)
+        {
+            if (previous == 0)
+            {
+                ready_queue_head = next;
+            }
+
+            else
+            {
+                previous->next = next;
+            }
+
+            if (ready_queue_tail == thread)
+            {
+                ready_queue_tail = previous;
+            }
+
+            thread_enqueue_terminated(thread);
+        }
+
+        else
+        {
+            previous = thread;
+        }
+
+        thread = next;
+    }
+
     __asm__ volatile("sti");
 }
 
@@ -398,7 +506,24 @@ void thread_reap_terminated(thread_t *current)
 
             if (thread->process != 0 && thread->process->thread_count > 0)
             {
+                terminal_writeIn("Thread reaper: TID:");
+                terminal_write_hex(thread->tid);
+
+                terminal_writeIn("Thread reaper: PID:");
+                terminal_write_hex(thread->process->pid);
+
+                terminal_writeIn("Thread reaper: thread_count BEFORE:");
+                terminal_write_hex(thread->process->thread_count);
+
                 thread->process->thread_count--;
+
+                terminal_writeIn("Thread reaper: thread_count AFTER:");
+                terminal_write_hex(thread->process->thread_count);
+
+                if (thread->process->thread_count == 0)
+                {
+                    terminal_writeIn("Thread reaper: process now has zero threads.");
+                }
             }
 
             if (thread->kernel_stack != 0)
@@ -429,19 +554,56 @@ void thread_terminate(void)
         return;
     }
 
-    current->state = THREAD_TERMINATED;
-    current->next = 0;
-
-    if (terminated_queue_tail == 0)
+    if (current->state == THREAD_TERMINATED)
     {
-        terminated_queue_head = current;
-        terminated_queue_tail = current;
+        return;
+    }
+
+    terminal_write("THREAD TERMINATE:");
+    terminal_write(" TID: ");
+    terminal_write_hex(current->tid);
+    terminal_write(" PID: ");
+
+    if (current->process != 0)
+    {
+        terminal_write_hex(current->process->pid);
     }
 
     else
     {
-        terminated_queue_tail->next = current;
-        terminated_queue_tail = current;
+        terminal_write_hex(0xFFFFFFFF);
+    }
+
+    terminal_write("\n");
+    __asm__ volatile("cli");
+    thread_enqueue_terminated(current);
+
+    thread_t *next = thread_dequeue();
+
+    if (next == 0)
+    {
+        next = thread_idle();
+    }
+
+    if (next == 0)
+    {
+        __asm__ volatile("sti");
+        return;
+    }
+
+    if (next->process != 0 && current->process != next->process)
+    {
+        process_set_current(next->process);
+        address_space_activate(next->process->address_space);
+    }
+
+    next->state = THREAD_RUNNING;
+    thread_set_current(next);
+    x86_context_switch(&current->saved_esp, next->saved_esp);
+
+    while (1)
+    {
+        __asm__ volatile("hlt");
     }
 }
 

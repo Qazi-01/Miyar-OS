@@ -205,7 +205,33 @@ process_t *process_current(void)
 
 void process_set_current(process_t *process)
 {
+    terminal_writeIn("process_set_current: setting PID: ");
+
+    if (process != 0)
+    {
+        terminal_write_hex(process->pid);
+    }
+
+    else
+    {
+        terminal_write("NULL");
+    }
+
+    terminal_write("\n");
     current_process = process;
+    terminal_writeIn("process_set_current: current PID is now: ");
+
+    if (current_process != 0)
+    {
+        terminal_write_hex(current_process->pid);
+    }
+
+    else
+    {
+        terminal_write("NULL");
+    }
+
+    terminal_write("\n");
 }
 
 process_t *process_find(uint32_t pid)
@@ -238,9 +264,11 @@ void process_exit(process_t *process)
     }
 
     process->state = PROCESS_TERMINATED;
+    thread_terminate_process_threads(process);
+
     thread_t *current = thread_current();
 
-    if (current != 0 && current->process == process)
+    if (current != 0 && current->process == process && current->state != THREAD_TERMINATED)
     {
         thread_terminate();
     }
@@ -254,11 +282,14 @@ void process_reap_terminated(void)
     {
         process_t *next = process->next;
 
-        if (process != kernel_process && process != current_process && process->state == PROCESS_TERMINATED && process->thread_count == 0)
+        if (process != kernel_process)
         {
-            terminal_writeIn("Process reaper: destroying terminated process.");
-            process_destroy(process);
-            terminal_writeIn("Process reaper: process destroyed.");
+            if (process != current_process && process->state == PROCESS_TERMINATED && process->thread_count == 0)
+            {
+                terminal_writeIn("Process reaper: destroying terminated process.");
+                process_destroy(process);
+                terminal_writeIn("Process reaper: process destroyed.");
+            }
         }
 
         process = next;

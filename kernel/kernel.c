@@ -30,6 +30,7 @@
 #include "process/scheduler_test.h"
 #include "process/process_scheduler_test.h"
 #include "process/process_termination_test.h"
+#include "process/process_multithread_test.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -119,14 +120,10 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
 
     process_init();
     scheduler_init();
-    address_isolation_test();
 
     __asm__ volatile("sti");
 
-    scheduler_test();
-    thread_blocking_test_start();
-    process_scheduler_test();
-    process_termination_test();
+    process_multithread_test();
 
     terminal_writeIn("");
     terminal_writeIn("");
