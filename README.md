@@ -8,18 +8,28 @@ MiyarOS was created to understand how an operating system works from the ground 
 
 ## Current Version
 
-**v0.3 - Filesystem**:
+**v0.4 - Process Management & Multitasking**:
+
+MiyarOS V0.4.0 introduces the foundations of process management and multitasking, including independent address spaces, kernel threads, schedulling, context switching, process termination, resource cleanup, and protected kernel resources.
+
 A bootable release ISO is available in the `release/` directory and on the project's GitHub Releases page.
 
 ## Highlights
 
 * 32-bit x86 kernel written from scratch in C and x86 Assembly.
 * GRUB Multiboot compliant.
-* Physical and virtual memory management.
+* Bitmap-based physical frame allocation.
+* Kernel heap.
+* Paging and virtual memory management.
 * Fully functional FAT32 filesystem.
 * Unix-like shell with filesystem commands.
 * Absolute and relative path resolution.
 * Multi-cluster file support.
+* Process management and independent address spaces.
+* Kernel threads and thread scheduling.
+* Context switching and preemptive multitasking.
+* Process and thread termination with resource cleanup.
+* Protected kernel process, address space, and core threads.
 * Open-source and built as a learning project.
 
 ## Releases
@@ -40,6 +50,7 @@ Alternatively, clone the repository and build MiyarOS from source using the prov
 * CPU exception handling.
 * Kernel panic screen with diagnostic information.
 * Dedicated page fault handler.
+* Context switching.
 
 ### Memory Management
 
@@ -50,7 +61,36 @@ Alternatively, clone the repository and build MiyarOS from source using the prov
 * Paging support.
 * Virtual Memory Manager (VMM).
 * Dynamic page table creation.
+* Independent address spaces.
+* Kernel address-space protection.
 * Read-only kernel memory protection.
+* Physical frame accounting and cleanup.
+
+### Process Management & Multitasking
+
+* Process creation and destruction.
+* Process identifiers (PIDs).
+* Process state management.
+* Process lookup.
+* Process termination.
+* Process reaping.
+* Parent process tracking.
+* Per-process address spaces.
+* Kernel thread creation.
+* Thread identifiers (TIDs).
+* Thread states: READY, RUNNING, BLOCKED, and TERMINATED.
+* Ready queue scheduling.
+* Thread blocking and unblocking.
+* Thread termination and reaping.
+* Kernel stack allocation for threads.
+* Context switching.
+* Timer-based preemptive multitasking.
+* Process/thread isolation.
+* Protected kernel process.
+* Protected bootstrap and idle threads.
+* Scheduler invariant testing.
+* Process isolation testing.
+* Protected resource testing.
 
 ### Storage & Filesystem
 
@@ -134,6 +174,7 @@ Miyar-OS/
 │   └── arch/
 │       └── x86/
 │           ├── boot.asm
+│           ├── context.asm
 │           ├── gdt.asm
 │           └── isr.asm
 │
@@ -161,7 +202,15 @@ Miyar-OS/
     │   ├── heap.c
     │   ├── paging.c
     │   ├── vmm.c
-    │   └── page_fault.c
+    │   ├── address_space.c
+    │   ├── page_fault.c
+    │   └── (Test files)
+    │
+    ├── process/
+    │   ├── process.c
+    │   ├── scheduler.c
+    │   ├── thread.c
+    │   └── (Test files)
     │
     ├── fs/
     │   ├── directory.c
@@ -193,11 +242,12 @@ Miyar-OS/
 * xorriso
 * QEMU (recommended)
 
-## Build Instructions
+## Build & Run Instructions
 
 ```bash
 make clean
 make
+
 ```
 
 This builds the kernel and generates a bootable ISO.
@@ -276,18 +326,30 @@ Place `disk.img` in the project root (alongside the `Makefile`).
 * Current working directory
 * Integrated filesystem shell commands
 
-### Planned
-
 #### v0.4 - Process Management & Multitasking
 
-* Scheduler
-* Context switching
-* Kernel threads
-* Processes
+* Process creation and lifecycle management.
+* Independent process address spaces.
+* Kernel threads.
+* Thread scheduling.
+* Context switching.
+* Timer-driven preemptive multitasking.
+* Thread blocking and unblocking.
+* Process and thread termination.
+* Process and thread reaping.
+* Process/thread isolation.
+* Scheduler robustness and invariant testing.
+* Protected kernel resources.
+* Kernel, bootstrap-thread, and idle-thread protection.
+* Resource and PMM cleanup verification.
+
+### Planned
 
 #### v0.5 - User Mode & System Calls
 
 * Ring 3 execution
+* Kernel/user separation.
+* User-mode process execution.
 * ELF program loading
 * System call interface
 
@@ -295,6 +357,7 @@ Place `disk.img` in the project root (alongside the `Makefile`).
 
 * Generic filesystem layer
 * Multiple filesystem support
+* Kernel-facing VFS interface.
 
 #### Future
 
@@ -303,6 +366,7 @@ Place `disk.img` in the project root (alongside the `Makefile`).
 * Networking
 * Security improvements
 * Graphical user interface
+* User-space utilities and applications
 
 ## License
 

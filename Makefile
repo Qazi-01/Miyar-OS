@@ -60,7 +60,8 @@ $(BUILDDIR)/address_space_test.o \
 $(BUILDDIR)/scheduler_test.o \
 $(BUILDDIR)/process_scheduler_test.o \
 $(BUILDDIR)/process_termination_test.o \
-$(BUILDDIR)/process_multithread_test.o
+$(BUILDDIR)/process_multithread_test.o \
+$(BUILDDIR)/protected_resource_test.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -189,6 +190,9 @@ $(BUILDDIR)/process_termination_test.o: $(KERNELDIR)/process/process_termination
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/process_multithread_test.o: $(KERNELDIR)/process/process_multithread_test.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/protected_resource_test.o: $(KERNELDIR)/process/protected_resource_test.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/gdtasm.o: $(SRCDIR)/arch/x86/gdt.asm | $(BUILDDIR)

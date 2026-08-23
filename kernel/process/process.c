@@ -51,18 +51,8 @@ void process_init(void)
 
     current_process = kernel_process;
 
-    if (current_process == 0)
-    {
-        terminal_writeIn("process_init: current_process is NULL after assignment.");
-    }
-
     process_list_head = kernel_process;
     process_list_tail = kernel_process;
-
-    if (current_process == 0)
-    {
-        terminal_writeIn("process_init: current_process is NULL at the end of initialization.");
-    }
 }
 
 process_t *process_create(const char *name)
@@ -242,9 +232,7 @@ void process_reap_terminated(void)
         {
             if (process != current_process && process->state == PROCESS_TERMINATED && process->thread_count == 0)
             {
-                terminal_writeIn("Process reaper: destroying terminated process.");
                 process_destroy(process);
-                terminal_writeIn("Process reaper: process destroyed.");
             }
         }
 

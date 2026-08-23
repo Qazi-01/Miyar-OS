@@ -219,6 +219,11 @@ void thread_destroy(thread_t *thread)
         return;
     }
 
+    if (thread == &bootstrap_thread || thread == idle_thread_instance)
+    {
+        return;
+    }
+
     if (thread->kernel_stack != 0)
     {
         kfree((void *)thread->kernel_stack);
@@ -501,6 +506,11 @@ void thread_terminate(void)
     thread_t *current = thread_current();
 
     if (current == 0)
+    {
+        return;
+    }
+    
+    if (current == &bootstrap_thread || current == idle_thread_instance)
     {
         return;
     }

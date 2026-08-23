@@ -31,6 +31,7 @@
 #include "process/process_scheduler_test.h"
 #include "process/process_termination_test.h"
 #include "process/process_multithread_test.h"
+#include "process/protected_resource_test.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
 
@@ -69,7 +70,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     terminal_init();
     terminal_writeIn("============================================================\n");
     terminal_writeIn("                        MIYAR OS");
-    terminal_writeIn("                         v0.3.0\n");
+    terminal_writeIn("                         v0.4.0\n");
     terminal_writeIn("============================================================\n");
     terminal_writeIn("");
     terminal_writeIn("Booting kernel...");
@@ -122,8 +123,6 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
     scheduler_init();
 
     __asm__ volatile("sti");
-
-    scheduler_test_yield();
 
     terminal_writeIn("");
     terminal_writeIn("");

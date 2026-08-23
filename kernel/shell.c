@@ -205,8 +205,8 @@ static void cmd_about(const char *args)
     (void)args;
 
     terminal_writeIn("");
-    terminal_writeIn("MiyarOS v0.3.0");
-    terminal_writeIn("Kernel: 0.3.0");
+    terminal_writeIn("MiyarOS v0.4.0");
+    terminal_writeIn("Kernel: 0.4.0");
     terminal_writeIn("Architecture: x86(32-bits)");
     terminal_writeIn("");
     terminal_writeIn("A hobby operating system written from scratch");

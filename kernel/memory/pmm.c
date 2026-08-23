@@ -69,7 +69,6 @@ void pmm_init(void)
 
     reserve_region((uintptr_t)&_kernel_start, (uintptr_t)(&_kernel_end -&_kernel_start));
     bitmap_set(0);
-    terminal_writeIn("PMM initialized");
 }
 
 void *pmm_alloc_frame(void)
