@@ -43,7 +43,7 @@ static uint32_t *vmm_create_page_table(address_space_t *address_space, uint32_t 
     }
 
     address_space->page_tables[directory_index] = page_table;
-    address_space->page_directory[directory_index] = ((uint32_t)page_table) | PAGE_PRESENT | PAGE_WRITABLE;
+    address_space->page_directory[directory_index] = ((uint32_t)page_table) | PAGE_PRESENT | PAGE_WRITABLE | PAGE_USER;
 
     return page_table;
 }

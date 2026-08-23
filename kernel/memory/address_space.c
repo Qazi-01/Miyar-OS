@@ -17,7 +17,6 @@ static void load_page_directory(uint32_t *page_directory)
 
 address_space_t *address_space_create(void)
 {
-    terminal_writeIn("address_space_create: START");
     address_space_t *address_space = (address_space_t *)pmm_alloc_frame();
 
     if (address_space == 0)
@@ -26,7 +25,6 @@ address_space_t *address_space_create(void)
         return 0;
     }
 
-    terminal_writeIn("address_space_create: allocated frame OK.");
     address_space->page_tables = (uint32_t **)kmalloc(sizeof(uint32_t *) * 1024);
 
     if (address_space->page_tables == 0)
@@ -35,8 +33,6 @@ address_space_t *address_space_create(void)
         pmm_free_frame(address_space);
         return 0;
     }
-
-    terminal_writeIn("address_space_create: memory allocation OK.");
 
     for (uint32_t i = 0; i < 1024; i++)
     {
@@ -53,7 +49,6 @@ address_space_t *address_space_create(void)
         return 0;
     }
 
-    terminal_writeIn("address_space_create: page directory frame OK.");
     uint32_t *kernel_page_directory = paging_get_directory();
 
     for (uint32_t i = 0; i < 1024; i++)
@@ -64,7 +59,6 @@ address_space_t *address_space_create(void)
     page_directory[0] = kernel_page_directory[0];
     address_space->page_tables[0] = paging_get_first_table();
     address_space->page_directory = page_directory;
-    terminal_writeIn("address_space_create: SUCCESS");
 
     return address_space;
 }
@@ -76,20 +70,37 @@ void address_space_destroy(address_space_t *address_space)
         return;
     }
 
+    if (address_space == &kernel_address_space)
+    {
+        return;
+    }
+
     if (address_space == current_address_space)
     {
         return;
     }
 
+    if (address_space->page_tables != 0)
+    {
+        for (uint32_t i = 1; i < ADDRESS_SPACE_PAGE_TABLES; i++)
+        {
+            if (address_space->page_tables[i] != 0)
+            {
+                pmm_free_frame(address_space->page_tables[i]);
+                address_space->page_tables[i] = 0;
+            }
+        }
+
+        kfree(address_space->page_tables);
+        address_space->page_tables = 0;
+    }
+
     if (address_space->page_directory != 0)
     {
         pmm_free_frame(address_space->page_directory);
+        address_space->page_directory = 0;
     }
 
-    if (address_space->page_tables != 0)
-    {
-        kfree(address_space->page_tables);
-    }
     pmm_free_frame(address_space);
 }
 

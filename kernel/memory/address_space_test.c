@@ -12,12 +12,26 @@
 void address_isolation_test(void)
 {
     terminal_writeIn("Address space isolation test started.");
+    uint32_t frames_before = pmm_free_frames();
     process_t *process_a = process_create("Isolation A");
     process_t *process_b = process_create("Isolation B");
 
     if (process_a == 0 || process_b == 0)
     {
         terminal_writeIn("Isolation test: process creation failed.");
+        return;
+    }
+
+    terminal_write("Free frames before: ");
+    terminal_write_hex(frames_before);
+    uint32_t frames_after_creation = pmm_free_frames();
+    terminal_write(" | Frames after creation: ");
+    terminal_write_hex(frames_after_creation);
+    terminal_write("\n");
+
+    if (frames_after_creation >= frames_before)
+    {
+        terminal_writeIn("Isolation test: address-space allocation did not consume frames.");
         return;
     }
 
@@ -134,6 +148,14 @@ void address_isolation_test(void)
         terminal_writeIn("Process B mapping FAILED.");
     }
 
+    uint32_t frames_after_mapping = pmm_free_frames();
+
+    if (frames_after_mapping >= frames_after_creation)
+    {
+        terminal_writeIn("Isolation test: page-table allocation did not consume a frame.");
+        return;
+    }
+
     if (physical_a == physical_b)
     {
         terminal_writeIn("Isolation FAILED: mappings share physical frame.");
@@ -212,18 +234,6 @@ void address_isolation_test(void)
 
     process_t *kernel_process = process_find(0);
 
-    if (kernel_process == 0)
-    {
-        terminal_writeIn("ERROR: Kernel process not found.");
-    }
-
-    else
-    {
-        terminal_writeIn("Kernel process restored.");
-        address_space_activate(kernel_process->address_space);
-        process_set_current(kernel_process);
-    }
-
     if (kernel_process != 0)
     {
         address_space_activate(kernel_process->address_space);
@@ -236,4 +246,23 @@ void address_isolation_test(void)
 
     process_destroy(process_a);
     process_destroy(process_b);
+
+    uint32_t frames_after_destroy = pmm_free_frames();
+
+    if (frames_after_destroy != frames_before)
+    {
+        terminal_writeIn("Isolation test: PMM frame leak detected.");
+        terminal_write("Frames before: ");
+        terminal_write_hex(frames_before);
+        terminal_write("\n");
+
+        terminal_write("Frames after destruction: ");
+        terminal_write_hex(frames_after_destroy);
+        terminal_write("\n");
+
+        return;
+    }
+
+    terminal_writeIn("Address-space cleanup: OK.");
+    terminal_writeIn("PMM frame accounting: OK.");
 }

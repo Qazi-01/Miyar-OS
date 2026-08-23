@@ -10,6 +10,11 @@ static volatile uint32_t thread_a_ticks = 0;
 static volatile uint32_t thread_b_ticks = 0;
 static volatile uint32_t termination_test_ran = 0;
 static volatile uint32_t termination_test_after_terminate = 0;
+static volatile uint32_t scheduler_test_started = 0;
+static volatile uint32_t scheduler_test_yielded = 0;
+static volatile uint32_t scheduler_test_resumed = 0;
+static volatile uint32_t scheduler_test_finished = 0;
+static thread_t *scheduler_test_worker_thread = 0;
 
 static void scheduler_test_terminating_thread(void)
 {
@@ -22,6 +27,21 @@ static void scheduler_test_terminating_thread(void)
     {
         __asm__ volatile("hlt");
     }
+}
+
+static void scheduler_test_worker(void)
+{
+    scheduler_test_started = 1;
+    thread_yield();
+    scheduler_test_yielded = 1;
+
+    while (!scheduler_test_finished)
+    {
+        thread_yield();
+    }
+
+    scheduler_test_resumed = 1;
+    thread_terminate();
 }
 
 static void scheduler_test_thread_a(void)
@@ -161,4 +181,96 @@ void scheduler_test(void)
     }
 
     terminal_writeIn("Termination test: PASSED.");
+}
+
+void scheduler_test_yield(void)
+{
+    terminal_writeIn("Scheduler invariant test started.");
+
+    scheduler_test_started = 0;
+    scheduler_test_yielded = 0;
+    scheduler_test_resumed = 0;
+    scheduler_test_finished = 0;
+    scheduler_test_worker_thread = 0;
+
+    thread_t *worker = thread_create(scheduler_test_worker, "Scheduler Test");
+
+    if (worker == 0)
+    {
+        terminal_writeIn("Scheduler test: thread creation FAILED.");
+        return;
+    }
+
+    scheduler_test_worker_thread = worker;
+
+    if (worker->state != THREAD_READY)
+    {
+        terminal_writeIn("Scheduler test: new thread is not READY.");
+        thread_destroy(worker);
+        scheduler_test_worker_thread = 0;
+        return;
+    }
+
+    terminal_writeIn("New thread state: READY");
+    thread_enqueue(worker);
+
+    while (!scheduler_test_started)
+    {
+        thread_yield();
+    }
+
+    if (thread_current() == 0)
+    {
+        terminal_writeIn("Scheduler test: current thread is NULL.");
+        return;
+    }
+
+    if (thread_current()->state != THREAD_RUNNING)
+    {
+        terminal_writeIn("Scheduler test: current thread is NOT RUNNING.");
+        return;
+    }
+
+    terminal_writeIn("Current thread state: RUNNING.");
+
+    while (!scheduler_test_yielded)
+    {
+        thread_yield();
+    }
+
+    terminal_writeIn("Thread yield completed.");
+
+    if (worker->state == THREAD_RUNNING)
+    {
+        terminal_writeIn("Scheduler test: yielded thread remained RUNNING.");
+        return;
+    }
+
+    if (worker->state != THREAD_READY)
+    {
+        terminal_writeIn("Scheduler test: yielded thread is NOT READY.");
+        return;
+    }
+
+    terminal_writeIn("Yielded thread state: READY.");
+    scheduler_test_finished = 1;
+
+    while (!scheduler_test_resumed)
+    {
+        thread_yield();
+    }
+
+    terminal_writeIn("Thread resumed successfully.");
+
+    if (worker->state != THREAD_TERMINATED)
+    {
+        terminal_writeIn("Scheduler test: Thread termination FAILED.");
+        return;
+    }
+
+    terminal_writeIn("Scheduler test: Thread TERMINATED.");
+
+    terminal_writeIn("========================================");
+    terminal_writeIn("    SCHEDULER INVARIANT TEST: PASSED");
+    terminal_writeIn("========================================");
 }

@@ -123,7 +123,7 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
 
     __asm__ volatile("sti");
 
-    process_multithread_test();
+    scheduler_test_yield();
 
     terminal_writeIn("");
     terminal_writeIn("");

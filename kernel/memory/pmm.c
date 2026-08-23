@@ -88,12 +88,25 @@ void *pmm_alloc_frame(void)
 
 void pmm_free_frame(void *frame)
 {
-    if (!frame)
+    if (frame == 0)
     {
         return;
     }
 
-    uint32_t frame_number = (uintptr_t)frame/PAGE_SIZE;
+    uintptr_t address = (uintptr_t)frame;
+
+    if (address % PAGE_SIZE != 0)
+    {
+        return;
+    }
+
+    uint32_t frame_number = address/PAGE_SIZE;
+
+    if (frame_number >= total_frames)
+    {
+        return;
+    }
+
     bitmap_reset(frame_number);
 }
 
@@ -151,4 +164,19 @@ static void reserve_region(uint64_t base, uint64_t length)
     {
         bitmap_set(frame);
     }
+}
+
+uint32_t pmm_free_frames(void)
+{
+    uint32_t free_frames = 0;
+
+    for (uint32_t frame = 0; frame < total_frames; frame++)
+    {
+        if (!bitmap_test(frame))
+        {
+            free_frames++;
+        }
+    }
+
+    return free_frames;
 }

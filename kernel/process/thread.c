@@ -49,8 +49,6 @@ static void thread_enqueue_terminated(thread_t *thread)
 
 void thread_init(void)
 {
-    terminal_writeIn("Thread_init: Started");
-
     next_tid = 1;
     current_thread = 0;
     ready_queue_head = 0;
@@ -58,17 +56,12 @@ void thread_init(void)
     terminated_queue_head = 0;
     terminated_queue_tail = 0;
 
-    terminal_writeIn("Thread_init: checking process");
-
     process_t *kernel_process = process_current();
 
     if (kernel_process == 0)
     {
-        terminal_writeIn("Thread_init: process is NULL");
         return;
     }
-
-    terminal_writeIn("Thread_init: Kernel process OK");
 
     bootstrap_thread.tid = next_tid++;
     bootstrap_thread.state = THREAD_RUNNING;
@@ -91,30 +84,7 @@ void thread_init(void)
     kernel_process->thread_count++;
     current_thread = &bootstrap_thread;
 
-    terminal_writeIn("Thread_init: bootstrap OK");
-
     idle_thread_instance = thread_create_in_process(kernel_process, idle_thread, "idle");
-
-    terminal_writeIn("Thread_init: idle create returned");
-
-    if (idle_thread_instance != 0)
-    {
-        terminal_writeIn("Thread_init: idle process PID: ");
-        
-        if (idle_thread_instance->process != 0)
-        {
-            terminal_write_hex(idle_thread_instance->process->pid);
-        }
-
-        else
-        {
-            terminal_write("NULL");
-        }
-
-        terminal_write("\n");
-    }
-
-    terminal_writeIn("Thread_init: idle OK");
 }
 
 thread_t *thread_create_in_process(process_t *process,void (*entry)(void), const char *name)
@@ -506,31 +476,12 @@ void thread_reap_terminated(thread_t *current)
 
             if (thread->process != 0 && thread->process->thread_count > 0)
             {
-                terminal_writeIn("Thread reaper: TID:");
-                terminal_write_hex(thread->tid);
-
-                terminal_writeIn("Thread reaper: PID:");
-                terminal_write_hex(thread->process->pid);
-
-                terminal_writeIn("Thread reaper: thread_count BEFORE:");
-                terminal_write_hex(thread->process->thread_count);
-
                 thread->process->thread_count--;
-
-                terminal_writeIn("Thread reaper: thread_count AFTER:");
-                terminal_write_hex(thread->process->thread_count);
-
-                if (thread->process->thread_count == 0)
-                {
-                    terminal_writeIn("Thread reaper: process now has zero threads.");
-                }
             }
 
             if (thread->kernel_stack != 0)
             {
-                terminal_writeIn("Thread reaper: reaping terminated thread.");
                 kfree((void *)thread->kernel_stack);
-                terminal_writeIn("Thread reaper: terminated thread freed.");
             }
 
             kfree(thread);
@@ -559,22 +510,6 @@ void thread_terminate(void)
         return;
     }
 
-    terminal_write("THREAD TERMINATE:");
-    terminal_write(" TID: ");
-    terminal_write_hex(current->tid);
-    terminal_write(" PID: ");
-
-    if (current->process != 0)
-    {
-        terminal_write_hex(current->process->pid);
-    }
-
-    else
-    {
-        terminal_write_hex(0xFFFFFFFF);
-    }
-
-    terminal_write("\n");
     __asm__ volatile("cli");
     thread_enqueue_terminated(current);
 

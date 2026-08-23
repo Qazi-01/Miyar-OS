@@ -12,13 +12,9 @@ static process_t *process_list_tail = 0;
 
 void process_init(void)
 {
-    terminal_writeIn("process_init: START");
-
     next_pid = 1;
     current_process = 0;
     kernel_process = 0;
-
-    terminal_writeIn("process_init: Creating kernel process.");
 
     kernel_process = process_create("kernel");
 
@@ -27,8 +23,6 @@ void process_init(void)
         terminal_writeIn("process_init: Failed to create kernel process.");
         return;
     }
-
-    terminal_writeIn("process_init: Kernel process created successfully.");
 
     if (kernel_process->address_space != address_space_current())
     {
@@ -55,38 +49,24 @@ void process_init(void)
     kernel_process->name[4] = 'e';
     kernel_process->name[5] = 'l';
 
-    terminal_writeIn("process_init: assigning kernel process as current process.");
     current_process = kernel_process;
-    terminal_writeIn("process_init: current process assigned.");
 
     if (current_process == 0)
     {
         terminal_writeIn("process_init: current_process is NULL after assignment.");
     }
 
-    else
-    {
-        terminal_writeIn("process_init: current_process assigned successfully.");
-    }
-
     process_list_head = kernel_process;
     process_list_tail = kernel_process;
-    terminal_writeIn("process_init: END");
 
     if (current_process == 0)
     {
         terminal_writeIn("process_init: current_process is NULL at the end of initialization.");
     }
-
-    else
-    {
-        terminal_writeIn("process_init: current_process is valid at the end of initialization.");
-    }
 }
 
 process_t *process_create(const char *name)
 {
-    terminal_writeIn("process_create: START");
     process_t *process = (process_t *)kmalloc(sizeof(process_t));
 
     if (process == 0)
@@ -95,7 +75,6 @@ process_t *process_create(const char *name)
         return 0;
     }
 
-    terminal_writeIn("process_create: Process allocated.");
     process->address_space = address_space_create();
 
     if (process->address_space == 0)
@@ -104,8 +83,6 @@ process_t *process_create(const char *name)
         terminal_writeIn("process_create: Failed to create address space for process.");
         return 0;
     }
-
-    terminal_writeIn("process_create: Address space created for process.");
 
     process->pid = next_pid++;
     process->state = PROCESS_RUNNING;
@@ -205,33 +182,12 @@ process_t *process_current(void)
 
 void process_set_current(process_t *process)
 {
-    terminal_writeIn("process_set_current: setting PID: ");
-
-    if (process != 0)
+    if (process == 0)
     {
-        terminal_write_hex(process->pid);
+        return;
     }
-
-    else
-    {
-        terminal_write("NULL");
-    }
-
-    terminal_write("\n");
+    
     current_process = process;
-    terminal_writeIn("process_set_current: current PID is now: ");
-
-    if (current_process != 0)
-    {
-        terminal_write_hex(current_process->pid);
-    }
-
-    else
-    {
-        terminal_write("NULL");
-    }
-
-    terminal_write("\n");
 }
 
 process_t *process_find(uint32_t pid)
