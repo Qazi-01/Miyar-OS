@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "arch/x86/gdt.h"
+#include "arch/x86/tss.h"
 #include "memory/heap.h"
 #include "arch/x86/idt.h"
 #include "drivers/keyboard.h"
@@ -77,6 +78,8 @@ void kernel_main(uint32_t magic, multiboot_info_t *multiboot_info) {
 
     gdt_init();
     terminal_writeIn("Loading GDT....................... [ OK ]");
+
+    tss_init();
 
     idt_init();
     terminal_writeIn("Loading IDT....................... [ OK ]");

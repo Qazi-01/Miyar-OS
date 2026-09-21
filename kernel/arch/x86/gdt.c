@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "arch/x86/gdt.h"
+#include "arch/x86/tss.h"
 
 struct gdt_entry
 {
@@ -19,7 +20,7 @@ struct gdt_ptr
 
 extern void gdt_flush(uint32_t);
 
-static struct gdt_entry gdt[3];
+static struct gdt_entry gdt[6];
 static struct gdt_ptr gp;
 
 static void gdt_set_gate(
@@ -46,20 +47,11 @@ void gdt_init(void)
     gp.base = (uint32_t)&gdt;
 
     gdt_set_gate(0, 0, 0, 0, 0);
-
-    gdt_set_gate(
-        1,
-        0,
-        0xFFFFFFFF,
-        0x9A,
-        0xCF);
-
-    gdt_set_gate(
-        2,
-        0,
-        0xFFFFFFFF,
-        0x92,
-        0xCF);
+    gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
+    gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
+    gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
+    gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
+    gdt_set_gate(5, (uint32_t)&tss, sizeof(tss) - 1, 0x89, 0x00);
 
     gdt_flush((uint32_t)&gp);
 }

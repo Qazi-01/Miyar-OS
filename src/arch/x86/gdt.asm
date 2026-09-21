@@ -1,4 +1,5 @@
 global gdt_flush
+global tss_flush
 
 section .text
 
@@ -19,6 +20,13 @@ gdt_flush:
     jmp 0x08:.flush
 
 .flush:
+    ret
+
+tss_flush:
+    
+    mov ax, 0x28
+    ltr ax
+
     ret
 
 section .note.GNU-stack noalloc noexec nowrite progbits
