@@ -1,10 +1,8 @@
+![MiyarOS](images/screenshot.png)
+
 # Miyar-OS
 
-MiyarOS is a hobby operating system for 32-bit x86 that boots with GRUB and follows the Multiboot specification. The kernel is written entirely in C and x86 Assembly and is developed from scratch as a learning project. It currently features physical and virtual memory management, a fully functional FAT32 filesystem, an interactive command-line shell, hardware device drivers, interrupt handling, and paging.
-
-## Why I Built It
-
-MiyarOS was created to understand how an operating system works from the ground up, from the very first boot instruction to a functional kernel capable of managing memory, storage, and user interaction. Rather than building on an existing kernel, every subsystem is implemented from scratch to gain practical experience with low-level systems programming and operating system design.
+a hobby operating system for 32-bit x86 that boots with GRUB and follows the Multiboot specification. The kernel is written entirely in C and x86 Assembly and is developed from scratch as a learning project. It currently features physical and virtual memory management, a fully functional FAT32 filesystem, an interactive command-line shell, hardware device drivers, interrupt handling, and paging.
 
 ## Current Version
 
@@ -12,31 +10,7 @@ MiyarOS was created to understand how an operating system works from the ground 
 
 MiyarOS V0.4.0 introduces the foundations of process management and multitasking, including independent address spaces, kernel threads, schedulling, context switching, process termination, resource cleanup, and protected kernel resources.
 
-A bootable release ISO is available in the `release/` directory and on the project's GitHub Releases page.
-
-## Highlights
-
-* 32-bit x86 kernel written from scratch in C and x86 Assembly.
-* GRUB Multiboot compliant.
-* Bitmap-based physical frame allocation.
-* Kernel heap.
-* Paging and virtual memory management.
-* Fully functional FAT32 filesystem.
-* Unix-like shell with filesystem commands.
-* Absolute and relative path resolution.
-* Multi-cluster file support.
-* Process management and independent address spaces.
-* Kernel threads and thread scheduling.
-* Context switching and preemptive multitasking.
-* Process and thread termination with resource cleanup.
-* Protected kernel process, address space, and core threads.
-* Open-source and built as a learning project.
-
-## Releases
-
-Each tagged release includes a bootable ISO that can be downloaded from the GitHub Releases page.
-
-Alternatively, clone the repository and build MiyarOS from source using the provided Makefile.
+A bootable release ISO is available on the project's latest GitHub Release.
 
 ## Features
 
@@ -250,7 +224,7 @@ make
 
 ```
 
-This builds the kernel and generates a bootable ISO.
+This builds the kernel and creates a bootable ISO.
 
 ## Run
 
@@ -262,18 +236,13 @@ Or manually:
 
 ```bash
 qemu-system-i386 \
-    -cdrom release/MiyarOS-v0.3.iso \
-    -drive file=disk.img,format=raw
+  -display curses \
+  -cdrom /tmp/miyaros.iso \
+  -drive file=disk.img,format=raw \
+  -boot d \
+  -m 256
 ```
 
-Terminal-only:
-
-```bash
-qemu-system-i386 \
-    -curses \
-    -cdrom release/MiyarOS-v0.3.iso \
-    -drive file=disk.img,format=raw
-```
 
 ## Disk Image
 
@@ -343,24 +312,9 @@ Place `disk.img` in the project root (alongside the `Makefile`).
 * Kernel, bootstrap-thread, and idle-thread protection.
 * Resource and PMM cleanup verification.
 
-### Planned
-
-#### v0.5 - User Mode & System Calls
-
-* Ring 3 execution
-* Kernel/user separation.
-* User-mode process execution.
-* ELF program loading
-* System call interface
-
-#### v0.6 - Virtual File System (VFS)
-
-* Generic filesystem layer
-* Multiple filesystem support
-* Kernel-facing VFS interface.
-
-#### Future
-
+### Planned Future
+* User Mode & System Calls
+* Virtual File System
 * USB drivers
 * Audio
 * Networking
