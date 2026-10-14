@@ -1,4 +1,4 @@
-![MiyarOS](images/screenshot.png)
+![MiyarOS](Screenshot_20261009-192920.jpg)
 
 # Miyar-OS
 
