@@ -13,7 +13,7 @@ void tss_init(void)
     tss.ss0 = GDT_KERNEL_DATA;
 
     static uint8_t temporary_kernel_stack[4096];
-    __attribute__((alligned(16)));
+    __attribute__((aligned(16)));
     tss.esp0 = (uint32_t)(temporary_kernel_stack + sizeof(temporary_kernel_stack));
     tss.iomap_base = sizeof(tss_entry_t);
     tss_flush();

@@ -8,6 +8,7 @@ typedef struct {
     uint32_t fs;
     uint32_t es;
     uint32_t ds;
+
     uint32_t edi;
     uint32_t esi;
     uint32_t ebp;
@@ -16,11 +17,16 @@ typedef struct {
     uint32_t edx;
     uint32_t ecx;
     uint32_t eax;
+    
     uint32_t int_no;
     uint32_t err_code;
+
     uint32_t eip;
     uint32_t cs;
     uint32_t eflags;
+
+    uint32_t useresp;
+    uint32_t ss;
 } x86_thread_frame_t;
 
 void x86_context_switch(uint32_t *old_esp, uint32_t new_esp);

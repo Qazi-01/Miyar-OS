@@ -7,6 +7,37 @@
 
 static bool directory_write_entry(const disk_t *disk, uint32_t cluster, const fat32_directory_entry_t *entry);
 
+static char directory_lowercase(char character)
+{
+    if (character >= 'A' && character <= 'Z')
+    {
+        return (char)(character + ('a' - 'A'));
+    }
+
+    return character;
+}
+
+static bool directory_names_equal(const char *left, const char *right)
+{
+    if (left == 0 || right == 0)
+    {
+        return false;
+    }
+
+    while (*left != '\0' && *right != '\0')
+    {
+        if (directory_lowercase(*left) != directory_lowercase(*right))
+        {
+            return false;
+        }
+
+        left++;
+        right++;
+    }
+
+    return *left == *right;
+}
+
 uint32_t directory_entry_cluster(const fat32_directory_entry_t *entry)
 {
     if (entry == 0)
@@ -202,6 +233,15 @@ bool directory_create_entry_in_cluster(const disk_t *disk, uint32_t cluster, con
         return false;
     }
 
+    char new_name[13];
+    fat32_directory_entry_t existing;
+
+    if (!directory_get_name(entry, new_name) ||
+        directory_find_in_cluster(disk, cluster, new_name, &existing))
+    {
+        return false;
+    }
+
     const fat32_filesystem_t *fs = fat32_get_filesystem();
     uint8_t sector[512];
     uint32_t start_cluster = cluster;
@@ -281,7 +321,7 @@ bool directory_find_in_cluster(const disk_t *disk, uint32_t cluster, const char 
     {
         directory_get_name(&current, filename);
 
-        if (strcmp(filename, name) == 0)
+        if (directory_names_equal(filename, name))
         {
             *entry = current;
             return true;
@@ -325,11 +365,6 @@ bool directory_set_name(fat32_directory_entry_t *entry, const char *name)
         }
 
         char c = *name++;
-
-        if (c >= 'a' && c <= 'z')
-        {
-            c -= 32;
-        }
 
         if (in_extension)
         {
@@ -520,7 +555,7 @@ bool directory_delete_in_cluster(const disk_t *disk, uint32_t cluster, const cha
                 char filename[13];
                 directory_get_name(&entries[i], filename);
 
-                if (strcmp(filename, name) == 0)
+                if (directory_names_equal(filename, name))
                 {
                     entries[i].name[0] = (char)0xE5;
                     return disk_write(disk, first_sector + s, sector) == 0;
@@ -793,7 +828,7 @@ bool directory_rename_entry(const disk_t *disk, uint32_t parent_cluster, const c
                 char filename[13];
                 directory_get_name(&entries[i], filename);
                 
-                if (strcmp(filename, old_name) == 0)
+                if (directory_names_equal(filename, old_name))
                 {
                     entries[i] = *entry;
                     return disk_write(disk, first_sector + s, sector) == 0;

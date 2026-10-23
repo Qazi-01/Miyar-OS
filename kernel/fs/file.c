@@ -27,7 +27,9 @@ static bool file_resolve_destination(const disk_t *disk, const char *new_name, u
 
     if (parsed.count == 1)
     {
-        *parent_cluster = fs_current_directory();
+        *parent_cluster = parsed.absolute
+            ? fat32_get_filesystem()->root_cluster
+            : fs_current_directory();
         strcpy(leaf_name, parsed.components[0]);
         return true;
     }
@@ -42,7 +44,7 @@ static bool file_resolve_destination(const disk_t *disk, const char *new_name, u
 
     for (int i = 0; i < parsed.count - 1; i++)
     {
-        if (i > 0 || parsed.absolute)
+        if (i > 0)
         {
             parent_path[pos++] = '/';
         }
@@ -72,6 +74,7 @@ static bool file_resolve_destination(const disk_t *disk, const char *new_name, u
         return false;
     }
 
+    *parent_cluster = directory_entry_cluster(&parent_entry);
     strcpy(leaf_name, parsed.components[parsed.count - 1]);
     return true;
 }

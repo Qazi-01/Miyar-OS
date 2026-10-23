@@ -62,7 +62,9 @@ $(BUILDDIR)/process_scheduler_test.o \
 $(BUILDDIR)/process_termination_test.o \
 $(BUILDDIR)/process_multithread_test.o \
 $(BUILDDIR)/protected_resource_test.o \
-$(BUILDDIR)/tss.o
+$(BUILDDIR)/tss.o \
+$(BUILDDIR)/user_test.o \
+$(BUILDDIR)/user_mode.o
 
 KERNEL_ELF=$(BUILDDIR)/kernel.elf
 ISO=miyaros.iso
@@ -123,6 +125,12 @@ $(BUILDDIR)/gdt.o: $(KERNELDIR)/arch/x86/gdt.c | $(BUILDDIR)
 
 $(BUILDDIR)/tss.o: $(KERNELDIR)/arch/x86/tss.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/user_test.o: $(KERNELDIR)/user/user_test.c | $(BUILDDIR)
+> $(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/user_mode.o: $(SRCDIR)/arch/x86/user_mode.asm | $(BUILDDIR)
+> $(ASM) $(ASMFLAGS) $< -o $@
 
 $(BUILDDIR)/multiboot.o: $(KERNELDIR)/memory/multiboot.c | $(BUILDDIR)
 > $(CC) $(CFLAGS) -c $< -o $@

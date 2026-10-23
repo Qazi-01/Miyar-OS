@@ -109,6 +109,7 @@ Alternatively, clone the repository and build MiyarOS from source using the prov
 * Current working directory support.
 * Path normalization (`.`, `..`, `/`).
 * FAT32 8.3 filename support.
+* Case-preserving, case-insensitive filename lookup with duplicate-name protection.
 
 ### Drivers
 
