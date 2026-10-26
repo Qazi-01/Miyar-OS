@@ -2,102 +2,23 @@
 
 # Miyar-OS
 
-a hobby operating system for 32-bit x86 that boots with GRUB and follows the Multiboot specification. The kernel is written entirely in C and x86 Assembly and is developed from scratch as a learning project. It currently features physical and virtual memory management, a fully functional FAT32 filesystem, an interactive command-line shell, hardware device drivers, interrupt handling, and paging.
+This is an OS started by a teen who idolize Linus Torvalds, creator of Linux. The OS is made for 32-bit x86 machines and boots with GRUB and follows Multiboot 2 specs. It's written purely in C and assembly for now and was developed from scratch as a learning project.
 
-## Current Version
 
-**v0.4 - Process Management & Multitasking**:
+## v0.4 - Process Management & Multitasking (Current Version):
 
-MiyarOS V0.4.0 introduces the foundations of process management and multitasking, including independent address spaces, kernel threads, schedulling, context switching, process termination, resource cleanup, and protected kernel resources.
+This version introduces process management, multitasking, independent address spaces, kernel threads, schedulling, context switching, process termination, resources cleanup, and protected kernel resources at a basic level into the OS.
 
-A bootable release ISO is available on the project's latest GitHub Release.
 
 ## Features
 
-### Kernel
+* Kernel
+* Memory Management
+* Process Management & Multitasking
+* Storage & Filesystem
+* Drivers
+* Shell
 
-* Multiboot-compliant 32-bit x86 boot flow through GRUB.
-* Kernel written entirely in C and x86 Assembly.
-* Global Descriptor Table (GDT).
-* Interrupt Descriptor Table (IDT).
-* PIC remapping and IRQ handling.
-* CPU exception handling.
-* Kernel panic screen with diagnostic information.
-* Dedicated page fault handler.
-* Context switching.
-
-### Memory Management
-
-* Multiboot memory map detection.
-* Physical Memory Manager (PMM).
-* Bitmap-based physical frame allocator.
-* Kernel heap (`kmalloc` / `kfree`).
-* Paging support.
-* Virtual Memory Manager (VMM).
-* Dynamic page table creation.
-* Independent address spaces.
-* Kernel address-space protection.
-* Read-only kernel memory protection.
-* Physical frame accounting and cleanup.
-
-### Process Management & Multitasking
-
-* Process creation and destruction.
-* Process identifiers (PIDs).
-* Process state management.
-* Process lookup.
-* Process termination.
-* Process reaping.
-* Parent process tracking.
-* Per-process address spaces.
-* Kernel thread creation.
-* Thread identifiers (TIDs).
-* Thread states: READY, RUNNING, BLOCKED, and TERMINATED.
-* Ready queue scheduling.
-* Thread blocking and unblocking.
-* Thread termination and reaping.
-* Kernel stack allocation for threads.
-* Context switching.
-* Timer-based preemptive multitasking.
-* Process/thread isolation.
-* Protected kernel process.
-* Protected bootstrap and idle threads.
-* Scheduler invariant testing.
-* Process isolation testing.
-* Protected resource testing.
-
-### Storage & Filesystem
-
-* ATA PIO disk driver.
-* Disk abstraction layer.
-* FAT32 filesystem detection and mounting.
-* FAT table management.
-* Cluster allocation and deallocation.
-* Multi-cluster file reading and writing.
-* File appending.
-* FAT32 directory traversal.
-* File and directory lookup.
-* File creation, deletion, copying, and renaming.
-* Directory creation and deletion.
-* Absolute and relative path resolution.
-* Current working directory support.
-* Path normalization (`.`, `..`, `/`).
-* FAT32 8.3 filename support.
-
-### Drivers
-
-* PS/2 keyboard driver with Shift support.
-* PIT timer and uptime reporting.
-* VGA text-mode terminal with scrolling and backspace.
-* Serial debugging output.
-
-### Shell
-
-* Interactive command-line shell.
-* Table-driven command dispatcher.
-* FAT32 filesystem integration.
-* Absolute and relative path support.
-* Output redirection using `>` and `>>`.
 
 ## Built-In Shell Commands
 
@@ -125,86 +46,6 @@ A bootable release ISO is available on the project's latest GitHub Release.
 | `exception`             | Triggers a divide-by-zero exception.           |
 | `pagefault`             | Triggers a page fault.                         |
 
-## Repository Structure
-
-```text
-Miyar-OS/
-├── Makefile
-├── README.md
-├── LICENSE
-├── linker.ld
-├── .gitignore
-├── miyaros.iso
-│   (after compilation or in release)
-├── build/
-│   (after compilation)
-│
-├── iso/
-│   └── boot/
-│       └── grub/
-│           └── grub.cfg
-│
-├── src/
-│   └── arch/
-│       └── x86/
-│           ├── boot.asm
-│           ├── context.asm
-│           ├── gdt.asm
-│           └── isr.asm
-│
-└── kernel/
-    ├── arch/
-    │   └── x86/
-    │       ├── gdt.c
-    │       ├── idt.c
-    │       ├── irq.c
-    │       └── exceptions.c
-    │
-    ├── drivers/
-    │   ├── ata.c
-    │   ├── disk.c
-    │   ├── keyboard.c
-    │   ├── pic.c
-    │   ├── serial.c
-    │   ├── timer.c
-    │   └── vga.c
-    │
-    ├── memory/
-    │   ├── multiboot.c
-    │   ├── memory_map.c
-    │   ├── pmm.c
-    │   ├── heap.c
-    │   ├── paging.c
-    │   ├── vmm.c
-    │   ├── address_space.c
-    │   ├── page_fault.c
-    │   └── (Test files)
-    │
-    ├── process/
-    │   ├── process.c
-    │   ├── scheduler.c
-    │   ├── thread.c
-    │   └── (Test files)
-    │
-    ├── fs/
-    │   ├── directory.c
-    │   ├── fat32.c
-    │   ├── file.c
-    │   ├── fs.c
-    │   └── path.c
-    │
-    ├── lib/
-    │   └── string.c
-    │
-    ├── include/
-    │   └── ...
-    │   (all header files)
-    │
-    ├── kernel.c
-    ├── panic.c
-    ├── shell.c
-    └── terminal.c
-```
 
 ## Build Requirements
 
@@ -243,6 +84,8 @@ qemu-system-i386 \
   -m 256
 ```
 
+> **Note:** A tested bootable release ISO is available on the project's latest GitHub Release.
+
 
 ## Disk Image
 
@@ -260,57 +103,10 @@ Format it as FAT32:
 mkfs.fat -F 32 disk.img
 ```
 
-Place `disk.img` in the project root (alongside the `Makefile`).
+Place the `disk.img` in the project root folder.
 
 > **Note:** The disk image is not included in the repository and must be created before using the filesystem.
 
-## Roadmap
-
-### Completed
-
-#### v0.1 - Core Kernel
-
-* Boot process
-* Interrupt handling
-* Drivers
-* VGA terminal
-* Interactive shell
-
-#### v0.2 - Memory Management
-
-* Physical Memory Manager
-* Kernel heap
-* Paging
-* Virtual Memory Manager
-* Page fault handling
-* Read-only kernel memory protection
-
-#### v0.3 - Filesystem
-
-* ATA PIO disk driver
-* FAT32 filesystem implementation
-* File and directory management
-* Multi-cluster file I/O
-* Absolute and relative path resolution
-* Current working directory
-* Integrated filesystem shell commands
-
-#### v0.4 - Process Management & Multitasking
-
-* Process creation and lifecycle management.
-* Independent process address spaces.
-* Kernel threads.
-* Thread scheduling.
-* Context switching.
-* Timer-driven preemptive multitasking.
-* Thread blocking and unblocking.
-* Process and thread termination.
-* Process and thread reaping.
-* Process/thread isolation.
-* Scheduler robustness and invariant testing.
-* Protected kernel resources.
-* Kernel, bootstrap-thread, and idle-thread protection.
-* Resource and PMM cleanup verification.
 
 ### Planned Future
 * User Mode & System Calls
